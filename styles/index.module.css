@@ -1,0 +1,252 @@
+.slider {
+    width: 100%;
+    height: 75vh;
+    overflow: hidden;
+    position: relative;
+}
+
+.sliderView {
+    width: 100%;
+    height: 75vh;
+    overflow: hidden;
+}
+
+.slides {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.8s cubic-bezier(0.755, 0.05, 0.855, 0.06);
+}
+
+.slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 75vh;
+    width: 100%;
+    padding: 0 75px;
+    background-size: cover;
+    -moz-background-size: cover;
+    -webkit-background-size: cover;
+    -o-background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.slide h2 {
+    letter-spacing: 3px;
+    color: white;
+}
+
+.slide p {
+    color: white;
+}
+
+.sliderDots {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    margin-top: auto;
+    transform: translate(0, -50%);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    margin: 15px;
+    transform: rotate(45deg);
+    border: 4px solid #a89d8e;
+    border-radius: 3px;
+    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.5s;
+}
+
+.dot.active {
+    background-color: black;
+}
+
+.homeDescBox {
+    display: flex;
+    width: 100%;
+    max-width: 1200px;
+    padding: 50px;
+    margin: 0 auto;
+}
+
+.homeDesc {
+    width: calc(100% - 220px);
+    padding: 15px;
+}
+
+.homeDesc h1 {
+    text-align: left;
+}
+
+.homeDesc p {
+    font-size: 20px;
+}
+
+.homePros {
+    padding: 0 20px;
+    width: 250px;
+}
+
+.homePros ul {
+    list-style: none;
+    padding: 0;
+}
+
+.homePros ul li {
+    font-size: 12px;
+    line-height: 230%;
+}
+
+.homePros ul li img {
+    width: 35px;
+    height: auto;
+    position: relative;
+    top: 10px;
+}
+
+@media screen and (max-width: 800px) {
+    .homeDescBox {
+        flex-wrap: wrap;
+    }
+
+    .homePros {
+        width: 100%;
+    }
+
+    .homeDesc {
+        width: 100%;
+    }
+
+    .homePros ul {
+        display: inline-flex;
+    }
+
+    .homePros ul li {
+        margin: 0 15px;
+    }
+}
+
+@media screen and (max-width: 620px) {
+    .homePros ul {
+        flex-wrap: wrap;
+    }
+}
+
+.newsBox {
+    width: 100%;
+    margin: 0 auto;
+    max-width: 1200px;
+    padding: 0 25px;
+}
+
+.infoBox {
+    width: 33.33%;
+    padding: 15px;
+    float: left;
+}
+
+.page {
+    opacity: 0;
+    animation: fade 1s forwards;
+}
+
+@keyframes fade {
+    from {opacity: 0;}
+    to {opacity: 1;}
+  }
+
+.infoBox h4 {
+    margin-top: 0;
+}
+
+.infoBox span {
+    font-size: 11px;
+}
+
+.infoBox img {
+    width: 100%;
+    height: auto;
+}
+
+.infoBox a {
+    display: block;
+    margin: 0 auto;
+}
+
+@media screen and (max-width: 800px) {
+    .infoBox {
+        width: 100%;
+    }
+}
+
+.openingHoursBox {
+    width: 100%;
+    padding: 30px;
+    overflow: hidden;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.openingHoursBox h2 {
+    text-align: center;
+    color: white;
+    width: 100%;
+}
+
+.openHour {
+    width: 13vw;
+    height: 13vw;
+    display: flex;
+    color: white;
+    float: left;
+    margin: 40px 15px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-color: #486b71;
+    border-bottom: 5px solid rgba(255, 255, 255, 0.5);
+}
+
+.reservBtn {
+    display: block;
+    color: white;
+    text-transform: uppercase;
+    padding: 10px 0;
+    border: 1px solid white;
+    text-decoration: none;
+    margin: 0 auto;
+    clear:both;
+    max-width: 250px;
+    width: 100%;
+    text-align:center;
+    text-shadow: 1px 1px 2px black;
+    box-shadow: 1px 1px 2px black;
+}
+
+@media screen and (max-width: 980px) {
+    .openHour {
+        width: 25vw;
+        height: 25vw;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .openHour {
+        width: 100%;
+        height: 100px;
+    }
+}
+
+.btnBoxHour {
+    width: 100%;
+}

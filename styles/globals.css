@@ -1,0 +1,451 @@
+body {
+  font-family: "Barlow", sans-serif;
+  margin: 0;
+}
+
+.formError {
+  text-align: right;
+  color: #ff6363;
+  font-size: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+select {
+  border-radius: 0;
+  border: 1px solid black;
+  padding: 5px 10px;
+}
+
+h1,
+h2 {
+  text-align: center;
+}
+
+h3,
+h4,
+h5 {
+  text-align: center;
+  text-shadow: 1px 2px 3px rgba(0, 0, 0, 0.7);
+}
+
+div#root {
+  display: flex;
+  width: 100%;
+  padding-top: 98px;
+  flex-direction: column;
+}
+
+.loader {
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: white;
+  z-index: 999999;
+}
+
+a.btn,
+button {
+  display: inline-block;
+  padding: 5px 10px;
+  background-color: #a89d8e;
+  text-align: center;
+  text-decoration: none;
+  color: white;
+  text-shadow: 1px 1px 2px black;
+  box-shadow: 0 0 3px black;
+}
+
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ellipsis div {
+  position: absolute;
+  top: 33px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: black;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+  left: 8px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(2) {
+  left: 8px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+  left: 32px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(4) {
+  left: 56px;
+  animation: lds-ellipsis3 0.6s infinite;
+}
+@keyframes lds-ellipsis1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes lds-ellipsis3 {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(0);
+  }
+}
+@keyframes lds-ellipsis2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(24px, 0);
+  }
+}
+
+@keyframes containerFade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  padding: 0 25px;
+  animation-name: containerFade;
+  animation-duration: 1s;
+  animation-fill-mode: forwards;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.fullLoading {
+  background-color: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+}
+
+.errorPage {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 435px;
+  margin: 25px auto;
+}
+
+.errorPage h1,
+.errorPage h3,
+.errorPage a,
+.errorPage p {
+  font-family: "Barlow", sans-serif;
+  color: #5c6167;
+  text-shadow: none;
+  text-decoration: none;
+}
+
+.errorPage b {
+  cursor: pointer;
+}
+
+.errorPage h3 {
+  color: gainsboro;
+}
+
+main {
+  min-height: 100vh;
+}
+
+@media screen and (min-width: 980px) {
+  main {
+    padding-top: 100px;
+  }
+}
+
+.reservForm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 99999;
+}
+
+.contactPage {
+  display: flex;
+  width: 100%;
+}
+
+.contactPage > .contactBg {
+  background-image: url("../public/images/contactbg.jpg");
+  background-size: cover;
+  min-height: 70%;
+  width: 35%;
+  position: sticky;
+  top: 100px;
+}
+
+.contactPage > .contactContent {
+  padding: 25px;
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contactInfo {
+  display: flex;
+  width: 100%;
+  padding: 25px;
+}
+
+.contactInfo > div {
+  width: 100%;
+  margin: 5px;
+  min-width: 200px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  margin: 5px;
+}
+
+@media screen and (max-width: 1200px) {
+  .contactInfo {
+    flex-wrap: wrap;
+  }
+}
+
+.contactPage > .contactContent > form {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  max-width: 700px;
+  width: 100%;
+  position: relative;
+}
+
+.contactPage > .contactContent > form > .formError {
+  padding-right: 15px;
+}
+
+.contactPage > .contactContent > form > label > span {
+  display: inline-block;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.contactPage > .contactContent > form > label > input {
+  float: right;
+  padding: 15px;
+  margin: 15px 15px 15px 0;
+}
+
+.contactPage > .contactContent > form > label > textarea {
+  padding: 15px;
+  margin: 15px;
+  resize: none;
+  width: calc(100% - 30px);
+  height: 225px;
+}
+
+.contactPage > .contactContent > form {
+  margin: 0 15px;
+  width: 100%;
+}
+
+.contactPage > .contactContent > form > button {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+@media screen and (max-width: 750px) {
+  .contactPage > .contactContent {
+    width: 100%;
+  }
+
+  .contactPage > .contactBg {
+    display: none;
+  }
+}
+
+.reservForm form {
+  display: flex;
+  flex-direction: column;
+}
+
+.reservForm form label {
+  padding: 10px 0;
+}
+
+.reservForm form label span {
+  float: left;
+  padding-right: 25px;
+}
+
+.reservForm form label input {
+  border: 1px solid #a89d8e;
+  float: right;
+}
+
+.reservList {
+  padding: 25px 0;
+  margin: 0;
+  list-style: none;
+  font-size: 20px;
+}
+
+.reservList li {
+  margin: 15px;
+}
+
+.reservList li button {
+  margin: 5px 10px;
+}
+
+.closeBtn {
+  position: absolute;
+  right: 15px;
+  top: 25px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+}
+
+.closeBtn_1,
+.closeBtn_2 {
+  height: 4px;
+  width: 100%;
+  background-color: white;
+}
+
+.closeBtn_1 {
+  position: relative;
+  top: 4px;
+  transform: rotate(45deg);
+}
+
+.closeBtn_2 {
+  transform: rotate(-45deg);
+}
+
+.costBox {
+  list-style: none;
+  width: 100%;
+  max-width: 600px;
+  padding: 0;
+  text-align: center;
+}
+
+.costBox {
+  font-size: 16px;
+}
+
+.costBox > li:nth-child(2) > ul > li {
+  padding: 5px 0;
+  font-size: 17px;
+  background-color: #a89d8e;
+  font-weight: 700;
+}
+.costBox > li > ul {
+  display: flex;
+  width: 100%;
+  padding: 0;
+  list-style: none;
+}
+
+.costBox > li > ul > li {
+  width: 50%;
+  border: 1px solid black;
+}
+
+.costBox > li > ul > li:first-child {
+  width: 100%;
+}
+
+.photoBox {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+.photoBox > img {
+  max-width: 500px;
+  width: 33.3333%;
+  cursor: pointer;
+  margin: 15px;
+  height: auto;
+}
+
+@media screen and (max-width: 800px) {
+  .photoBox > img {
+    width: 50%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .photoBox > img {
+    width: 100%;
+  }
+}
+
+.fullImageScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
+}
+
+.fullImageScreen img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 100%;
+}

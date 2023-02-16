@@ -1,0 +1,66 @@
+.footer {
+  margin-top: 50px;
+  background-color: black;
+  color: white;
+}
+
+.mainContent {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.descBox {
+  max-width: 350px;
+  padding: 25px;
+  font-size: 13px;
+}
+
+.copyrights {
+  width: 100%;
+  background-color: #191919;
+  padding: 5px 25px;
+  text-align: center;
+}
+
+.linkBox {
+  padding: 15px;
+}
+
+.linkBox ul {
+  list-style: none;
+  padding: 0 20px;
+  margin: 0;
+}
+
+.linkBox ul li {
+  padding: 2px 0;
+}
+
+.linkBox ul li a {
+  text-decoration: none;
+  color: white;
+  font-size: 20px;
+  padding: 3px 0;
+}
+
+.linkBox ul li a:hover {
+  text-decoration: underline;
+}
+
+.linkBoxName {
+  font-size: 22px;
+  color: white;
+  position: relative;
+  font-weight: 700;
+}
+
+.linkBoxName:after {
+  content: "";
+  width: 100%;
+  height: 3px;
+  background-color: #a89d8e;
+  position: absolute;
+  bottom: -10px;
+  left: 10%;
+  transform: skewX(70deg);
+}

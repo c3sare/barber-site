@@ -1,0 +1,249 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: fixed;
+  padding: 25px;
+  min-height: 100px;
+  top: 0;
+  left: 0;
+  background-color: black;
+  z-index: 99;
+}
+
+@media screen and (max-width: 979px) {
+  .header {
+    position: unset;
+    flex-wrap: wrap;
+  }
+
+  div#root {
+    padding-top: 0;
+  }
+}
+
+.logo {
+  height: 45px;
+  width: auto;
+}
+
+.navMenu {
+  padding: 5px 25px;
+}
+
+.navMenu ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.navMenu a {
+  display: inline-block;
+  text-decoration: none;
+  color: white;
+  margin: 7px 5px;
+  padding: 7px 5px;
+  position: relative;
+  transition: color 0.3s;
+}
+
+@media screen and (min-width: 980px) {
+  .navMenu > ul {
+    display: flex;
+    list-style: none;
+  }
+
+  .navMenu a:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    width: 0;
+    background-color: #a89d8e;
+    overflow: hidden;
+    transition: width 0.3s cubic-bezier(0.755, 0.05, 0.855, 0.06);
+  }
+
+  .navMenu a.active,
+  .navMenu a:hover {
+    color: #a89d8e;
+  }
+
+  .navMenu a:hover::after,
+  .navMenu a.active::after {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 980px) {
+  .subMenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 150px;
+    padding: 20px 10px;
+    background-color: black;
+    color: white;
+    opacity: 0;
+    list-style: none;
+    border: 1px solid #a89d8e;
+    transform: translateX(-50%);
+    transition: opacity 1s;
+  }
+
+  .subMenu li {
+    padding: 8px 5px;
+  }
+
+  .navMenu > ul > li:hover .subMenu {
+    display: block;
+    opacity: 1;
+  }
+  .showHideSubMenu {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 979.99px) {
+  .subMenu {
+    max-height: 0;
+    padding: 0;
+    margin: -4px 0 !important;
+    overflow: hidden;
+    transition: max-height .3s;
+  }
+
+  .subMenu li a {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .subMenu li a:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .showHideSubMenu {
+    position: absolute;
+    right: 10px;
+    top: 11px;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+
+  .showHideSubMenu:before {
+    content: "";
+    position: absolute;
+    top: calc(50% - 2px);
+    left: 0;
+    width: 25px;
+    height: 4px;
+    background-color: white;
+  }
+
+  .showHideSubMenu:after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 3px);
+    top: 0;
+    width: 4px;
+    height: 25px;
+    background-color: white;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  .showHideSubMenu.rotate:after {
+    opacity: 1;
+  }
+}
+
+.menuButton {
+  display: none;
+  text-decoration: none;
+}
+
+.menuBtnElement {
+  width: 35px;
+  height: 5px;
+  background-color: white;
+  margin: 6px 0;
+  transition: all 0.4s;
+}
+
+.change .menuBtnElement:nth-child(1) {
+  -webkit-transform: rotate(-45deg) translate(-9px, 6px);
+  transform: rotate(-45deg) translate(-9px, 6px);
+}
+
+.change .menuBtnElement:nth-child(2) {
+  opacity: 0;
+}
+
+.change .menuBtnElement:nth-child(3) {
+  -webkit-transform: rotate(45deg) translate(-8px, -8px);
+  transform: rotate(45deg) translate(-8px, -8px);
+}
+
+.navMenu {
+  padding: 0;
+  margin: 0;
+}
+
+.navMenu li {
+  position: relative;
+}
+
+@media screen and (max-width: 979px) {
+  .navMenu {
+    display: block;
+    top: 0;
+    left: 0;
+    max-height: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+    transition: max-height 0.5s;
+  }
+
+  .navMenu li {
+    width: 100%;
+  }
+
+  .navMenu a {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: background-color 0.3s;
+    font-size: 18px;
+    padding: 15px;
+  }
+
+  .navMenu a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .menuButton {
+    display: block;
+    z-index: 1;
+    cursor: pointer;
+  }
+
+  .navMenu {
+    padding: 0;
+  }
+
+  .subMenuActive {
+    background-color: grey !important;
+  }
+}
+
+@media screen and (min-width: 980px) {
+  .navMenu {
+    display: flex;
+    height: initial !important;
+  }
+}

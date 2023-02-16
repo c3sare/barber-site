@@ -1,0 +1,469 @@
+  textarea.error {
+    border-color: red !important;
+    color: red;
+  }
+  
+  .textarea.error::placeholder {
+    color: red;
+  }
+  
+  .sortTree {
+    height: 1000px;
+    color: black;
+    margin: 25px;
+  }
+  
+  .header {
+    position: fixed;
+    height: 100vh;
+    background-color: rgb(46, 46, 46);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.5s;
+    width: 92px;
+    justify-content: space-between;
+    overflow-y: auto;
+    z-index: 9;
+  }
+  
+  .rst__rowTitle {
+    color: black;
+  }
+  
+  .h1 {
+    text-align: center;
+  }
+  
+  .header > ul {
+    list-style: none;
+    padding: 25px 15px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .header.open > ul > li,
+  .header:hover > ul > li {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    min-width: 240px;
+    transition: background-color 0.3s;
+  }
+  
+  .header.open,
+  .header:hover {
+    width: 270px;
+  }
+  .header .title-menu,
+  .header .menu-show-btn {
+    display: none;
+  }
+  
+  .header:hover .title-menu,
+  .header:hover .menu-show-btn,
+  .header.open .title-menu,
+  .header.open .menu-show-btn {
+    display: block;
+  }
+  
+  .head-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding: 8px 15px;
+    font-size: 15px;
+    color: black;
+    outline-width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+    border: 1px solid #ffffff00;
+    transition: all 0.3s ease-out;
+  }
+  
+  .head-menu img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .menu-show-btn {
+    font-size: 35px;
+    padding: 5px 10px 0 10px;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  
+  .menu-show-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.05);
+    transition: all 1s;
+  }
+  
+  .header > ul > li {
+    margin: 5px 0;
+  }
+  
+  .header > ul > li > a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    padding: 8px 15px;
+    font-size: 12px;
+    color: #ffffff;
+    outline-width: 0;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    overflow: hidden;
+    border: 1px solid #ffffff00;
+    transition: all 0.3s ease-out;
+  }
+  
+  .header > ul > li:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .icon-menu {
+    font-size: 20px;
+  }
+  
+  .title-menu {
+    font-size: 12px;
+    padding: 0 15px;
+  }
+  
+  .head-menu .title-menu {
+    font-size: 10px;
+  }
+  
+  .main {
+    background-color: rgb(36, 36, 36);
+    width: calc(100% - 92px);
+    color: white;
+    float: right;
+    padding: 25px;
+    transition: width 0.3s;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  .fullWidth {
+    width: 100% !important;
+  }
+  
+  .errorMsg {
+    display: block;
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    font-size: 11px;
+    padding: 5px;
+    border-radius: 8px;
+    transform: translateY(-6%);
+  }
+  
+  .errorMsg:after {
+    position: absolute;
+    right: calc(100% - 13px);
+    content: "";
+    top: -11px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid rgba(255, 255, 255, 0.1);
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    margin: 15px auto 0;
+    transform: rotate(-45deg);
+  }
+  
+  .loadingBox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(59, 59, 59, 0.7);
+    z-index: 99;
+  }
+  
+  .lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+  .lds-ellipsis div {
+    position: absolute;
+    top: 33px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: white;
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+  }
+  .lds-ellipsis div:nth-child(1) {
+    left: 8px;
+    animation: lds-ellipsis1 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(2) {
+    left: 8px;
+    animation: lds-ellipsis2 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(3) {
+    left: 32px;
+    animation: lds-ellipsis2 0.6s infinite;
+  }
+  .lds-ellipsis div:nth-child(4) {
+    left: 56px;
+    animation: lds-ellipsis3 0.6s infinite;
+  }
+  @keyframes lds-ellipsis1 {
+    0% {
+      transform: scale(0);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes lds-ellipsis3 {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(0);
+    }
+  }
+  @keyframes lds-ellipsis2 {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(24px, 0);
+    }
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .MuiDropzoneArea-root {
+    background-color: rgb(56, 56, 56) !important;
+    color: white !important;
+  }
+  
+  .textarea {
+    background-color: transparent;
+    color: #b0bec5;
+    border-radius: 5px;
+    border-color: #455a64;
+    box-sizing: border-box;
+    padding: 5px;
+    width: 100%;
+    min-height: 30px;
+    resize: vertical;
+  }
+  
+  .textarea:hover {
+    border-color: #607d8b;
+  }
+  
+  .textarea:focus-visible {
+    outline: none;
+    border-color: #b0bec5;
+    border-width: 2px;
+    padding: 4px;
+  }
+  
+  .ulDragableList {
+    list-style: none;
+    max-width: 100%;
+    padding: 0;
+    width: 400px;
+    margin: 15px 0;
+  }
+  
+  .liDragableElement {
+    width: 100%;
+    padding: 15px 10px;
+    margin: 5px 0;
+    border: 1px solid darkgrey;
+    display: block;
+    color: white;
+  }
+  
+  .handleIcon {
+    display: inline-block;
+    margin: 5px;
+    cursor: move;
+    cursor: -webkit-grabbing;
+  }
+  
+  .menuListEdit ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .menuListEdit li {
+    min-height: 50px;
+    margin: 15px 5px;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .menuListEdit li:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+  }
+  
+  .menuListEdit li > span {
+    float: left;
+    padding: 10px 25px;
+  }
+  
+  .menuListEdit li > div {
+    float: right;
+  }
+  
+  .rstcustom__rowContents {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+  
+  .rstcustom__rowTitle {
+    font-weight: 100 !important;
+  }
+  
+  .rstcustom__nodeContent {
+    width: 100%;
+  }
+  
+  .editMenuElement {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 9;
+  }
+  
+  .pageEditor {
+    padding-top: 50px;
+  }
+  
+  .newsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .newsList li {
+    margin: 8px;
+    padding: 4px 16px;
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .newsDate {
+    font-weight: 400;
+    float: right;
+  }
+  
+  .addDateForm {
+    width: 100vw;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(59, 59, 59, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .openHoursList {
+    list-style: none;
+  }
+  
+  .openHoursList li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  
+  .openHoursList li span {
+    display: flex;
+    align-items: center;
+  }
+  
+  .openHoursList li b {
+    width: 33.33%;
+  }
+  
+  .sliderConfigList {
+    list-style: none;
+  }
+  
+  .sliderConfig {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 15px 0;
+  }
+  
+  .sliderConfig img {
+    max-width: 20%;
+  }
+  
+  .sliderConfig textarea {
+    margin-top: 15px;
+    height: 100px;
+    resize: vertical;
+  }
+  
+  .usWorkConfig {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .usWorkConfig > li {
+    display: flex;
+    flex-wrap: wrap;
+    width: 33.33333%;
+    padding: 15px;
+    position: relative;
+  }
+  
+  .usWorkConfig > li > span {
+    display: none;
+  }
+  
+  .usWorkConfig > li:hover > span {
+    display: initial;
+  }
+  
+  @media screen and (max-width: 1080px) {
+    .usWorkConfig > li {
+      width: 50%;
+    }
+  }
+  
+  @media screen and (max-width: 800px) {
+    .usWorkConfig > li {
+      width: 100%;
+    }
+  }
+  
+  .usWorkConfig > li > img {
+    width: 100%;
+  }
+  
