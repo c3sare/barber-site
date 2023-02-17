@@ -96,12 +96,18 @@ async function checkDataFooter(data:FormDataFooter) {
     return createResponse("Ustawienia przycisku nie są prawidłowe!");
   }
 
+  if(data.linkBoxes.length > 4) {
+    return createResponse("Za dużo pojemników z odnośnikami!")
+  }
+
   for(let i=0; i<data.linkBoxes.length!;i++) {
     const linkBox = data.linkBoxes[i];
     if(
       linkBox.name.length <= 0 ||
       linkBox.name.length > 30 ||
-      !regexLinkBoxName.test(linkBox.name)
+      !regexLinkBoxName.test(linkBox.name) ||
+      linkBox.links.length <= 0 ||
+      linkBox.links.length > 5
     ) return createResponse("Nazwa kontenera na odnośniki jest nieprawidłowa!");
     for(let j=0; j<linkBox.links.length; j++) {
       const link = linkBox.links[j];

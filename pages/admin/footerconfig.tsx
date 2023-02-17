@@ -149,7 +149,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
           container
           alignItems="center"
           direction="column"
-          style={{ maxWidth: "550px", margin: "0 auto" }}
+          sx={{ maxWidth: "550px", margin: "0 auto", "& > *": {margin: "15px 0"} }}
         >
           <Grid
             container
@@ -195,13 +195,25 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
               </ThemeProvider>
             </Grid>
           </Grid>
-          <Grid container justifyContent="center">
-            <Box pt={2} pb={1}>
-              <Typography component="h1">Opis</Typography>
-            </Box>
+          <Grid container justifyContent="center" sx={{position: "relative"}}>
+            <Typography
+              component="label"
+              htmlFor="desc"
+              sx={{
+                position: "absolute",
+                top: "-9px",
+                left: "11px",
+                fontSize: "12px",
+                padding: "0 5px",
+                color: "#cfd8dc",
+                backgroundColor: "rgb(36, 36, 36)"
+              }}
+            >
+              Opis
+            </Typography>
             <CTextArea
+              id="desc"
               style={{ height: "110px" }}
-              placeholder="Wpisz opis dolny..."
               {...register("desc", {
                 required: "To pole jest wymagane",
                 pattern: {
@@ -220,7 +232,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
           </Grid>
           <Grid container alignItems="center" direction="column">
             <Grid item xs={12} lg={6} md={8}>
-              <Box pt={3}>
+              <Box>
                 <Typography component="h3">Ustawienia Przycisku</Typography>
               </Box>
             </Grid>
@@ -228,13 +240,14 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
               <Controller
                 control={control}
                 name="btnMore"
-                render={({ field: { onChange, onBlur, value, ref } }) => (
+                render={({ field: { onChange, onBlur, value, ref, name } }) => (
                   <FormControlLabel
                     label="Pokazuj przycisk 'Więcej'"
                     control={
                       <CCheckbox
                         color="default"
                         onChange={onChange}
+                        name={name}
                         onBlur={onBlur}
                         checked={Boolean(value)}
                         inputRef={ref}
@@ -251,7 +264,6 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                     <Box pb={2}>
                       <Controller
                         control={control}
-                        defaultValue=""
                         name="btnTitle"
                         rules={{
                           required: "To pole jest wymagane.",
@@ -265,13 +277,13 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                             message: "Max. ilość znaków to 25",
                           },
                         }}
-                        render={({ field: { onChange, onBlur, value, ref } }) => (
+                        render={({ field: { onChange, onBlur, value, ref, name } }) => (
                           <CTextField
                             variant="outlined"
-                            placeholder="Nazwa przycisku"
+                            label="Nazwa przycisku"
                             onChange={onChange}
                             onBlur={onBlur}
-                            name=""
+                            name={name}
                             value={value}
                             inputRef={ref}
                             error={Boolean(errors.btnTitle)}
@@ -298,13 +310,14 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                             message: "Max. ilość znaków to 256",
                           },
                         }}
-                        render={({ field: { onChange, onBlur, value, ref } }) => (
+                        render={({ field: { onChange, onBlur, value, ref, name } }) => (
                           <CTextField
                             variant="outlined"
-                            placeholder="Link przycisku"
+                            label="Link przycisku"
                             onChange={onChange}
                             onBlur={onBlur}
                             value={value}
+                            name={name}
                             inputRef={ref}
                             error={Boolean(errors.btnLink)}
                             helperText={errors.btnLink?.message}
@@ -324,7 +337,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
             direction="column"
           >
             <Grid item xs={12} lg={6} md={8}>
-              <Box pb={1} pt={3}>
+              <Box pb={1}>
                 <Typography component="h2">Kontenery nawigacyjne</Typography>
               </Box>
             </Grid>
@@ -363,11 +376,12 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                           },
                         }}
                         render={({
-                          field: { onChange, onBlur, value, ref },
+                          field: { onChange, onBlur, value, ref, name },
                         }) => (
                           <CTextField
                             variant="outlined"
-                            placeholder="Nazwa nawigacji"
+                            name={name}
+                            label="Nazwa nawigacji"
                             onChange={onChange}
                             onBlur={onBlur}
                             value={value}
@@ -417,13 +431,14 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                                 },
                               }}
                               render={({
-                                field: { onChange, onBlur, value, ref },
+                                field: { onChange, onBlur, value, ref, name },
                               }) => (
                                 <CTextField
                                   variant="outlined"
-                                  placeholder="Nazwa odnośnika"
+                                  label="Nazwa odnośnika"
                                   onChange={onChange}
                                   onBlur={onBlur}
+                                  name={name}
                                   value={value}
                                   inputRef={ref}
                                   error={Boolean(
@@ -456,12 +471,13 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                                 },
                               }}
                               render={({
-                                field: { onChange, onBlur, value, ref },
+                                field: { onChange, onBlur, value, ref, name },
                               }) => (
                                 <CTextField
                                   variant="outlined"
-                                  placeholder="Adres odnośnika"
+                                  label="Adres odnośnika"
                                   onChange={onChange}
+                                  name={name}
                                   onBlur={onBlur}
                                   value={value}
                                   inputRef={ref}
@@ -480,16 +496,6 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                         </Grid>
                         <Grid item xs={1}>
                           <Box pb={2}>
-                            {linkIndex === fields[boxIndex].links.length - 1 &&
-                              box.links.length < 5 && (
-                                <CButton
-                                  type="button"
-                                  onClick={() => handleAddLinkToBox(boxIndex)}
-                                  variant="contained"
-                                >
-                                  <FaPlus />
-                                </CButton>
-                              )}
                             {fields[boxIndex].links.length > 1 && (
                               <CButton
                                 type="button"
@@ -504,6 +510,18 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                           </Box>
                         </Grid>
                       </Grid>
+                      {
+                        linkIndex === fields[boxIndex].links.length - 1 &&
+                          box.links.length < 5 && (
+                            <CButton
+                              type="button"
+                              onClick={() => handleAddLinkToBox(boxIndex)}
+                              variant="contained"
+                            >
+                              <FaPlus />
+                            </CButton>
+                          )
+                      }
                     </Grid>
                   </Grid>
                 ))}
@@ -512,7 +530,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
             ))}
             {fields.length < 4 && (
               <Grid item>
-                <Box pt={2}>
+                <Box>
                   <CButton
                     onClick={handleAddBox}
                     startIcon={<FaPlus />}
@@ -526,7 +544,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
             )}
           </Grid>
           <Grid item xs={12} lg={6} md={8}>
-            <Box pt={5}>
+            <Box>
               <CButton
                 disabled={sending}
                 startIcon={<FaSave />}

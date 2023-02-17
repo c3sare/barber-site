@@ -8,7 +8,9 @@ const CTextArea = styled(TextareaAutosize)({
     resize: "vertical",
     borderRadius: "5px",
     width: "100%",
+    minHeight: "56px",
     maxHeight: "300px",
+    padding: "16.5px 14px",
     color: blueGrey[300],
     '&:focus-visible': {
         outline: "0px"
