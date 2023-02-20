@@ -3,63 +3,74 @@ import { Layout } from "@/componentsAdminPanel/Layout"
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
+import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
+import 'react-complex-tree/lib/style-modern.css';
 
 import React, { useState } from "react";
-import styles from "@/styles/tree.module.css";
-import { ThemeProvider, CssBaseline } from "@mui/material";
-import {
-  Tree,
-  NodeModel,
-  MultiBackend,
-  getBackendOptions,
-  DndProvider
-} from "@minoru/react-dnd-treeview";
 
-import { createTheme } from "@mui/material/styles";
-import { TreeElement } from "@/componentsAdminPanel/elements/TreeElement";
-import { TreeElementPlaceholder } from "@/componentsAdminPanel/elements/TreeElementPlaceholder";
-import { TreeElementDragPreview } from "@/componentsAdminPanel/elements/TreeElementDragPreview";
 import {MenuItemDB} from "@/lib/types/MenuItem";
 
-export const theme = createTheme({
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        "*": {
-          margin: 0,
-          padding: 0
-        },
-        "html, body, #root": {
-          height: "100%"
-        },
-        ul: {
-          listStyle: "none"
-        }
-      }
-    },
-    MuiSvgIcon: {
-      styleOverrides: {
-        root: { verticalAlign: "middle" }
-      }
-    }
+const startItem:any = {
+  root: {
+    index: 'root',
+    canMove: true,
+    isFolder: true,
+    children: [],
+    data: 'Root item',
+    canRename: true
   }
-});
+}
 
 function changeData(data:MenuItemDB[]) {
-  return data.map((item:any, i:number) => {
-    return ({
-    id: i,
-    parent: 0,
-    droppable: true,
-    text: item.title,
-    data: {...item}
+  let items = {...startItem};
+  items.root.children = data.filter(item => item?.parent === "").map(item => item._id);
+
+  data.forEach(item => {
+    items[item._id] = {
+      index: item._id,
+      canMove: !(item.slug === ""),
+      isFolder: true,
+      children: data.filter(sitem => sitem.parent === item._id).map(item => item._id),
+      data: {...item},
+      canRename: true
+    }
+  });
+
+  return items;
+}
+
+function sortByOrder(a:any, b:any) {
+  if(a.order > b.order) {
+    return 1;
+  } else if(a.order < b.order) {
+    return -1;
+  } else {
+    return 0;
+  }
+}
+
+function returnNormData(data:any) {
+  const newData = {...data};
+  const keys = Object.keys(newData);
+
+  keys.forEach(item => {
+    data[item].children.forEach((sitem:any) => {
+      data[sitem].data.parent = item;
     })
   })
+
+  const tab:any[] = [];
+  keys.forEach((item, order) => {
+    const obj = {...data[item].data};
+    obj.order = order
+    tab.push(obj)
+  });
+
+  return tab;
 }
 
 const AdminPanelMenuConfig = ({permissions, menu}: any) => {
-  const [treeData, setTreeData] = useState<NodeModel[]>(changeData(menu));
-  const handleDrop = (newTree: NodeModel[]) => setTreeData(newTree);
+  const [treeData, setTreeData] = useState<any>(changeData(menu.sort(sortByOrder)));
 
     return (
         <Layout perms={permissions}>
@@ -67,38 +78,16 @@ const AdminPanelMenuConfig = ({permissions, menu}: any) => {
           <CButton>
             Dodaj nowy element
           </CButton>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <DndProvider backend={MultiBackend} options={getBackendOptions()}>
-              <div className={styles.app}>
-                <Tree
-                  tree={treeData}
-                  rootId={0}
-                  sort={false}
-                  insertDroppableFirst={false}
-                  dropTargetOffset={10}
-                  canDrop={(tree, { dragSource, dropTargetId }) => {
-                    if (dragSource?.parent === dropTargetId) {
-                      return true;
-                    }
-                  }}
-                  render={(node, options) => <TreeElement node={node} {...options} />}
-                  dragPreviewRender={(monitorProps) => (
-                    <TreeElementDragPreview monitorProps={monitorProps} />
-                  )}
-                  placeholderRender={(node, { depth }) => (
-                    <TreeElementPlaceholder node={node} depth={depth} />
-                  )}
-                  onDrop={handleDrop}
-                  classes={{
-                    root: styles.treeRoot,
-                    draggingSource: styles.draggingSource,
-                    placeholder: styles.placeholderContainer
-                  }}
-                />
-              </div>
-            </DndProvider>
-          </ThemeProvider>
+          <UncontrolledTreeEnvironment
+            dataProvider={new StaticTreeDataProvider(treeData, (item, data) => ({ ...item, data }))}
+            getItemTitle={item => item.data.title}
+            viewState={{}}
+            canDragAndDrop={true}
+            canDropOnFolder={true}
+            canReorderItems={true}
+          >
+            <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
+          </UncontrolledTreeEnvironment>
         </Layout>
     )
 }
