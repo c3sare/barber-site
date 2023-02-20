@@ -3,7 +3,7 @@ import { Layout } from "@/componentsAdminPanel/Layout"
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
-import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
+import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
 import style from "@/styles/admin.module.css";
 
@@ -98,7 +98,7 @@ function returnNormData(data:any):MenuItemDB[] {
 }
 
 const SortPanel = () => {
-  const [treeData, setTreeData] = useState<any>(null);
+  const [treeData, setTreeData] = useState<MenuItemSort | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -129,8 +129,8 @@ const SortPanel = () => {
     treeData !== null ? 
     <>
       <UncontrolledTreeEnvironment
-        dataProvider={new StaticTreeDataProvider(treeData, (item:MenuItemSort, data:MenuItemDB) => ({ ...item, data }))}
-        getItemTitle={(item:MenuItemRCT) => item.data.title}
+        dataProvider={new StaticTreeDataProvider(treeData, (item:TreeItem<MenuItemDB>, data:MenuItemDB) => ({ ...item, data }))}
+        getItemTitle={(item:TreeItem<MenuItemDB>) => item.data.title}
         viewState={{}}
         canDragAndDrop={true}
         canDropOnFolder={true}
