@@ -5,28 +5,56 @@ import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
 import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
+import style from "@/styles/admin.module.css";
 
-import React, { useState } from "react";
+import ViewListIcon from '@mui/icons-material/ViewList';
+import BottomNavigation from '@mui/material/BottomNavigation';
+import BottomNavigationAction from '@mui/material/BottomNavigationAction';
+import DriveFileRenameOutlineIcon from '@mui/icons-material/DriveFileRenameOutline';
 
 import {MenuItemDB} from "@/lib/types/MenuItem";
+import WebIcon from '@mui/icons-material/Web';
+import { useEffect, useState } from "react";
+import React from "react";
+import IconButton from "@mui/material/IconButton";
+import Link from "next/link";
+import { Tooltip } from "@mui/material";
+import NoteAltIcon from '@mui/icons-material/NoteAlt';
+import DeleteIcon from '@mui/icons-material/Delete';
+import Loading from "@/componentsAdminPanel/Loading";
 
-const startItem:any = {
+interface MenuItemRCT {
+  index: string,
+  canMove: boolean,
+  isFolder: boolean,
+  children: string[],
+  data: MenuItemDB,
+  canRename: boolean
+}
+
+
+interface MenuItemSort {
+  [key: string]: MenuItemRCT,
+}
+
+const startItem:MenuItemSort = {
   root: {
     index: 'root',
     canMove: true,
     isFolder: true,
     children: [],
-    data: 'Root item',
+    data: 'Root item' as any,
     canRename: true
   }
 }
 
-function changeData(data:MenuItemDB[]) {
+function changeData(data:MenuItemDB[]):MenuItemSort {
   let items = {...startItem};
-  items.root.children = data.filter(item => item?.parent === "").map(item => item._id);
+  items.root.children = data.filter(item => item?.parent === "").map(item => item._id) as never[];
 
   data.forEach(item => {
-    items[item._id] = {
+    const id = item._id;
+    items[id] = {
       index: item._id,
       canMove: !(item.slug === ""),
       isFolder: true,
@@ -39,7 +67,7 @@ function changeData(data:MenuItemDB[]) {
   return items;
 }
 
-function sortByOrder(a:any, b:any) {
+function sortByOrder(a:MenuItemDB, b:MenuItemDB) {
   if(a.order > b.order) {
     return 1;
   } else if(a.order < b.order) {
@@ -49,9 +77,9 @@ function sortByOrder(a:any, b:any) {
   }
 }
 
-function returnNormData(data:any) {
+function returnNormData(data:any):MenuItemDB[] {
   const newData = {...data};
-  const keys = Object.keys(newData);
+  const keys = Object.keys(newData).filter(item => item !== "root");
 
   keys.forEach(item => {
     data[item].children.forEach((sitem:any) => {
@@ -69,27 +97,164 @@ function returnNormData(data:any) {
   return tab;
 }
 
-const AdminPanelMenuConfig = ({permissions, menu}: any) => {
-  const [treeData, setTreeData] = useState<any>(changeData(menu.sort(sortByOrder)));
+const SortPanel = () => {
+  const [treeData, setTreeData] = useState<any>(null);
 
-    return (
-        <Layout perms={permissions}>
-          <h1>Edycja Nawigacji</h1>
-          <CButton>
-            Dodaj nowy element
-          </CButton>
-          <UncontrolledTreeEnvironment
-            dataProvider={new StaticTreeDataProvider(treeData, (item, data) => ({ ...item, data }))}
-            getItemTitle={item => item.data.title}
-            viewState={{}}
-            canDragAndDrop={true}
-            canDropOnFolder={true}
-            canReorderItems={true}
-          >
-            <Tree treeId="tree-1" rootItem="root" treeLabel="Tree Example" />
-          </UncontrolledTreeEnvironment>
-        </Layout>
-    )
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/menu")
+    .then(data => data.json())
+    .then(data => {
+      if(!data.error && mounted) {
+        setTreeData(changeData(data.menu.sort(sortByOrder)));
+      } else {
+        console.log("error");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+    });
+
+    return () => {
+      mounted = false;
+    }
+  }, []);
+
+  const handleSendButton = (e:React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log(returnNormData(treeData));
+  }
+
+  return (
+    treeData !== null ? 
+    <>
+      <UncontrolledTreeEnvironment
+        dataProvider={new StaticTreeDataProvider(treeData, (item:MenuItemSort, data:MenuItemDB) => ({ ...item, data }))}
+        getItemTitle={(item:MenuItemRCT) => item.data.title}
+        viewState={{}}
+        canDragAndDrop={true}
+        canDropOnFolder={true}
+        canReorderItems={true}
+      >
+        <Tree treeId="tree-1" rootItem="root" treeLabel="Menu Tree" />
+      </UncontrolledTreeEnvironment>
+      <CButton onClick={handleSendButton} sx={{display: "block", margin: "5px auto"}} type="button">Zapisz kolejność</CButton>
+    </>
+    :
+    <Loading/>
+  )
+}
+
+const generateMenu = (tab:MenuItemDB[]) => {
+  return tab.map(item => (
+    <li key={item._id}>
+      <div>{item.title}</div>
+      <div>
+        <Tooltip title="Edytuj stronę" placement="bottom">
+          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+            <WebIcon/>
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Zmień dane" placement="bottom">
+          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+            <NoteAltIcon/>
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Usuń stronę" placement="bottom">
+          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+            <DeleteIcon/>
+          </IconButton>
+        </Tooltip>
+      </div>
+  </li>
+  ));
+}
+
+const EditPanel = () => {
+  const [menu, setMenu] = useState<any>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/menu")
+    .then(data => data.json())
+    .then(data => {
+      if(!data.error && mounted) {
+        setMenu(data.menu.sort(sortByOrder));
+      } else {
+        console.log("error");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+    });
+
+    return () => {
+      mounted = false;
+    }
+  }, [])
+
+  return (
+    menu.length > 0 ? <ul className={style.menuListEdit}>
+      {generateMenu(menu)}
+    </ul>
+    :
+    <Loading/>
+  )
+}
+
+const AdminPanelMenuConfig = ({permissions, menu}: any) => {
+  const [value, setValue] = React.useState('sort');
+
+  const handleChange = (_event:React.SyntheticEvent, newValue: string) => {
+    setValue(newValue);
+  };
+
+  return (
+    <Layout perms={permissions}>
+      <h1>Edycja Nawigacji</h1>
+      <BottomNavigation
+        sx={{
+          width: 250,
+          backgroundColor: "transparent",
+          margin: "0 auto",
+          marginBottom: "25px",
+          "& > button": {
+            color: "white",
+            backgroundColor: "rgba(255, 255, 255, 0.05)"
+          },
+          "& > .Mui-selected": {
+            color: "white",
+            backgroundColor: "rgba(255, 255, 255, 0.15)"
+          },
+          "& > button:first-of-type": {
+            borderRadius: "25px 0 0 25px"
+          },
+          "& > button:nth-of-type(2)": {
+            borderRadius: "0 25px 25px 0"
+          }
+        }}
+        value={value}
+        onChange={handleChange}
+      >
+        <BottomNavigationAction
+          label="Sortuj"
+          value="sort"
+          icon={<ViewListIcon />}
+        />
+        <BottomNavigationAction
+          label="Edytuj"
+          value="edit"
+          icon={<DriveFileRenameOutlineIcon />}
+        />
+      </BottomNavigation>
+      {value === "sort" &&
+        <SortPanel/>
+      }
+      {value === "edit" &&
+        <EditPanel/>
+      }
+    </Layout>
+  )
 }
 
 export default AdminPanelMenuConfig;

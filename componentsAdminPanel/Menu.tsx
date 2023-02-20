@@ -2,7 +2,6 @@ import {
     FaHome,
     FaWalking,
     FaUserEdit,
-    FaBars,
     FaCopyright,
     FaWrench,
     FaThList,
@@ -12,125 +11,76 @@ import {
     FaNewspaper,
   } from "react-icons/fa";
 import style from "../styles/admin.module.css";
-//   import logo from "../logo.svg";
-  import Link from "next/link";
-// import Image from "next/image";
+import Link from "next/link";
+import { IconButton, Tooltip } from "@mui/material";
+import logo from "@/public/images/next-logo.png";
+import Image from "next/image";
+
+const IconButtonStyled = ({href, icon, name}:{href: string, icon: JSX.Element, name: string}) => {
+
+  return (
+    <Tooltip title={name} placement="right">
+      <IconButton aria-label={name} LinkComponent={Link} href={href} sx={{width: "50px", height: "50px", borderRadius: "50%", "&:hover": {backgroundColor: "rgba(0, 0, 0, 0.3)"}}}>
+        {icon}
+      </IconButton>
+    </Tooltip>
+  )
+}
   
-  const Menu = ({ perms, setMenuShow }: any) => {
+  const Menu = ({ perms }: any) => {
     return (
       <>
-        <div className={style["head-menu"]}>
-          <div className={style["icon-menu"]}>
-            {/* <Image src={logo} alt="Logo" /> */}
-          </div>
-          <div className={style["title-menu"]}>Panel Administratora</div>
-          <div
-            className={style["menu-show-btn"]}
-            onClick={() => setMenuShow((prev:boolean) => !prev)}
-          >
-            <FaBars />
-          </div>
+        <div className={style["icon-menu"]}>
+          <Image src={logo} alt="Logo" width={50} height={50}/>
         </div>
         <ul>
           <li>
-            <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/`}>
-              <div className={style["icon-menu"]}>
-                <FaHome />
-              </div>
-              <div className={style["title-menu"]}>Strona Główna</div>
-            </Link>
+            <IconButtonStyled name={"Strona Główna"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/`} icon={<FaHome size={"large"}/>}/>
           </li>
           {perms?.basic && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/basicconfig`}>
-                <div className={style["icon-menu"]}>
-                  <FaWrench />
-                </div>
-                <div className={style["title-menu"]}>Konfiguracja Podstawowa</div>
-              </Link>
+              <IconButtonStyled name={"Konfiguracja Podstawowa"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/basicconfig`} icon={<FaWrench size={"large"}/>}/>
             </li>
           )}
           {perms?.footer && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/footerconfig`}>
-                <div className={style["icon-menu"]}>
-                  <FaCopyright />
-                </div>
-                <div className={style["title-menu"]}>Konfiguracja Stopki</div>
-              </Link>
+              <IconButtonStyled name={"Konfiguracja Stopki"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/footerconfig`} icon={<FaCopyright size={"large"}/>}/>
             </li>
           )}
           {perms?.menu && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/menuconfig`}>
-                <div className={style["icon-menu"]}>
-                  <FaThList />
-                </div>
-                <div className={style["title-menu"]}>Edycja Nawigacji</div>
-              </Link>
+              <IconButtonStyled name={"Edycja Nawigacji"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/menuconfig`} icon={<FaThList size={"large"}/>}/>
             </li>
           )}
           {perms?.news && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/news`}>
-                <div className={style["icon-menu"]}>
-                  <FaNewspaper />
-                </div>
-                <div className={style["title-menu"]}>Aktualności</div>
-              </Link>
+              <IconButtonStyled name={"Aktualności"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/news`} icon={<FaNewspaper size={"large"}/>}/>
             </li>
           )}
           {perms?.workers && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/workersconfig`}>
-                <div className={style["icon-menu"]}>
-                  <FaUsersCog />
-                </div>
-                <div className={style["title-menu"]}>Pracownicy</div>
-              </Link>
+              <IconButtonStyled name={"Pracownicy"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/workersconfig`} icon={<FaUsersCog size={"large"}/>}/>
             </li>
           )}
           {perms?.reservations && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/reservations`}>
-                <div className={style["icon-menu"]}>
-                  <FaRegClock />
-                </div>
-                <div className={style["title-menu"]}>Rezerwacje</div>
-              </Link>
+              <IconButtonStyled name={"Rezerwacje"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/reservations`} icon={<FaRegClock size={"large"}/>}/>
             </li>
           )}
           {perms?.smtpconfig && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/postconfig`}>
-                <div className={style["icon-menu"]}>
-                  <FaMailBulk />
-                </div>
-                <div className={style["title-menu"]}>Konfiguracja Poczty</div>
-              </Link>
+              <IconButtonStyled name={"Konfiguracja Poczty"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/postconfig`} icon={<FaMailBulk size={"large"}/>}/>
             </li>
           )}
           {perms?.users && (
             <li>
-              <Link href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/usersconfig`}>
-                <div className={style["icon-menu"]}>
-                  <FaUserEdit />
-                </div>
-                <div className={style["title-menu"]}>Użytkownicy Panelu</div>
-              </Link>
+              <IconButtonStyled name={"Użytkownicy Panelu"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/usersconfig`} icon={<FaUserEdit size={"large"}/>}/>
             </li>
           )}
         </ul>
         <ul>
           <li>
-            <Link
-              href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/logout`}
-            >
-              <div className={style["icon-menu"]}>
-                <FaWalking />
-              </div>
-              <div className={style["title-menu"]}>Wyloguj</div>
-            </Link>
+            <IconButtonStyled name={"Wyloguj"} href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/logout`} icon={<FaWalking size={"large"}/>}/>
           </li>
         </ul>
       </>

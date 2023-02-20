@@ -449,3 +449,18 @@ main {
   height: auto;
   max-height: 100%;
 }
+
+.rct-tree-item-arrow svg {
+  width: 40px !important;
+}
+
+.rct-tree-item-arrow {
+  margin-right: calc(-1 * 40px + 6px) !important;
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.rct-tree-item-button {
+  padding: 25px 0 !important;
+  padding-left: 50px !important;
+}

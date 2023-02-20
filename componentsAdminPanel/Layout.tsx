@@ -12,7 +12,7 @@ interface SnackBarMessage {
     type: "info" | "warning" | "error"
 }
 
-export const Layout = ({logged, children, perms} : any) => {
+export const Layout = ({children, perms} : any) => {
     const menuDiv = React.useRef<HTMLDivElement>(null);
     const [snackBar, setSnackBar] = React.useState<SnackBarMessage>({open: false, msg: '', type: "info"});
     const [menuShow, setMenuShow] = React.useState<boolean>(false);
@@ -26,10 +26,10 @@ export const Layout = ({logged, children, perms} : any) => {
           <Head>
             <title>Panel Administracyjny</title>
           </Head>
-          <header ref={menuDiv} className={style.header + (menuShow ? " "+style.open : '')}>
+          <header ref={menuDiv} className={style.header}>
             <Menu perms={perms} setMenuShow={setMenuShow}/>
           </header>
-          <main className={style.main + (logged ? '' : " " +style.fullWidth)} style={menuShow ? {width: 'calc(100% - '+menuDiv.current!.offsetWidth + 'px)'} : {}}>
+          <main className={style.main}>
           <Container component="div">
             {children}
           </Container>
