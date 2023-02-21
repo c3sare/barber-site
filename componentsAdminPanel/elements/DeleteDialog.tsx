@@ -5,19 +5,33 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { MenuItemDB } from "@/lib/types/MenuItem";
 
-export default function DeleteDialog({ open, setOpen }:any) {
+export default function DeleteDialog({
+  open,
+  setOpen,
+  setState,
+  state
+}:{
+  open: {
+    id: string,
+    open: boolean
+  },
+  setOpen:CallableFunction,
+  setState: CallableFunction,
+  state: MenuItemDB[]
+}) {
   const handleClose = () => {
-    setOpen((state:any) => ({
-      text: state.text,
+    setOpen({
       open: false,
-      name: state.name,
-      func: null,
-    }));
+      id: "",
+    });
   };
 
   const handleDeleteElement = () => {
-    open.func();
+    setState((prevState:MenuItemDB[]) => {
+      return prevState.filter(item => item._id !== open.id);
+    });
     handleClose();
   };
 
@@ -28,10 +42,10 @@ export default function DeleteDialog({ open, setOpen }:any) {
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">{open.name}</DialogTitle>
+      <DialogTitle id="alert-dialog-title">Usuwanie</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          {open.text}
+          Czy chcesz usunąć ten węzeł nawigacji? - <b>{state.find(item => item._id === open.id)?.title || ""}</b>
         </DialogContentText>
       </DialogContent>
       <DialogActions>

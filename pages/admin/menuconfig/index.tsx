@@ -3,7 +3,7 @@ import { Layout } from "@/componentsAdminPanel/Layout"
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
-import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider, TreeItem } from 'react-complex-tree';
+import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider, TreeItem, ControlledTreeEnvironment } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
 import style from "@/styles/admin.module.css";
 
@@ -21,7 +21,9 @@ import Link from "next/link";
 import { Tooltip } from "@mui/material";
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SettingsIcon from '@mui/icons-material/Settings';
 import Loading from "@/componentsAdminPanel/Loading";
+import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 
 interface MenuItemRCT {
   index: string,
@@ -77,20 +79,25 @@ function sortByOrder(a:MenuItemDB, b:MenuItemDB) {
   }
 }
 
-function returnNormData(data:any):MenuItemDB[] {
+function returnNormData(data:MenuItemSort):MenuItemDB[] {
+  data["root"].children.forEach((item, i) => {
+    data[item].data.order = i+1;
+    data[item].data.parent = "";
+  })
+
   const newData = {...data};
   const keys = Object.keys(newData).filter(item => item !== "root");
 
-  keys.forEach(item => {
+  keys.forEach((item:string, i:number) => {
     data[item].children.forEach((sitem:any) => {
       data[sitem].data.parent = item;
-    })
+      data[sitem].data.order = i+1;
+    });
   })
 
   const tab:any[] = [];
-  keys.forEach((item, order) => {
+  keys.forEach((item) => {
     const obj = {...data[item].data};
-    obj.order = order
     tab.push(obj)
   });
 
@@ -102,11 +109,12 @@ const SortPanel = () => {
 
   useEffect(() => {
     let mounted = true;
-    fetch("/api/menu")
+    fetch("/api/menu/sort")
     .then(data => data.json())
     .then(data => {
-      if(!data.error && mounted) {
-        setTreeData(changeData(data.menu.sort(sortByOrder)));
+      if(!data.error) {
+        if(mounted)
+          setTreeData(changeData(data.menu.sort(sortByOrder)));
       } else {
         console.log("error");
       }
@@ -122,16 +130,30 @@ const SortPanel = () => {
 
   const handleSendButton = (e:React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log(returnNormData(treeData));
+    console.log(returnNormData(treeData as MenuItemSort));
+
+    fetch("/api/menu/sort", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        menu: returnNormData(treeData as MenuItemSort)
+      })
+    })
+    .then(data => data.json())
+    .then(data => console.log(data))
+    .catch(err => console.error(err));
   }
 
   return (
     treeData !== null ? 
     <>
       <UncontrolledTreeEnvironment
-        dataProvider={new StaticTreeDataProvider(treeData, (item:TreeItem<MenuItemDB>, data:MenuItemDB) => ({ ...item, data }))}
+        dataProvider={new StaticTreeDataProvider(treeData)}
         getItemTitle={(item:TreeItem<MenuItemDB>) => item.data.title}
         viewState={{}}
+        onDrop={() => setTreeData({...treeData})}
         canDragAndDrop={true}
         canDropOnFolder={true}
         canReorderItems={true}
@@ -145,24 +167,48 @@ const SortPanel = () => {
   )
 }
 
-const generateMenu = (tab:MenuItemDB[]) => {
+const generateMenu = (tab:MenuItemDB[], setDialog:CallableFunction) => {
   return tab.map(item => (
     <li key={item._id}>
-      <div>{item.title}</div>
       <div>
-        <Tooltip title="Edytuj stronę" placement="bottom">
-          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
-            <WebIcon/>
-          </IconButton>
+        <span>{item.title}</span>
+        {
+          !item.on && 
+            <span style={{color: "gainsboro", fontStyle: "italic", marginLeft: "15px"}}>(wyłączona)</span>
+        }
+      </div>
+      <div>
+        {item.custom ?
+          <Tooltip title="Edytuj stronę niestandardową" placement="bottom">
+            <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+              <WebIcon/>
+            </IconButton>
+          </Tooltip>
+          :
+          <Tooltip title="Edytuj dane strony" placement="bottom">
+            <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+              <NoteAltIcon/>
+            </IconButton>
         </Tooltip>
-        <Tooltip title="Zmień dane" placement="bottom">
+        }
+        {!item.default &&
+          <Tooltip title="Usuń stronę" placement="bottom">
+            <IconButton
+              sx={{margin: "0 5px"}}
+              onClick={() => {
+                setDialog({
+                  id: item._id,
+                  open: true
+                })
+              }}
+            >
+              <DeleteIcon/>
+            </IconButton>
+          </Tooltip>
+        }
+        <Tooltip title="Ustawienia" placement="bottom">
           <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
-            <NoteAltIcon/>
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Usuń stronę" placement="bottom">
-          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
-            <DeleteIcon/>
+            <SettingsIcon/>
           </IconButton>
         </Tooltip>
       </div>
@@ -172,14 +218,19 @@ const generateMenu = (tab:MenuItemDB[]) => {
 
 const EditPanel = () => {
   const [menu, setMenu] = useState<any>([]);
+  const [dialog, setDialog] = useState({
+    open: false,
+    id: ""
+  });
 
   useEffect(() => {
     let mounted = true;
     fetch("/api/menu")
     .then(data => data.json())
     .then(data => {
-      if(!data.error && mounted) {
-        setMenu(data.menu.sort(sortByOrder));
+      if(!data.error) {
+        if(mounted)
+          setMenu(data.menu.sort(sortByOrder));
       } else {
         console.log("error");
       }
@@ -194,9 +245,14 @@ const EditPanel = () => {
   }, [])
 
   return (
-    menu.length > 0 ? <ul className={style.menuListEdit}>
-      {generateMenu(menu)}
-    </ul>
+    menu.length > 0 ? (
+      <>
+      <ul className={style.menuListEdit}>
+        {generateMenu(menu, setDialog)}
+      </ul>
+      <DeleteDialog open={dialog} setOpen={setDialog} state={menu} setState={setMenu}/>
+      </>
+    )
     :
     <Loading/>
   )
