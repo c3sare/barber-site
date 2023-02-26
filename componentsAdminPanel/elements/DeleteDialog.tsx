@@ -7,6 +7,11 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { MenuItemDB } from "@/lib/types/MenuItem";
 
+interface DialogState {
+  open: boolean,
+  id: string
+}
+
 export default function DeleteDialog({
   open,
   setOpen,
@@ -22,16 +27,31 @@ export default function DeleteDialog({
   state: MenuItemDB[]
 }) {
   const handleClose = () => {
-    setOpen({
+    setOpen((state:DialogState) => ({
       open: false,
-      id: "",
-    });
+      id: state.id,
+    }
+    ));
   };
 
-  const handleDeleteElement = () => {
-    setState((prevState:MenuItemDB[]) => {
-      return prevState.filter(item => item._id !== open.id);
-    });
+  const handleDeleteElement = async () => {
+    const res:{error: boolean} = await fetch("/api/menu", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: open.id
+      })
+    }).then(data => data.json());
+
+    if(!res.error) {
+      setState((prevState:MenuItemDB[]) => {
+        return prevState.filter(item => item._id !== open.id);
+      });
+    } else {
+      console.log("Nie udało usunąć się węzła!")
+    }
     handleClose();
   };
 

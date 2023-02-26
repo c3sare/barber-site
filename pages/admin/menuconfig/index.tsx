@@ -207,7 +207,7 @@ const generateMenu = (tab:MenuItemDB[], setDialog:CallableFunction) => {
           </Tooltip>
         }
         <Tooltip title="Ustawienia" placement="bottom">
-          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}} href={"/admin/menuconfig/settings/"+item._id}>
             <SettingsIcon/>
           </IconButton>
         </Tooltip>
