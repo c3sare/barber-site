@@ -1,14 +1,14 @@
 import { Layout } from "@/componentsAdminPanel/Layout"
 import CButton from "@/componentsAdminPanel/elements/CButton";
-import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import { Box, Grid, Link } from "@mui/material";
+import { Box, Grid } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { useForm } from "react-hook-form";
+import Link from "next/link";
 
 const AdminPanelIndex = ({permissions={}}: any) => {
-    const {handleSubmit, register, control, formState: {errors}} = useForm();
+    const {handleSubmit, register, formState: {errors}} = useForm();
 
     const handleSendData = (data:any) => {
         fetch("/api/menu", {

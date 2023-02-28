@@ -3,7 +3,7 @@ import { Layout } from "@/componentsAdminPanel/Layout"
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
-import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider, TreeItem, ControlledTreeEnvironment } from 'react-complex-tree';
+import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
 import style from "@/styles/admin.module.css";
 
@@ -180,7 +180,7 @@ const generateMenu = (tab:MenuItemDB[], setDialog:CallableFunction) => {
       <div>
         {item.custom ?
           <Tooltip title="Edytuj stronę niestandardową" placement="bottom">
-            <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
+            <IconButton LinkComponent={Link} href={"/admin/menuconfig/custom/"+item._id} sx={{margin: "0 5px"}}>
               <WebIcon/>
             </IconButton>
           </Tooltip>
@@ -247,6 +247,7 @@ const EditPanel = () => {
   return (
     menu.length > 0 ? (
       <>
+      <CButton LinkComponent={Link} href="/admin/menuconfig/add">Dodaj węzeł nawigacji</CButton>
       <ul className={style.menuListEdit}>
         {generateMenu(menu, setDialog)}
       </ul>
