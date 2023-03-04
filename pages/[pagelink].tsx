@@ -1,8 +1,11 @@
+import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
 import getMenu from "@/lib/getMenu";
 import { getDataOne } from "@/utils/getData";
 import getPage from "@/utils/getPage";
 import pageList from "@/utils/pageList";
+import dynamic from "next/dynamic";
+const Editor = dynamic(import("@react-page/editor"))
 import React from "react";
 
 export async function getStaticPaths() {
@@ -42,8 +45,9 @@ const CustomPage = ({ page ,menu, footer, info }: any) => {
     <Layout title={page.title} info={info} footer={footer} menu={menu}>
         <div
         className="container"
-        dangerouslySetInnerHTML={{__html: page.html}}
-        />
+        >
+          <Editor cellPlugins={cellPlugins} value={page.data} readOnly/>
+        </div>
     </Layout>
   );
 };

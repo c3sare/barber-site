@@ -24,6 +24,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Loading from "@/componentsAdminPanel/Loading";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
+import { useRouter } from "next/router";
 
 interface MenuItemRCT {
   index: string,
@@ -260,11 +261,26 @@ const EditPanel = () => {
 }
 
 const AdminPanelMenuConfig = ({permissions, menu}: any) => {
-  const [value, setValue] = React.useState('sort');
+  const router = useRouter();
+  const [value, setValue] = React.useState("sort");
 
   const handleChange = (_event:React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
+    router.push(router.route+"#"+newValue)
   };
+
+  useEffect(() => {
+    const haveHash = router.asPath.indexOf("#") > -1;
+    const valueOfHash = router.asPath.slice(router.asPath.indexOf("#")+1);
+
+    if(valueOfHash === "sort" || valueOfHash === "edit")
+      setValue(
+        haveHash ?
+          valueOfHash
+        :
+          "sort"
+      );
+  }, [router.asPath])
 
   return (
     <Layout perms={permissions}>

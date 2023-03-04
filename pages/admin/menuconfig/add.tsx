@@ -6,11 +6,18 @@ import { Box, Grid } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
+import SaveIcon from '@mui/icons-material/Save';
 
 const AdminPanelIndex = ({permissions={}}: any) => {
-    const {handleSubmit, register, formState: {errors}} = useForm();
+  const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
+  const {handleSubmit, register, formState: {errors}} = useForm();
 
     const handleSendData = (data:any) => {
+        setLoading(true);
         fetch("/api/menu", {
             method: "PUT",
             "headers": {
@@ -19,7 +26,15 @@ const AdminPanelIndex = ({permissions={}}: any) => {
             body: JSON.stringify(data)
         })
         .then(res => res.json())
-        .then(data => console.log(data))
+        .then(data => {
+          if(!data.error) {
+            router.push("/admin/menuconfig#edit");
+          } else {
+            console.log(data);
+          }
+        })
+        .catch(err => console.log(err))
+        .finally(() => setLoading(false));
     } 
 
     return (
@@ -29,10 +44,15 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                   container
                   alignItems="center"
                   direction="column"
-                  sx={{ maxWidth: "550px", width: "100%", margin: "0 auto"}}
+                  sx={{
+                    maxWidth: "550px",
+                    width: "100%",
+                    margin: "0 auto"
+                  }}
                 >
                     <CTextField
                         label="Tytuł"
+                        disabled={loading}
                         {...register("title", {
                         pattern: {
                             value: /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u,
@@ -49,6 +69,7 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                     />
                     <CTextField
                         label="Adres"
+                        disabled={loading}
                         {...register("slug", {
                           pattern: {
                             value: /^[a-z](-?[a-z])*$/,
@@ -64,8 +85,22 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                         helperText={errors.slug?.message as string}
                     />
                     <Box>
-                        <CButton LinkComponent={Link} href="/admin/menuconfig">Wróć</CButton>
-                        <CButton type="submit">Dodaj</CButton>
+                        <CButton
+                          disabled={loading}
+                          LinkComponent={Link}
+                          href="/admin/menuconfig#edit"
+                        >
+                          Wróć
+                        </CButton>
+                        <CLoadingButton
+                          loadingPosition="start"
+                          loading={loading}
+                          disabled={loading}
+                          startIcon={<SaveIcon />}
+                          type="submit"
+                        >
+                          Dodaj
+                        </CLoadingButton>
                     </Box>
                 </Grid>
               </form>

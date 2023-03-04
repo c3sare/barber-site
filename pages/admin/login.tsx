@@ -49,6 +49,7 @@ const Login = () => {
                         variant="outlined"
                         color="primary"
                         label="Login"
+                        autoComplete="username"
                         {...register("login", {required: "To pole jest wymagane"})}
                         error={Boolean(errors.login?.message)}
                         helperText={errors.login?.message as ReactNode}
@@ -60,6 +61,7 @@ const Login = () => {
                         color="primary"
                         type="password"
                         label="Hasło"
+                        autoComplete="current-password"
                         {...register("pwd", {required: "To pole jest wymagane"})}
                         error={Boolean(errors.pwd?.message)}
                         helperText={errors.pwd?.message as ReactNode}

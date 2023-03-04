@@ -4,32 +4,32 @@ import React from 'react';
 import CodeSnippet from './CodeSnippetComp';
 
 const codeSnippet: CellPlugin<{
-  code: string;
-  language: string;
+  kod: string;
+  rozszerzenie: string;
 }> = {
   Renderer: (props) =>
-    props.data?.code ? (
-      <CodeSnippet language={props.data.language} code={props.data.code} />
+    props.data?.kod ? (
+      <CodeSnippet language={props.data.rozszerzenie} code={props.data.kod} />
     ) : null,
   id: 'code-snippet',
-  title: 'Code snippet',
-  description: 'A code snippet',
+  title: 'Fragment kodu',
+  description: 'Wstaw fragment kodu',
   version: 1,
   controls: {
     type: 'autoform',
     schema: {
       properties: {
-        language: {
+        rozszerzenie: {
           type: 'string',
         },
-        code: {
+        kod: {
           type: 'string',
           uniforms: {
             multiline: true,
           },
         },
       },
-      required: ['code'],
+      required: ['kod'],
     },
   },
 };

@@ -123,7 +123,7 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                     />
                   }
                   <Box>
-                    <CButton LinkComponent={Link} href="/admin/menuconfig">Wróć</CButton>
+                    <CButton LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
                     <CButton type="submit">Zapisz zmiany</CButton>
                   </Box>
                 </Grid>

@@ -1,6 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
+import fs from "fs/promises";
+import path from "path";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { MongoClient, ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -24,6 +25,8 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
     if(deleteResult.deletedCount === 1) {
       const updateParentResult = await tab.updateMany({parent: id}, {$set: {parent: ""}});
       if(updateParentResult.acknowledged) {
+        const pagesDirectory = path.join(process.cwd(), 'pagecontent');
+        fs.unlink(`${pagesDirectory}/${id}.json`);
         res.json({error: false});
       } else {
         res.json({error: true});
@@ -55,7 +58,9 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         default: false
       });
       if(insertResult.acknowledged) {
-        res.json({error: false})
+        const pagesDirectory = path.join(process.cwd(), 'pagecontent');
+        fs.appendFile(`${pagesDirectory}/${insertResult.insertedId.toString()}.json`, '{}');
+        res.json({error: false});
       } else {
         res.json({error: true});
       }

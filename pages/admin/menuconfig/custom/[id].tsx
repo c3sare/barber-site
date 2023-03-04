@@ -6,10 +6,10 @@ import { useRouter } from "next/router";
 import useSWR from "swr";
 import type { Value } from '@react-page/editor';
 import Editor from '@react-page/editor';
-import { useState } from "react";
-import { StylesProvider, createGenerateClassName } from '@material-ui/core/styles';
-import '@react-page/editor/lib/index.css';
+import { useEffect, useState } from "react";
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
+import CButton from "@/componentsAdminPanel/elements/CButton";
+import Link from "next/link";
 
 const TRANSLATIONS: { [key: string]: string } = {
     'Edit blocks': 'Edycja bloku',
@@ -39,35 +39,67 @@ const TRANSLATIONS: { [key: string]: string } = {
     "Open link in new window": "Otwórz stronę w nowym oknie",
     "Image's alternative description": "Alternatywny tekst obrazu",
     "Click to add or drag and drop it somewhere on your page!": "Kliknij aby dodać lub przeciągnij i upuść gdzieś na stronę",
+    "OR": "LUB",
+    "Existing image URL": "Istniejący adres obrazu",
+    "Video": "Film",
+    "Include videos from Vimeo or YouTube": "Dołącza film z serwisu Youtube lub Vimeo",
+    "HTML 5 Video": "Film HTML5",
+    "Add webm, ogg and other HTML5 video": "Dodaj filmy WEBM, OGG i inne obsługiwane przez HTML5",
+    "Background": "Tło",
+    "Add background color, image or gradient": "Dodaj kolor tła, obraz lub gradient",
+    
 };
-
-const generateClassName = createGenerateClassName({
-    disableGlobal: true,
-    seed: 'mui-jss',
-  });
 
 const AdminPanelIndex = ({permissions={}}: any) => {
   const router = useRouter();
-  const {data, error, isLoading} = useSWR("/api/menu/settings/"+router.query.id);
+  const [loading, setLoading] = useState(false);
+  const {data, error, isLoading} = useSWR("/api/menu/custom/content/"+router.query.id);
   const [value, setValue] = useState<Value | null>(null);
+
+  useEffect(() => {
+    setValue(data);
+  }, [data]);
+
+  const handleSendContent = () => {
+    setLoading(true);
+    fetch(`/api/menu/custom/content/${router.query.id}`, {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify(value)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.error) {
+        console.log("Wystąpił błąd");
+        setLoading(false);
+      } else {
+        router.push("/admin/menuconfig#edit")
+      }
+    })
+  }
 
     return (
         <Layout perms={permissions}>
-          {!isLoading ?
+          {!isLoading && !loading ?
             !error ?
-                <StylesProvider generateClassName={generateClassName}>
-                    <Editor
-                        cellPlugins={cellPlugins}
-                        zoomEnabled={false}
-                        value={value}
-                        onChange={setValue}
-                        uiTranslator={(label?: string | null | undefined) => {
-                            if (TRANSLATIONS[label as string] !== undefined) {
-                              return TRANSLATIONS[label as string] as string;
-                            }
-                            return `${label}(to translate)`;
-                          }}/>
-                </StylesProvider>
+              <>
+                <Editor
+                  cellPlugins={cellPlugins}
+                  zoomEnabled={false}
+                  value={value}
+                  onChange={setValue}
+                  uiTranslator={(label?: string | null | undefined) => {
+                    if (TRANSLATIONS[label as string] !== undefined) {
+                      return TRANSLATIONS[label as string] as string;
+                    }
+                    return `${label}(to translate)`;
+                  }}
+                />
+                <CButton LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
+                <CButton onClick={handleSendContent}>Zapisz zmiany</CButton>
+              </>
             :
             <span>Nie znaleziono strony!</span>
             :

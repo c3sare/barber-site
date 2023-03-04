@@ -1,6 +1,4 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { MongoClient, ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
