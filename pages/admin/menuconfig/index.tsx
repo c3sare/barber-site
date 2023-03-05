@@ -5,7 +5,7 @@ import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
 import { UncontrolledTreeEnvironment, Tree, StaticTreeDataProvider, TreeItem } from 'react-complex-tree';
 import 'react-complex-tree/lib/style-modern.css';
-import style from "@/styles/admin.module.css";
+import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser';
 
 import ViewListIcon from '@mui/icons-material/ViewList';
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import IconButton from "@mui/material/IconButton";
 import Link from "next/link";
-import { Tooltip } from "@mui/material";
+import { Box, Divider, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -169,51 +169,65 @@ const SortPanel = () => {
 }
 
 const generateMenu = (tab:MenuItemDB[], setDialog:CallableFunction) => {
-  return tab.map(item => (
-    <li key={item._id}>
-      <div>
-        <span>{item.title}</span>
-        {
-          !item.on && 
-            <span style={{color: "gainsboro", fontStyle: "italic", marginLeft: "15px"}}>(wyłączona)</span>
-        }
-      </div>
-      <div>
-        {item.custom ?
-          <Tooltip title="Edytuj stronę niestandardową" placement="bottom">
-            <IconButton LinkComponent={Link} href={"/admin/menuconfig/custom/"+item._id} sx={{margin: "0 5px"}}>
-              <WebIcon/>
+  return tab.map((item, i) => (
+    <React.Fragment key={item._id}>
+    <ListItem
+      sx={{"&:hover": {
+        backgroundColor: "rgba(255, 255, 255, 0.1)"
+      }}}
+      secondaryAction={
+        <>
+          {item.on &&
+            <Tooltip title="Otwórz w nowym oknie" placement="bottom">
+              <IconButton LinkComponent={Link} href={`/${item.slug}`} target="_blank" sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
+                <OpenInBrowserIcon/>
+              </IconButton>
+            </Tooltip>
+          }
+          {item.custom ?
+            <Tooltip title="Edytuj stronę niestandardową" placement="bottom">
+              <IconButton LinkComponent={Link} href={"/admin/menuconfig/custom/"+item._id} sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
+                <WebIcon/>
+              </IconButton>
+            </Tooltip>
+            :
+            (!["reservations", "news"].includes(item.slug) &&
+              <Tooltip title="Edytuj dane strony" placement="bottom">
+                <IconButton LinkComponent={Link} href={`/admin/menuconfig/default/${item.slug === "" ? "main" : item.slug}`} sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
+                  <NoteAltIcon/>
+                </IconButton>
+              </Tooltip>
+            )
+          }
+          {!item.default &&
+            <Tooltip title="Usuń stronę" placement="bottom">
+              <IconButton
+                sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
+                onClick={() => {
+                  setDialog({
+                    id: item._id,
+                    open: true
+                  })
+                }}
+              >
+                <DeleteIcon/>
+              </IconButton>
+            </Tooltip>
+          }
+          <Tooltip title="Ustawienia" placement="bottom">
+            <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/menuconfig/settings/"+item._id}>
+              <SettingsIcon/>
             </IconButton>
           </Tooltip>
-          :
-          <Tooltip title="Edytuj dane strony" placement="bottom">
-            <IconButton LinkComponent={Link} sx={{margin: "0 5px"}}>
-              <NoteAltIcon/>
-            </IconButton>
-        </Tooltip>
-        }
-        {!item.default &&
-          <Tooltip title="Usuń stronę" placement="bottom">
-            <IconButton
-              sx={{margin: "0 5px"}}
-              onClick={() => {
-                setDialog({
-                  id: item._id,
-                  open: true
-                })
-              }}
-            >
-              <DeleteIcon/>
-            </IconButton>
-          </Tooltip>
-        }
-        <Tooltip title="Ustawienia" placement="bottom">
-          <IconButton LinkComponent={Link} sx={{margin: "0 5px"}} href={"/admin/menuconfig/settings/"+item._id}>
-            <SettingsIcon/>
-          </IconButton>
-        </Tooltip>
-      </div>
-  </li>
+        </>
+      }
+    >
+      <ListItemText primary={`${item.title}${!item.on ? " (wyłączona)" : ""}`} />
+  </ListItem>
+  {(tab.length !== i+1) &&
+    <Divider sx={{borderColor: "#4c4c4c"}}/>
+  }
+  </React.Fragment>
   ));
 }
 
@@ -248,10 +262,12 @@ const EditPanel = () => {
   return (
     menu.length > 0 ? (
       <>
-      <CButton LinkComponent={Link} href="/admin/menuconfig/add">Dodaj węzeł nawigacji</CButton>
-      <ul className={style.menuListEdit}>
-        {generateMenu(menu, setDialog)}
-      </ul>
+      <CButton LinkComponent={Link} href="/admin/menuconfig/add" sx={{display: "block", width: "195px", margin: "15px auto"}}>Dodaj węzeł nawigacji</CButton>
+      <Box sx={{ width: '100%', bgcolor: 'rgb(45, 45, 45)', borderRadius: "5px", overflow: "hidden"}}>
+        <List sx={{padding: "0"}}>
+          {generateMenu(menu, setDialog)}
+        </List>
+      </Box>
       <DeleteDialog open={dialog} setOpen={setDialog} state={menu} setState={setMenu}/>
       </>
     )
@@ -312,11 +328,31 @@ const AdminPanelMenuConfig = ({permissions, menu}: any) => {
         <BottomNavigationAction
           label="Sortuj"
           value="sort"
+          sx={{
+            padding: "0px 12px",
+            "&.Mui-selected": {
+              color: "white"
+            },
+            "&>span": {
+              opacity: "1",
+              fontSize: "0.875rem"
+            }
+          }}
           icon={<ViewListIcon />}
         />
         <BottomNavigationAction
           label="Edytuj"
           value="edit"
+          sx={{
+            padding: "0px 12px",
+            "&.Mui-selected": {
+              color: "white"
+            },
+            "&>span": {
+              opacity: "1",
+              fontSize: "0.875rem"
+            }
+          }}
           icon={<DriveFileRenameOutlineIcon />}
         />
       </BottomNavigation>

@@ -30,5 +30,7 @@ async function customPageContentRoute(req: NextApiRequest, res: NextApiResponse)
             res.json({error: true});
             console.error("Cannot access file "+id+".json")
         }
+    } else {
+        res.json({});
     }
 }

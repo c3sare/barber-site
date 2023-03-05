@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
+import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
+import SaveIcon from '@mui/icons-material/Save';
 
 const TRANSLATIONS: { [key: string]: string } = {
     'Edit blocks': 'Edycja bloku',
@@ -77,28 +79,51 @@ const AdminPanelIndex = ({permissions={}}: any) => {
       } else {
         router.push("/admin/menuconfig#edit")
       }
-    })
+    });
   }
 
     return (
         <Layout perms={permissions}>
-          {!isLoading && !loading ?
+          {!isLoading ?
             !error ?
               <>
-                <Editor
-                  cellPlugins={cellPlugins}
-                  zoomEnabled={false}
-                  value={value}
-                  onChange={setValue}
-                  uiTranslator={(label?: string | null | undefined) => {
-                    if (TRANSLATIONS[label as string] !== undefined) {
-                      return TRANSLATIONS[label as string] as string;
-                    }
-                    return `${label}(to translate)`;
-                  }}
-                />
-                <CButton LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
-                <CButton onClick={handleSendContent}>Zapisz zmiany</CButton>
+                <div style={{width: "100%", position: "relative"}}>
+                  <Editor
+                    cellPlugins={cellPlugins}
+                    zoomEnabled={false}
+                    value={value}
+                    onChange={setValue}
+                    uiTranslator={(label?: string | null | undefined) => {
+                      if (TRANSLATIONS[label as string] !== undefined) {
+                        return TRANSLATIONS[label as string] as string;
+                      }
+                      return `${label}`;
+                    }}
+                  />
+                  {loading && 
+                    <div style={{width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", position: "absolute", top: "0", left: "0"}}>
+                      <Loading/>
+                    </div>
+                  }
+                </div>
+                <div style={{textAlign: "center"}}>
+                  <CButton
+                    disabled={loading}
+                    LinkComponent={Link}
+                    href="/admin/menuconfig#edit"
+                  >
+                    Wróć
+                  </CButton>
+                  <CLoadingButton
+                    disabled={loading}
+                    loading={loading}
+                    loadingPosition="start"
+                    startIcon={<SaveIcon/>}
+                    onClick={handleSendContent}
+                  >
+                    Zapisz zmiany
+                  </CLoadingButton>
+                </div>
               </>
             :
             <span>Nie znaleziono strony!</span>

@@ -6,6 +6,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { MenuItemDB } from "@/lib/types/MenuItem";
+import LoadingButton from "@mui/lab/LoadingButton";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface DialogState {
   open: boolean,
@@ -26,6 +28,7 @@ export default function DeleteDialog({
   setState: CallableFunction,
   state: MenuItemDB[]
 }) {
+  const [loading, setLoading] = React.useState(false);
   const handleClose = () => {
     setOpen((state:DialogState) => ({
       open: false,
@@ -35,6 +38,7 @@ export default function DeleteDialog({
   };
 
   const handleDeleteElement = async () => {
+    setLoading(true);
     const res:{error: boolean} = await fetch("/api/menu", {
       method: "DELETE",
       headers: {
@@ -46,12 +50,13 @@ export default function DeleteDialog({
     }).then(data => data.json());
 
     if(!res.error) {
-      setState((prevState:MenuItemDB[]) => {
+      setTimeout(() => setState((prevState:MenuItemDB[]) => {
         return prevState.filter(item => item._id !== open.id);
-      });
+      }), 250);
     } else {
       console.log("Nie udało usunąć się węzła!")
     }
+    setLoading(false);
     handleClose();
   };
 
@@ -69,10 +74,10 @@ export default function DeleteDialog({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Anuluj</Button>
-        <Button onClick={handleDeleteElement} autoFocus>
+        <Button disabled={loading} onClick={handleClose}>Anuluj</Button>
+        <LoadingButton loading={loading} disabled={loading} loadingPosition="start" startIcon={<DeleteIcon/>} onClick={handleDeleteElement} autoFocus>
           Usuń
-        </Button>
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

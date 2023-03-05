@@ -31,10 +31,13 @@ const AdminPanelIndex = ({permissions={}}: any) => {
             router.push("/admin/menuconfig#edit");
           } else {
             console.log(data);
+            setLoading(false)
           }
         })
-        .catch(err => console.log(err))
-        .finally(() => setLoading(false));
+        .catch(err => {
+          console.log(err);
+          setLoading(false);
+        });
     } 
 
     return (
@@ -47,7 +50,7 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                   sx={{
                     maxWidth: "550px",
                     width: "100%",
-                    margin: "0 auto"
+                    margin: "0 auto",
                   }}
                 >
                     <CTextField

@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField';
 import { styled } from '@mui/material/styles';
 
 const CTextField = styled(TextField)(({theme}) => ({
+    margin: "8px",
     '& label': {
         color: blueGrey[100]
     },

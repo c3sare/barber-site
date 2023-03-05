@@ -5,19 +5,23 @@ import { withIronSessionSsr } from "iron-session/next";
 import { useRouter } from "next/router";
 import { Controller, useForm } from "react-hook-form";
 import useSWR from "swr";
+import {useState} from "react";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
 import { Box, FormControlLabel, Grid } from "@mui/material";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
+import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
+import SaveIcon from '@mui/icons-material/Save';
 
 const AdminPanelIndex = ({permissions={}}: any) => {
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
   const {data, error, isLoading} = useSWR("/api/menu/settings/"+router.query.id);
   const {handleSubmit, register, formState: {errors}, control} = useForm();
 
   const handleSendData = (data:any) => {
-    console.log(data);
+    setLoading(true);
     fetch("/api/menu/settings/"+router.query.id, {
       method: "POST",
       headers: {
@@ -26,7 +30,15 @@ const AdminPanelIndex = ({permissions={}}: any) => {
       body: JSON.stringify(data)
     })
     .then(data => data.json())
-    .then(data => console.log(data));
+    .then(data => {
+      if(!data.error) {
+        router.push("/admin/menuconfig#edit");
+      } else {
+        console.log("error");
+        setLoading(false);
+      }
+    })
+    .catch(err => console.log(err))
   }
 
     return (
@@ -39,10 +51,15 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                   container
                   alignItems="center"
                   direction="column"
-                  sx={{ maxWidth: "550px", width: "100%", margin: "0 auto"}}
+                  sx={{
+                    maxWidth: "550px",
+                    width: "100%",
+                    margin: "0 auto",
+                  }}
                 >
                   <CTextField
                     label="Tytuł"
+                    disabled={loading}
                     {...register("title", {
                       value: data.title,
                       pattern: {
@@ -62,6 +79,7 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                     (data.slug !== "" && !data.default) &&
                       <CTextField
                         label="Adres"
+                        disabled={loading}
                         {...register("slug", {
                           value: data.slug,
                           pattern: {
@@ -83,14 +101,15 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                       control={control}
                       name="on"
                       defaultValue={data.on}
-                      render={({ field: { onChange, onBlur, value, ref, name } }) => (
+                      render={({ field: { onChange, onBlur, value, ref } }) => (
                         <FormControlLabel
                           label="Strona jest widoczna"
+                          disabled={loading}
                           control={
                             <CCheckbox
                               color="default"
                               onChange={onChange}
-                              name={name}
+                              name="on"
                               onBlur={onBlur}
                               checked={Boolean(value)}
                               inputRef={ref}
@@ -100,13 +119,14 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                       )}
                     />
                   }
-                  {data.default &&
+                  {(data.default && !["reservations", "news"].includes(data.slug)) &&
                     <Controller
                       control={control}
                       name="custom"
                       defaultValue={data.custom}
                       render={({ field: { onChange, onBlur, value, ref, name } }) => (
                         <FormControlLabel
+                          disabled={loading}
                           label="Strona niestandardowa"
                           control={
                             <CCheckbox
@@ -123,8 +143,8 @@ const AdminPanelIndex = ({permissions={}}: any) => {
                     />
                   }
                   <Box>
-                    <CButton LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
-                    <CButton type="submit">Zapisz zmiany</CButton>
+                    <CButton disabled={loading} LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
+                    <CLoadingButton disabled={loading} loading={loading} loadingPosition="start" startIcon={<SaveIcon/>} type="submit">Zapisz zmiany</CLoadingButton>
                   </Box>
                 </Grid>
               </form>

@@ -3,6 +3,7 @@ import { blueGrey } from '@mui/material/colors';
 import styled from '@emotion/styled';
 
 const CFormControlLabel = styled(FormControlLabel)({
+    margin: "8px",
     '&.Mui-disabled .MuiTypography-root': {
         color: 'rgba(255, 255, 255, 0.25)',
     },
