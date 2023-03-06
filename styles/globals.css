@@ -386,6 +386,7 @@ main {
   max-width: 600px;
   padding: 0;
   text-align: center;
+  margin: 0 auto;
 }
 
 .costBox {

@@ -272,7 +272,7 @@ const EditPanel = () => {
         <List sx={{padding: "0"}}>
           {generateMenu(menu, setDialog)}
         </List>
-        <CButton LinkComponent={Link} href="/admin/menuconfig/add" sx={{marginTop: "16px"}}>Dodaj węzeł nawigacji</CButton>
+        <CButton LinkComponent={Link} href="/admin/menuconfig/add">Dodaj węzeł nawigacji</CButton>
       </Box>
       <DeleteDialog open={dialog} setOpen={setDialog} state={menu} setState={setMenu}/>
       </>

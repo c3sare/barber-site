@@ -11,9 +11,11 @@ import SaveIcon from '@mui/icons-material/Save';
 import { CostsData } from "@/lib/types/CostsData";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 
 const DefaultCostsAddItem = ({permissions={}}: any) => {
+  const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
 
   const {
@@ -33,9 +35,18 @@ const DefaultCostsAddItem = ({permissions={}}: any) => {
       },
     })
     .then(res => res.json())
-    .then(data => console.log(data))
-    .catch(err => console.log(err))
-    .finally(() => setLoading(false))
+    .then(data => {
+      if(!data.error) {
+        router.push("/admin/menuconfig/default/costs/"+data.id);
+      } else {
+        console.log("Wystąpił błąd! - "+data.msg);
+        setLoading(false)
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      setLoading(false);
+    });
   };
 
   return (
@@ -59,6 +70,7 @@ const DefaultCostsAddItem = ({permissions={}}: any) => {
           }}
           render={({ field: { onChange, onBlur, value, ref } }) => (
             <CTextField
+              name="category"
               disabled={loading}
               label="Tytuł kategorii"
               sx={{ width: "100%" }}

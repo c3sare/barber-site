@@ -7,18 +7,22 @@ import getData from "@/utils/getData";
 import { Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CButton from "@/componentsAdminPanel/elements/CButton";
+import DeleteDialogCosts from "@/componentsAdminPanel/elements/DeleteDialogCosts";
 
-const DefaultCostsEdit = ({permissions={}, data}: any) => {
+const DefaultCostsEdit = ({permissions={}, costData}: any) => {
+  const [state, setState] = useState<CostsData[]>(costData);
+  const [data, setData] = useState({id: "", open: false});
+
   return (
     <Layout perms={permissions}>
       <h1>Cennik - Kategorie</h1>
       <Box sx={{ width: '100%', bgcolor: 'rgb(45, 45, 45)', borderRadius: "5px", overflow: "hidden", textAlign: "center"}}>
         <List sx={{padding: "0"}}>
-          {data.map((item:CostsData, i:number) => (
+          {state.map(item => (
             <React.Fragment key={item._id}>
               <ListItem
                 sx={{"&:hover": {
@@ -28,6 +32,7 @@ const DefaultCostsEdit = ({permissions={}, data}: any) => {
                   <>
                     <Tooltip title="Usuń stronę" placement="bottom">
                       <IconButton
+                        onClick={() => setData({id: item._id, open: true})}
                         sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
                       >
                         <DeleteIcon/>
@@ -47,10 +52,12 @@ const DefaultCostsEdit = ({permissions={}, data}: any) => {
             </React.Fragment>
           ))}
         </List>
+        <CButton LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
         <CButton LinkComponent={Link} href="/admin/menuconfig/default/costs/add">
           Dodaj
         </CButton>
       </Box>
+      <DeleteDialogCosts state={state} setState={setState} data={data} setData={setData}/>
     </Layout>
     )
 }
@@ -72,7 +79,7 @@ export const getServerSideProps = withIronSessionSsr(
   
       return {
         props: {
-          data,
+          costData: data,
           permissions: req.session.user?.permissions,
         },
       };

@@ -15,9 +15,10 @@ import {useEffect} from "react";
 import { IconButton, Tooltip } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import getData from "@/utils/getData";
+import Link from "next/link";
 
 
-const DefaultCostsEditItem = ({permissions={}}: any) => {
+const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:CostsData}) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const {
@@ -25,7 +26,7 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
     control,
     handleSubmit,
     setValue
-  } = useForm<CostsData>({});
+  } = useForm<CostsData>({defaultValues: data});
   const { fields, append, remove, update } = useFieldArray<any>({
     control,
     name: "services"
@@ -45,23 +46,9 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
     remove(i)
   }
 
-  useEffect(() => {
-    fetch("/api/costs/"+router.query.id)
-    .then(data => data.json())
-    .then(data => {
-      if(!data.category || !data.services) {
-        router.push("/admin/menuconfig/default/costs");
-      } else {
-        setValue("category", data.category);
-        setValue("services", data.services);
-      }
-    })
-  }, [router.query.id])
-
-  const handleSendData = (form:any) => {
+  const handleSendData = (form:CostsData) => {
     setLoading(true);
-
-    fetch("/api/costs", {
+    fetch("/api/costs/"+router.query.id, {
       method: "POST",
       body: JSON.stringify(form),
       headers: {
@@ -69,14 +56,23 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
       },
     })
     .then(res => res.json())
-    .then(data => console.log(data))
-    .catch(err => console.log(err))
-    .finally(() => setLoading(false))
+    .then(data => {
+      if(!data.error) {
+        router.push("/admin/menuconfig/default/costs");
+      } else {
+        console.log(data);
+        setLoading(false)
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      setLoading(false);
+    })
   };
 
   return (
     <Layout perms={permissions}>
-      <h1>Edycja kategorii</h1>
+      <h1>Edycja kategorii - {data.category}</h1>
       <form onSubmit={handleSubmit(handleSendData)} style={{maxWidth: "550px", margin: "0 auto", textAlign: "center"}}>
         <Controller
           control={control}
@@ -95,6 +91,7 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
           }}
           render={({ field: { onChange, onBlur, value, ref } }) => (
             <CTextField
+              disabled={loading}
               label="Tytuł kategorii"
               sx={{ width: "calc(80% - 20px)" }}
               value={value}
@@ -109,7 +106,7 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
         <div>
           <h2>Usługi</h2>
           {fields.map((item:any, i:number) => (
-            <div key={i}>
+            <div key={item.id}>
               <Controller
                 control={control}
                 name={`services.${i}.service`}
@@ -126,6 +123,7 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value, ref } }) => (
                   <CTextField
+                    disabled={loading}
                     variant="filled"
                     label="Nazwa usługi"
                     sx={{
@@ -153,6 +151,7 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value, ref } }) => (
                   <CTextField
+                    disabled={loading}
                     variant="filled"
                     sx={{ marginTop: "10px", width: "80px" }}
                     label="Cena"
@@ -178,6 +177,7 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
                 }}
                 render={({ field: { onChange, onBlur, value, ref } }) => (
                   <CTextField
+                    disabled={loading}
                     variant="filled"
                     sx={{ marginTop: "10px", width: "140px" }}
                     type="number"
@@ -196,18 +196,19 @@ const DefaultCostsEditItem = ({permissions={}}: any) => {
                 )}
               />
               <Tooltip title="Usuń" placement="bottom">
-                <IconButton onClick={() => handleDeleteService(i)} sx={{margin: "17px 0px", color: "#b0bec5", backgroundColor: "rgba(0, 0, 0, 0.06)"}}>
+                <IconButton disabled={loading} onClick={() => handleDeleteService(i)} sx={{margin: "17px 0px", color: "#b0bec5", backgroundColor: "rgba(0, 0, 0, 0.06)"}}>
                     <DeleteIcon/>
                 </IconButton>
               </Tooltip>
             </div>
           ))}
           {fields.length < 5 &&
-            <CButton onClick={handleAddService}>
+            <CButton disabled={loading} onClick={handleAddService}>
               Dodaj usługę
             </CButton>
           }
         </div>
+        <CButton LinkComponent={Link} href="/admin/menuconfig/default/costs">Wróć</CButton>
         <CLoadingButton
           loading={loading}
           disabled={loading}
@@ -228,7 +229,7 @@ export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req, query }) {
       const user = req.session.user;
       const menu:MenuItemDB[] = await getMenu();
-      const costs = await getData("costs");
+      const costs:CostsData[] = await getData("costs");
   
       if(
         user?.isLoggedIn !== true ||
@@ -243,6 +244,7 @@ export const getServerSideProps = withIronSessionSsr(
   
       return {
         props: {
+          data: costs.find(item => item._id === query.id),
           permissions: req.session.user?.permissions,
         },
       };
