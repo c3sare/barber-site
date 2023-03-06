@@ -25,6 +25,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import Loading from "@/componentsAdminPanel/Loading";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import { useRouter } from "next/router";
+import SaveIcon from '@mui/icons-material/Save';
+import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 
 interface MenuItemRCT {
   index: string,
@@ -107,6 +109,8 @@ function returnNormData(data:MenuItemSort):MenuItemDB[] {
 
 const SortPanel = () => {
   const [treeData, setTreeData] = useState<MenuItemSort | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [msg, setMsg] = useState<string>("");
 
   useEffect(() => {
     let mounted = true;
@@ -131,8 +135,7 @@ const SortPanel = () => {
 
   const handleSendButton = (e:React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log(returnNormData(treeData as MenuItemSort));
-
+    setLoading(true);
     fetch("/api/menu/sort", {
       method: "POST",
       headers: {
@@ -143,8 +146,12 @@ const SortPanel = () => {
       })
     })
     .then(data => data.json())
-    .then(data => console.log(data))
-    .catch(err => console.error(err));
+    .then(data => {
+      if(data.error) 
+        setMsg("Wystąpił błąd przy zapisie!");
+    })
+    .catch(err => console.error(err))
+    .finally(() => setLoading(false));
   }
 
   return (
@@ -161,7 +168,8 @@ const SortPanel = () => {
       >
         <Tree treeId="tree-1" rootItem="root" treeLabel="Menu Tree" />
       </UncontrolledTreeEnvironment>
-      <CButton onClick={handleSendButton} sx={{display: "block", margin: "5px auto"}} type="button">Zapisz kolejność</CButton>
+      <CLoadingButton loading={loading} disabled={loading} startIcon={<SaveIcon/>} onClick={handleSendButton} type="button" sx={{marginTop: "16px"}}>Zapisz kolejność</CLoadingButton>
+      {msg.length > 0 && <span className="error">{msg}</span>}
     </>
     :
     <Loading/>
@@ -262,12 +270,12 @@ const EditPanel = () => {
   return (
     menu.length > 0 ? (
       <>
-      <CButton LinkComponent={Link} href="/admin/menuconfig/add" sx={{display: "block", width: "195px", margin: "15px auto"}}>Dodaj węzeł nawigacji</CButton>
       <Box sx={{ width: '100%', bgcolor: 'rgb(45, 45, 45)', borderRadius: "5px", overflow: "hidden"}}>
         <List sx={{padding: "0"}}>
           {generateMenu(menu, setDialog)}
         </List>
       </Box>
+      <CButton LinkComponent={Link} href="/admin/menuconfig/add" sx={{marginTop: "16px"}}>Dodaj węzeł nawigacji</CButton>
       <DeleteDialog open={dialog} setOpen={setDialog} state={menu} setState={setMenu}/>
       </>
     )
@@ -356,12 +364,14 @@ const AdminPanelMenuConfig = ({permissions, menu}: any) => {
           icon={<DriveFileRenameOutlineIcon />}
         />
       </BottomNavigation>
-      {value === "sort" &&
-        <SortPanel/>
-      }
-      {value === "edit" &&
-        <EditPanel/>
-      }
+      <div style={{textAlign: "center"}}>
+        {value === "sort" &&
+          <SortPanel/>
+        }
+        {value === "edit" &&
+          <EditPanel/>
+        }
+      </div>
     </Layout>
   )
 }

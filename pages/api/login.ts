@@ -9,25 +9,31 @@ export default withIronSessionApiRoute(loginRoute, sessionOptions);
 
 async function loginRoute(req:NextApiRequest, res:NextApiResponse<User>) {
   const {login, permissions, password} = await getUserByLogin(req.body.login);
-  
-  if(login === req.body.login) {
+
+  if(login !== "") {
     const comparePWD = await bcrypt.compare(req.body.pwd, password);
-    req.session.user = {
-        isLoggedIn: comparePWD,
-        login: comparePWD ? login : "",
-        permissions: permissions
-    };
-    await req.session.save();
-    res.json({
-        isLoggedIn: comparePWD,
-        login: comparePWD ? login : "",
-        permissions: permissions
-    });
+    if(comparePWD) {
+      req.session.user = {
+        isLoggedIn: true,
+        login,
+        permissions,
+      };
+      await req.session.save();
+      res.json({
+        isLoggedIn: true,
+        login,
+        permissions
+      })
+    } else {
+      res.json({
+        isLoggedIn: false,
+        msg: "Nieprawidłowe dane logowania!"
+      } as any);
+    }
   } else {
     res.json({
-        isLoggedIn: false,
-        login: "",
-        permissions: {}
-    });
+      isLoggedIn: false,
+      msg: "Nieprawidłowe dane logowania!"
+    } as any);
   }
 }

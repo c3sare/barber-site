@@ -40,6 +40,7 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.43.1",
     "react-icons": "^4.7.1",
+    "react-imask": "^6.4.3",
     "react-katex": "^3.0.1",
     "react-player": "^2.11.2",
     "react-syntax-highlighter": "^15.5.0",

@@ -9,6 +9,16 @@ body {
   font-size: 12px;
 }
 
+.error {
+  display: block;
+  font-size: 10px;
+  color:#ff6363;
+  width: 100%;
+  padding: 8px 0;
+  text-align: center;
+  min-height: 32px;
+}
+
 * {
   box-sizing: border-box;
 }
