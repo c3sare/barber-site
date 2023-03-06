@@ -10,6 +10,8 @@ import {Controller, useForm} from "react-hook-form";
 import { IMaskInput } from "react-imask";
 import SaveIcon from '@mui/icons-material/Save';
 import { getDataOne } from "@/utils/getData";
+import getMenu from "@/lib/getMenu";
+import { MenuItemDB } from "@/lib/types/MenuItem";
 
 const ZipCode = React.forwardRef(function TextMaskCustom(props:any, ref) {
   const { onChange, ...other }:any = props;
@@ -324,8 +326,9 @@ export default EditDefaultPageContact;
 export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req }) {
       const user = req.session.user;
+      const menu:MenuItemDB[] = await getMenu();
   
-      if (user?.isLoggedIn !== true || !user?.permissions.menu) {
+      if (user?.isLoggedIn !== true || !user?.permissions.menu || menu.find(item => item.slug === "contact")?.custom) {
         return {
           notFound: true,
         };

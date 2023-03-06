@@ -13,6 +13,16 @@ import InfoData from "@/lib/types/InfoData";
 import MenuItem from "@/lib/types/MenuItem";
 import FooterData from "@/lib/types/FooterData";
 
+const sortOpenHours = (a:OpenHoursData, b:OpenHoursData) => {
+  if(a.order < b.order) {
+    return -1;
+  } else if(a.order > b.order) {
+    return 1;
+  } else {
+    return 0;
+  }
+} 
+
 export default function Home(
   {
     descMain,
@@ -119,7 +129,7 @@ export default function Home(
         style={{ backgroundImage: `url(/images/bgHour.jpg)` }}
       >
         <h2>Godziny otwarcia</h2>
-        {openHours.map((day, index:number) => (
+        {openHours.sort(sortOpenHours).map((day, index:number) => (
           <div key={index} className={styles.openHour}>
             <h3 style={{ letterSpacing: "4px" }}>{day.short}</h3>
             <p>{day.hours}</p>

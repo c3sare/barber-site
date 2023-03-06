@@ -204,8 +204,8 @@
 }
 
 .openHour {
-    width: 13vw;
-    height: 13vw;
+    width: calc(14vw - 45px);
+    height: calc(14vw - 45px);
     display: flex;
     color: white;
     float: left;

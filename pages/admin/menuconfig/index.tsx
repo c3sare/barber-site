@@ -179,62 +179,60 @@ const SortPanel = () => {
 const generateMenu = (tab:MenuItemDB[], setDialog:CallableFunction) => {
   return tab.map((item, i) => (
     <React.Fragment key={item._id}>
-    <ListItem
-      sx={{"&:hover": {
-        backgroundColor: "rgba(255, 255, 255, 0.1)"
-      }}}
-      secondaryAction={
-        <>
-          {item.on &&
-            <Tooltip title="Otwórz w nowym oknie" placement="bottom">
-              <IconButton LinkComponent={Link} href={`/${item.slug}`} target="_blank" sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
-                <OpenInBrowserIcon/>
-              </IconButton>
-            </Tooltip>
-          }
-          {item.custom ?
-            <Tooltip title="Edytuj stronę niestandardową" placement="bottom">
-              <IconButton LinkComponent={Link} href={"/admin/menuconfig/custom/"+item._id} sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
-                <WebIcon/>
-              </IconButton>
-            </Tooltip>
-            :
-            (!["reservations", "news"].includes(item.slug) &&
-              <Tooltip title="Edytuj dane strony" placement="bottom">
-                <IconButton LinkComponent={Link} href={`/admin/menuconfig/default/${item.slug === "" ? "main" : item.slug}`} sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
-                  <NoteAltIcon/>
+      <ListItem
+        sx={{"&:hover": {
+          backgroundColor: "rgba(255, 255, 255, 0.1)"
+        }}}
+        secondaryAction={
+          <>
+            {item.on &&
+              <Tooltip title="Otwórz w nowym oknie" placement="bottom">
+                <IconButton LinkComponent={Link} href={`/${item.slug}`} target="_blank" sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
+                  <OpenInBrowserIcon/>
                 </IconButton>
               </Tooltip>
-            )
-          }
-          {!item.default &&
-            <Tooltip title="Usuń stronę" placement="bottom">
-              <IconButton
-                sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
-                onClick={() => {
-                  setDialog({
-                    id: item._id,
-                    open: true
-                  })
-                }}
-              >
-                <DeleteIcon/>
+            }
+            {item.custom ?
+              <Tooltip title="Edytuj stronę niestandardową" placement="bottom">
+                <IconButton LinkComponent={Link} href={"/admin/menuconfig/custom/"+item._id} sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
+                  <WebIcon/>
+                </IconButton>
+              </Tooltip>
+              :
+              (!["reservations", "news"].includes(item.slug) &&
+                <Tooltip title="Edytuj dane strony" placement="bottom">
+                  <IconButton LinkComponent={Link} href={`/admin/menuconfig/default/${item.slug === "" ? "main" : item.slug}`} sx={{margin: "0 5px", color: "white", boxShadow: "none"}}>
+                    <NoteAltIcon/>
+                  </IconButton>
+                </Tooltip>
+              )
+            }
+            {!item.default &&
+              <Tooltip title="Usuń stronę" placement="bottom">
+                <IconButton
+                  sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
+                  onClick={() => {
+                    setDialog({
+                      id: item._id,
+                      open: true
+                    })
+                  }}
+                >
+                  <DeleteIcon/>
+                </IconButton>
+              </Tooltip>
+            }
+            <Tooltip title="Ustawienia" placement="bottom">
+              <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/menuconfig/settings/"+item._id}>
+                <SettingsIcon/>
               </IconButton>
             </Tooltip>
-          }
-          <Tooltip title="Ustawienia" placement="bottom">
-            <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/menuconfig/settings/"+item._id}>
-              <SettingsIcon/>
-            </IconButton>
-          </Tooltip>
-        </>
-      }
-    >
-      <ListItemText primary={`${item.title}${!item.on ? " (wyłączona)" : ""}`} />
-  </ListItem>
-  {(tab.length !== i+1) &&
+          </>
+        }
+      >
+        <ListItemText primary={`${item.title}${!item.on ? " (wyłączona)" : ""}`} />
+    </ListItem>
     <Divider sx={{borderColor: "#4c4c4c"}}/>
-  }
   </React.Fragment>
   ));
 }
@@ -274,8 +272,8 @@ const EditPanel = () => {
         <List sx={{padding: "0"}}>
           {generateMenu(menu, setDialog)}
         </List>
+        <CButton LinkComponent={Link} href="/admin/menuconfig/add" sx={{marginTop: "16px"}}>Dodaj węzeł nawigacji</CButton>
       </Box>
-      <CButton LinkComponent={Link} href="/admin/menuconfig/add" sx={{marginTop: "16px"}}>Dodaj węzeł nawigacji</CButton>
       <DeleteDialog open={dialog} setOpen={setDialog} state={menu} setState={setMenu}/>
       </>
     )
