@@ -131,8 +131,8 @@ export default function Home(
         <h2>Godziny otwarcia</h2>
         {openHours.sort(sortOpenHours).map((day, index:number) => (
           <div key={index} className={styles.openHour}>
-            <h3 style={{ letterSpacing: "4px" }}>{day.short}</h3>
-            <p>{day.hours}</p>
+            <h3 style={{ letterSpacing: "4px" }}>{day.long.slice(0, 3).toLocaleUpperCase()}</h3>
+            <p>{day.closed ? "Zamknięte" : `${day.start} - ${day.end}`}</p>
           </div>
         ))}
         <div className={styles.btnBoxHour}>
