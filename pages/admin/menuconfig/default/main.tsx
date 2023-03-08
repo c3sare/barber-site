@@ -12,6 +12,7 @@ import SlideshowIcon from '@mui/icons-material/Slideshow';
 import DescMain from "@/componentsAdminPanel/mainComponents/DescMain";
 import Slider from "@/componentsAdminPanel/mainComponents/Slider";
 import OpenHours from "@/componentsAdminPanel/mainComponents/OpenHours";
+import getData, { getDataOne } from "@/utils/getData";
 
 const DefaultMainEdit = ({permissions={}}: any) => {
   const router = useRouter();
@@ -135,7 +136,7 @@ export const getServerSideProps = withIronSessionSsr(
           notFound: true,
         };
       }
-  
+
       return {
         props: {
           permissions: req.session.user?.permissions,

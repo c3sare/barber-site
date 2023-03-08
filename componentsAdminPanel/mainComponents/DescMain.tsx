@@ -1,6 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import DescMainData from "@/lib/types/DescMainData";
 import { Box, IconButton, Typography, styled } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm, useFieldArray, UseFormRegisterReturn } from "react-hook-form"
 import CTextArea from "../elements/CTextArea";
 import CTextField from "../elements/CTextField";
@@ -33,12 +34,26 @@ const Input = React.forwardRef(({ onChange, onBlur, name }:UseFormRegisterReturn
 ));
 
 export default function DescMain() {
-    const [loading, setLoading] = useState<boolean>(false);
-    const {control, formState: {errors}, register, handleSubmit, watch} = useForm<DescMainData>();
+    const [loading, setLoading] = useState<boolean>(true);
+    const {control, formState: {errors}, register, handleSubmit, watch, setValue} = useForm<DescMainData>();
     const {fields, append, remove} = useFieldArray({
         name: "pros",
         control,
-    })
+    });
+
+    useEffect(() => {
+      fetch("/api/descmain")
+      .then(data => data.json())
+      .then(data => {
+        setValue("title", data.title);
+        setValue("description", data.description);
+        setValue("pros", data.pros);
+      })
+      .catch(err => {
+        console.log(err);
+      })
+      .finally(() => setLoading(false));
+    },[]);
 
     const handleSendData = (data:DescMainData) => {
       setLoading(true);
@@ -159,7 +174,7 @@ export default function DescMain() {
                   }}
                 >
                   <img
-                    style={{ maxHeight: "56px", maxWidth: "56px" }}
+                    style={{ maxHeight: "56px", maxWidth: "56px", ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
                     src={
                       typeof image === "object"
                         ? URL.createObjectURL(image?.[0])
@@ -208,7 +223,7 @@ export default function DescMain() {
                       color="primary"
                       aria-label="upload picture"
                       component="span"
-                      sx={{color: errors.pros?.[i]?.img ? "red" : blueGrey[700]}}
+                      sx={{color: blueGrey[700], ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
                     >
                       <CameraAltIcon/>
                     </IconButton>
@@ -218,7 +233,7 @@ export default function DescMain() {
                     color="primary"
                     aria-label="delete item"
                     component="span"
-                    sx={{color: blueGrey[700]}}
+                    sx={{color: blueGrey[700], ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
                   >
                     <DeleteIcon/>
                   </IconButton>
