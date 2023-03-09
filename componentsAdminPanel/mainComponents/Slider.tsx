@@ -1,22 +1,28 @@
 import { Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import CButton from "../elements/CButton";
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
-
-interface Slide {
-    _id: string,
-    title: string,
-    desc: string,
-    image: string
-}
-
+import Loading from "../Loading";
+import DeleteDialogSlide from "../elements/DeleteDialogSlide";
+import SlideData from "@/lib/types/SlideData";
 
 export default function Slider() {
-    const [slides, setSlides] = useState<Slide[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [slides, setSlides] = useState<SlideData[]>([]);
     const [data, setData] = useState({id: "", open: false});
+
+    useEffect(() => {
+      fetch("/api/slides")
+      .then(res => res.json())
+      .then(data => {
+        setSlides(data);
+      })
+      .catch(err => console.log(err))
+      .finally(() => setLoading(false));
+    }, [])
 
     return (
         <>
@@ -52,12 +58,18 @@ export default function Slider() {
                 <Divider sx={{borderColor: "#4c4c4c"}}/>
               </React.Fragment>
             ))}
+            {loading &&
+              <ListItem><Loading/></ListItem>
+            }
           </List>
-          <CButton LinkComponent={Link} href="/admin/menuconfig/default/costs/add">
+          <CButton LinkComponent={Link} href="/admin/menuconfig#edit">
+            Wróć
+          </CButton>
+          <CButton LinkComponent={Link} href="/admin/menuconfig/default/main/slider/add">
             Dodaj
           </CButton>
         </Box>
-        {/* <DeleteDialogCosts state={state} setState={setState} data={data} setData={setData}/> */}
+        <DeleteDialogSlide state={slides} setState={setSlides} data={data} setData={setData}/>
         </>
     )
 }

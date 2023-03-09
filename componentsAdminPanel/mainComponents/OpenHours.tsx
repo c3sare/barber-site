@@ -49,13 +49,14 @@ interface openHours {
 }
 
 export default function OpenHours() {
+    const [loading, setLoading] = useState<boolean>(true);
     const {control, handleSubmit, formState: {errors}, getValues, clearErrors, setError, watch} = useForm({
         defaultValues: async () => {
             const res = await fetch("/api/openhours").then(res => res.json());
+            setLoading(false);
             return res;
         }
     });
-    const [loading, setLoading] = useState<boolean>(false);
 
     const handleSendData = (data:any) => {
         const newTab:openHours[] = [];
@@ -107,6 +108,7 @@ export default function OpenHours() {
                     <Controller
                         control={control}
                         name={`${day.short}.start`}
+                        defaultValue=""
                         rules={{
                             validate: val => {
                                 if(getValues(`${day.short}.closed`)) {
@@ -146,6 +148,7 @@ export default function OpenHours() {
                     <Controller
                         control={control}
                         name={`${day.short}.end`}
+                        defaultValue=""
                         rules={{
                             validate: val => {
                                 if(getValues(`${day.short}.closed`)) {
@@ -185,17 +188,20 @@ export default function OpenHours() {
                     <Controller
                         control={control}
                         name={`${day.short}.closed`}
+                        defaultValue={false}
                         render={({
                             field: { onChange, onBlur, value, name, ref },
                         }) => (
                             <FormControlLabel
                                 label="Zamknięte"
+                                disabled={loading}
                                 control={
                                     <CCheckbox
+                                        color="default"
                                         onBlur={onBlur} // notify when input is touched
                                         onChange={(e) => {
                                             clearErrors(day.short);
-                                            onChange(e);
+                                            onChange(e.target.checked);
                                         }}
                                         checked={value}
                                         inputRef={ref}

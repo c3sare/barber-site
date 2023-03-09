@@ -12,6 +12,8 @@ import React from "react";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import { blueGrey } from "@mui/material/colors";
 import DeleteIcon from '@mui/icons-material/Delete';
+import CButton from "../elements/CButton";
+import Link from "next/link";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -35,25 +37,17 @@ const Input = React.forwardRef(({ onChange, onBlur, name }:UseFormRegisterReturn
 
 export default function DescMain() {
     const [loading, setLoading] = useState<boolean>(true);
-    const {control, formState: {errors}, register, handleSubmit, watch, setValue} = useForm<DescMainData>();
+    const {control, formState: {errors}, register, handleSubmit, watch, setValue} = useForm<DescMainData>({
+      defaultValues: async () => {
+        const res = await fetch("/api/descmain").then(res => res.json());
+        setLoading(false);
+        return res;
+      }
+    });
     const {fields, append, remove} = useFieldArray({
         name: "pros",
         control,
     });
-
-    useEffect(() => {
-      fetch("/api/descmain")
-      .then(data => data.json())
-      .then(data => {
-        setValue("title", data.title);
-        setValue("description", data.description);
-        setValue("pros", data.pros);
-      })
-      .catch(err => {
-        console.log(err);
-      })
-      .finally(() => setLoading(false));
-    },[]);
 
     const handleSendData = (data:DescMainData) => {
       setLoading(true);
@@ -262,6 +256,9 @@ export default function DescMain() {
               }
             </>
           </Box>
+          <CButton disabled={loading} LinkComponent={Link} href="/admin/menuconfig#edit">
+            Wróć
+          </CButton>
           <CLoadingButton loading={loading} disabled={loading} startIcon={<SaveIcon/>} loadingPosition="start" type="submit">
             Zapisz
           </CLoadingButton>
