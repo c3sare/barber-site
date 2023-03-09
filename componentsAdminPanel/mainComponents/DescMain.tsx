@@ -119,7 +119,7 @@ export default function DescMain() {
                 left: "10px",
                 fontSize: "12px",
                 padding: "0 5px",
-                color: errors.description ? "red" : "#cfd8dc",
+                color: loading ? "rgba(255, 255, 255, 0.25)" : (errors.description ? "red" : "#cfd8dc"),
                 backgroundColor: "rgb(36, 36, 36)",
               }}
             >
@@ -127,7 +127,20 @@ export default function DescMain() {
             </Typography>
             <CTextArea
               id="desc"
-              style={{ height: "110px", ...{...(errors.description ? {borderColor: "red"} : {})} }}
+              disabled={loading}
+              style={{
+                height: "110px",
+                ...{...( loading ?
+                  ({
+                    borderColor: "rgba(0, 0, 0, 0.38)",
+                    color: "rgba(255, 255, 255, 0.25)"
+                  }) : (
+                    errors.description ? {
+                      borderColor: "red",
+                      color: "red"
+                    } : {}
+                  ))}
+              }}
               {...register("description", {
                 required: "To pole jest wymagane",
                 pattern: {
@@ -215,12 +228,14 @@ export default function DescMain() {
                   />
                   <label htmlFor={`pros.${i}.img`}>
                     <Input
+                      disabled={loading}
                       {...register(`pros.${i}.img`, {
                         required: "Wymagane!"
                       })}
                     />
                     <IconButton
                       color="primary"
+                      disabled={loading}
                       aria-label="upload picture"
                       component="span"
                       sx={{color: blueGrey[700], ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
@@ -231,6 +246,7 @@ export default function DescMain() {
                   <IconButton
                     onClick={() => remove(i)}
                     color="primary"
+                    disabled={loading}
                     aria-label="delete item"
                     component="span"
                     sx={{color: blueGrey[700], ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
@@ -240,7 +256,7 @@ export default function DescMain() {
                 </div>
               )})}
               {fields.length < 3 &&
-                <IconButton onClick={() => append({img: "", desc: ""})} sx={{color: "white"}}>
+                <IconButton disabled={loading} onClick={() => append({img: "", desc: ""})} sx={{color: "white"}}>
                   <AddIcon/>
                 </IconButton>
               }

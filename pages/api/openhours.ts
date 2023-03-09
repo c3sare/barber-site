@@ -8,7 +8,21 @@ export default withIronSessionApiRoute(openHoursRoute, sessionOptions);
 async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === "GET") {
     const data = await getData("openHours");
-    res.json(data);
+    let newData:any = {};
+
+    data.forEach((item:any) => {
+      if(item.closed)
+        newData[item.short] = {start: "", end: "", closed: true};
+      else {
+        newData[item.short] = {
+          start: item.start,
+          end: item.end,
+          closed: false
+        }
+      }
+    });
+
+    res.json(newData);
   } else {
     res.json({error: true});
   }

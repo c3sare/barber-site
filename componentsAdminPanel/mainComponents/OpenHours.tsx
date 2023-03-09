@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import CButton from "../elements/CButton";
 import CLoadingButton from "../elements/CLoadingButton";
@@ -49,7 +49,12 @@ interface openHours {
 }
 
 export default function OpenHours() {
-    const {control, handleSubmit, formState: {errors}, getValues, clearErrors, setError, watch} = useForm();
+    const {control, handleSubmit, formState: {errors}, getValues, clearErrors, setError, watch} = useForm({
+        defaultValues: async () => {
+            const res = await fetch("/api/openhours").then(res => res.json());
+            return res;
+        }
+    });
     const [loading, setLoading] = useState<boolean>(false);
 
     const handleSendData = (data:any) => {
@@ -123,14 +128,13 @@ export default function OpenHours() {
                                 }
                             }
                         }}
-                        render={({field:{name, value, onChange, onBlur, ref}}) => (
+                        render={({field:{name, onChange, onBlur, ref, value}}) => (
                             <CTextField
                                 disabled={loading || closed}
                                 sx={{width: "80px"}}
                                 variant="standard"
-                                name={name}
-                                value={value}
                                 onChange={onChange}
+                                value={value}
                                 onBlur={onBlur}
                                 inputRef={ref}
                                 type="time"
@@ -164,14 +168,13 @@ export default function OpenHours() {
                                 }
                             }
                         }}
-                        render={({field:{name, value, onChange, onBlur, ref}}) => (
+                        render={({field:{name, onChange, onBlur, ref, value}}) => (
                             <CTextField
                                 disabled={loading || closed}
                                 sx={{width: "80px"}}
                                 variant="standard"
-                                name={name}
-                                value={value}
                                 onChange={onChange}
+                                value={value}
                                 onBlur={onBlur}
                                 inputRef={ref}
                                 type="time"
@@ -180,26 +183,26 @@ export default function OpenHours() {
                         )}
                     />
                     <Controller
-                      control={control}
-                      name={`${day.short}.closed`}
-                      render={({ field: { onChange, onBlur, ref, name } }) => (
-                        <FormControlLabel
-                          label="Zamknięte"
-                          control={
-                            <CCheckbox
-                                color="default"
-                                name={name}
-                                disabled={loading}
-                                onBlur={onBlur}
-                                inputRef={ref}
-                                onChange={(e) => {
-                                  clearErrors(day.short);
-                                  onChange(e);
-                                }}
+                        control={control}
+                        name={`${day.short}.closed`}
+                        render={({
+                            field: { onChange, onBlur, value, name, ref },
+                        }) => (
+                            <FormControlLabel
+                                label="Zamknięte"
+                                control={
+                                    <CCheckbox
+                                        onBlur={onBlur} // notify when input is touched
+                                        onChange={(e) => {
+                                            clearErrors(day.short);
+                                            onChange(e);
+                                        }}
+                                        checked={value}
+                                        inputRef={ref}
+                                    />
+                                }
                             />
-                          }
-                        />
-                      )}
+                        )}
                     />
                 </div>
             )})}
