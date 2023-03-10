@@ -51,18 +51,44 @@ export default function DescMain() {
 
     const handleSendData = (data:DescMainData) => {
       setLoading(true);
+      const fd = new FormData();
+      if(typeof data.pros?.[0]?.img === "object") {
+        fd.append("img0", data.pros[0].img[0]);
+        delete data.pros[0].img;
+      }
+      if(typeof data.pros?.[1]?.img === "object") {
+        fd.append("img1", data.pros[1].img[0]);
+        delete data.pros[1].img;
+      }
+      if(typeof data.pros?.[2]?.img === "object") {
+        fd.append("img2", data.pros[2].img[0]);
+        delete data.pros[2].img;
+      }
+
+      fd.append("data", JSON.stringify(data));
+
       fetch("/api/descmain", {
         method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          "Content-Type": "application/json"
+        body: fd,
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(!data.error) {
+          fetch("/api/descmain")
+          .then(res => res.json())
+          .then(data => {
+            setValue("pros", data.pros);
+            setLoading(false);
+          });
+        } else {
+          console.log("err");
+          setLoading(false)
         }
       })
-      .then(data => {
-        console.log(data);
+      .catch(err => {
+        console.log(err);
+        setLoading(false)
       })
-      .catch(err => console.log(err))
-      .finally(() => setLoading(false));
     }
 
     return (
@@ -224,7 +250,9 @@ export default function DescMain() {
                     <Input
                       disabled={loading}
                       {...register(`pros.${i}.img`, {
-                        required: "Wymagane!"
+                        validate: val => {
+                          return val !== "";
+                        },
                       })}
                     />
                     <IconButton
@@ -232,7 +260,7 @@ export default function DescMain() {
                       disabled={loading}
                       aria-label="upload picture"
                       component="span"
-                      sx={{color: blueGrey[700], ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
+                      sx={{color: errors.pros?.[i]?.img ? "red" : blueGrey[700], ...{...errors.pros?.[i]?.desc ? {marginBottom: "20px"} : {}}}}
                     >
                       <CameraAltIcon/>
                     </IconButton>

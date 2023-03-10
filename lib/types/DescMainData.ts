@@ -3,6 +3,6 @@ export default interface DescMainData {
     description: string,
     pros: {
         desc: string,
-        img: string
+        img?: string
     }[]
 }

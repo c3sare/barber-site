@@ -4,5 +4,5 @@ export default interface NewsData {
     desc: string,
     title: string,
     date: string,
-    img: string,
+    img: string | Blob[],
 }

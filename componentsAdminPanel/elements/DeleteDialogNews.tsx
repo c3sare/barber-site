@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -7,16 +6,16 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import CButton from './CButton';
 import CLoadingButton from './CLoadingButton';
-import SlideData from '@/lib/types/SlideData';
+import NewsData from '@/lib/types/NewsData';
 
-export default function DeleteDialogSlide({
+export default function DeleteDialogNews({
     state,
     setState,
     data,
     setData
 }: {
-    state: SlideData[],
-    setState: (state:SlideData[] | any) => void,
+    state: NewsData[],
+    setState: (state:NewsData[] | any) => void,
     data: {
         open: boolean,
         id: string
@@ -34,7 +33,7 @@ export default function DeleteDialogSlide({
 
   const handleDeleteItem = () => {
     setLoading(true);
-    fetch("/api/slides/"+data.id, {
+    fetch("/api/news/"+data.id, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json"
@@ -44,7 +43,7 @@ export default function DeleteDialogSlide({
     .then(res => res.json())
     .then(res => {
         if(!res.error) {
-          setState((prevState:SlideData[]) => prevState.filter(item => item._id !== data.id));
+          setState((prevState:NewsData[]) => prevState.filter(item => item._id !== data.id));
         } else {
             console.log("Wystąpił błąd przy usuwaniu wpisu!");
         }

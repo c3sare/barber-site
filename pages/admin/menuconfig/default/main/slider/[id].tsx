@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Layout } from "@/componentsAdminPanel/Layout"
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
@@ -7,7 +8,7 @@ import Link from "next/link";
 import { useState } from "react";
 import SaveIcon from '@mui/icons-material/Save';
 import { useRouter } from "next/router";
-import { Controller, UseFormRegisterReturn, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box, IconButton, Typography, styled } from "@mui/material";
 import CTextArea from "@/componentsAdminPanel/elements/CTextArea";
@@ -28,7 +29,7 @@ const InputStyled = styled("input")({
   });
   
   // eslint-disable-next-line react/display-name
-  const Input = React.forwardRef(({ onChange, onBlur, name }:UseFormRegisterReturn, ref:any) => (
+  const Input = React.forwardRef(({ onChange, onBlur, name }:any, ref:any) => (
     <InputStyled
       accept="image/*"
       id={name}
@@ -45,7 +46,7 @@ const InputStyled = styled("input")({
 const SliderEditPage = ({permissions={}, data}: any) => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const {control, formState: {errors}, handleSubmit, register, watch} = useForm<Slide>({
+    const {control, formState: {errors}, handleSubmit, register, watch, setValue} = useForm<Slide>({
         defaultValues: {
             title: data.title,
             desc: data.desc,
@@ -55,15 +56,44 @@ const SliderEditPage = ({permissions={}, data}: any) => {
 
     const image = watch("image");
 
+    const {onBlur, name, ref} = register("image");
+
+    const onChangeImage = async (e:React.ChangeEvent<HTMLInputElement>) => {
+        if(e.target?.files?.length === 1) {
+            setLoading(true);
+            const fd = new FormData();
+            fd.append("image", e.target.files[0]);
+            const data = await fetch("/api/slides/image/"+router.query.id, {
+                method: "POST",
+                body: fd
+            }).then(res => res.json())
+            .then(data => {
+                setLoading(false);
+                return data;
+            })
+            if(!data.error) {
+                setValue("image", data.image)
+            } else {
+                console.log("error");
+            }
+
+        }
+    }
+
     const handleSendData = (data:Slide) => {
         setLoading(true);
         const fd = new FormData();
         fd.append("title", data.title);
         fd.append("desc", data.desc);
-        fd.append("image", typeof data.image === "object" ? data.image[0] : data.image);
         fetch(`/api/slides/${router.query.id}`, {
             method: "POST",
-            body: fd
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                title: data.title,
+                desc: data.desc
+            })
         })
         .then(res => res.json())
         .then(data => {
@@ -87,22 +117,17 @@ const SliderEditPage = ({permissions={}, data}: any) => {
                 <div>
                     <img
                         style={{ maxHeight: "300px", maxWidth: "300px", height: "auto", width: "auto" }}
-                        src={
-                        typeof image === "object"
-                            ? URL.createObjectURL(image?.[0])
-                            : image
-                            ? `/images/${image}`
-                            : "/images/vercel.svg"
-                        }
+                        src={`/images/${image}`}
                         alt="logo"
                     />
                 </div>
                 <label htmlFor={`image`}>
                     <Input
+                      onBlur={onBlur}
+                      ref={ref}
+                      name={name}
+                      onChange={onChangeImage}
                       disabled={loading}
-                      {...register("image", {
-                        required: "Wymagane!"
-                      })}
                     />
                     <IconButton
                       color="primary"
