@@ -52,16 +52,25 @@ const AddNews = ({permissions={}}: any) => {
     const router = useRouter();
     const [loading, setLoading] = useState<boolean>(false);
     const [value, setValue] =  useState<Value | null>(null);
-    const {register, control, formState: {errors}, handleSubmit, watch} = useForm<NewsData>();
+    const {register, control, formState: {errors}, handleSubmit, watch} = useForm<NewsData>({
+        defaultValues: {
+            title: "",
+            desc: "",
+            img: ""
+        }
+    });
 
     const handleSendData = (data:NewsData) => {
         setLoading(true);
+        const fd = new FormData();
+        fd.append("title", data.title);
+        fd.append("desc", data.desc);
+        fd.append("date", data.date);
+        fd.append("content", JSON.stringify(value));
+        fd.append("img", data.img[0]);
         fetch("/api/news", {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({...data, content: value})
+            body: fd
         })
         .then(data => data.json())
         .then(data => {
@@ -115,16 +124,13 @@ const AddNews = ({permissions={}}: any) => {
                     rules={{
                         required: "To pole jest wymagane.",
                         pattern: {
-                            value: /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u,
+                            value: /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/,
                             message: "Nieprawidłowo uzupełnione pole",
-                        },
-                        maxLength: {
-                            value: 80,
-                            message: "Max. ilość znaków to 80",
-                        },
+                        }
                     }}
                     render={({ field: { onChange, onBlur, value, ref, name } }) => (
                         <CTextField
+                            disabled={loading}
                             sx={{width: "100%", margin: "0"}}
                             variant="outlined"
                             label="Data utworzenia"
@@ -134,8 +140,8 @@ const AddNews = ({permissions={}}: any) => {
                             name={name}
                             value={value}
                             inputRef={ref}
-                            error={Boolean(errors.title)}
-                            helperText={errors.title?.message}
+                            error={Boolean(errors.date)}
+                            helperText={errors.date?.message}
                         />
                     )}
                 />
@@ -153,8 +159,10 @@ const AddNews = ({permissions={}}: any) => {
                             message: "Max. ilość znaków to 80",
                         },
                     }}
+                    defaultValue=""
                     render={({ field: { onChange, onBlur, value, ref, name } }) => (
                         <CTextField
+                            disabled={loading}
                             sx={{width: "100%", margin: "16px 0"}}
                             variant="outlined"
                             label="Tytuł"
@@ -186,6 +194,7 @@ const AddNews = ({permissions={}}: any) => {
                     </Typography>
                     <CTextArea
                     id="desc"
+                    disabled={loading}
                     style={{ height: "110px" }}
                     {...register("desc", {
                         required: "To pole jest wymagane",
