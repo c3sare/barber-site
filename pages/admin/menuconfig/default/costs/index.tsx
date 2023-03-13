@@ -11,11 +11,11 @@ import React, { useState } from "react";
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CButton from "@/componentsAdminPanel/elements/CButton";
-import DeleteDialogCosts from "@/componentsAdminPanel/elements/DeleteDialogCosts";
+import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 
 const DefaultCostsEdit = ({permissions={}, costData}: any) => {
   const [state, setState] = useState<CostsData[]>(costData);
-  const [data, setData] = useState({id: "", open: false});
+  const [data, setData] = useState({id: "", open: false, text: ""});
 
   return (
     <Layout perms={permissions}>
@@ -32,7 +32,7 @@ const DefaultCostsEdit = ({permissions={}, costData}: any) => {
                   <>
                     <Tooltip title="Usuń stronę" placement="bottom">
                       <IconButton
-                        onClick={() => setData({id: item._id, open: true})}
+                        onClick={() => setData({id: item._id, open: true, text: "Czy chcesz usunąć wybraną kategorię? - "+state.find(itemf => itemf._id === item._id)!.category})}
                         sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
                       >
                         <DeleteIcon/>
@@ -57,7 +57,7 @@ const DefaultCostsEdit = ({permissions={}, costData}: any) => {
           Dodaj
         </CButton>
       </Box>
-      <DeleteDialogCosts state={state} setState={setState} data={data} setData={setData}/>
+      <DeleteDialog setState={setState} open={data} setOpen={setData} url="/api/costs"/>
     </Layout>
     )
 }

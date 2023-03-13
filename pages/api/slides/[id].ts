@@ -35,16 +35,6 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.json({error: true});
     }
-  } else if(req.method === "DELETE") {
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("slides");
-    const del = await tab.deleteOne({_id: new ObjectId(req.query.id as string)});
-    if(del.deletedCount === 1) {
-      res.json({error: false});
-    } else {
-      res.json({error: true});
-    }
   } else {
     res.json({error: true});
   }

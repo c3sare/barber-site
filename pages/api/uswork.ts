@@ -65,6 +65,7 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
         const insert = await tab.insertOne({image: fullName});
         res.json({error: false, _id: insert.insertedId, image: fullName});
     } else {
+        console.log("err4");
         res.json(createResponse("Nie masz uprawnień do wykonania tej zmiany!"));
     }
   } else if(req.method === "DELETE") {
@@ -82,11 +83,14 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
             res.json({error: false});
         } else {
             res.json({error: true});
+            console.log("err3");
         }
     } else {
-        res.json(createResponse("Nie masz uprawnień do wykonania tej zmiany!"));
+      console.log("err2");
+      res.json(createResponse("Nie masz uprawnień do wykonania tej zmiany!"));
     }
   } else {
+    console.log("err1");
     res.json(createResponse("Niepoprawne zapytanie!"));
   }
 }

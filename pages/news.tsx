@@ -17,7 +17,7 @@ const News = ({news, menu, footer, info}: any) => {
             <div key={index} className={styles.infoBox}>
               <Image
                 alt={article.title}
-                src={article.img}
+                src={`/images/articles/${article.img}`}
                 width={384}
                 height={229}
                 loading="lazy"

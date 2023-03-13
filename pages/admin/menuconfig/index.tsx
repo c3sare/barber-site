@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import IconButton from "@mui/material/IconButton";
 import Link from "next/link";
-import { Box, Divider, List, ListItem, ListItemText, Tooltip } from "@mui/material";
+import { Box, Divider, List, ListItem, ListItemText, MenuItem, Tooltip } from "@mui/material";
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -214,7 +214,8 @@ const generateMenu = (tab:MenuItemDB[], setDialog:CallableFunction) => {
                   onClick={() => {
                     setDialog({
                       id: item._id,
-                      open: true
+                      open: true,
+                      text: "Czy chcesz usunąć ten węzeł nawigacji? - "+tab.find(itemf => itemf._id === item._id)!.title
                     })
                   }}
                 >
@@ -241,7 +242,8 @@ const EditPanel = () => {
   const [menu, setMenu] = useState<any>([]);
   const [dialog, setDialog] = useState({
     open: false,
-    id: ""
+    id: "",
+    text: ""
   });
 
   useEffect(() => {
@@ -274,7 +276,7 @@ const EditPanel = () => {
         </List>
         <CButton LinkComponent={Link} href="/admin/menuconfig/add">Dodaj węzeł nawigacji</CButton>
       </Box>
-      <DeleteDialog open={dialog} setOpen={setDialog} state={menu} setState={setMenu}/>
+      <DeleteDialog open={dialog} setOpen={setDialog} setState={setMenu} url="/api/menu" />
       </>
     )
     :

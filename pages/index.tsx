@@ -115,7 +115,7 @@ export default function Home(
         <h2>Aktualności</h2>
         {news.map((article, index:number) => (
           <div key={index} className={styles.infoBox}>
-            <Image alt={article.title} src={article.img} width={384} height={229} loading="lazy"/>
+            <Image alt={article.title} src={`/images/articles/${article.img}`} width={384} height={229} loading="lazy"/>
             <h4>{article.title}</h4>
             <p>{article.desc}</p>
             <Link href={`/news/${article.id}`} className="btn">

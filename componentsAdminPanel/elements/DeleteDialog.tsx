@@ -1,45 +1,47 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { MenuItemDB } from "@/lib/types/MenuItem";
-import LoadingButton from "@mui/lab/LoadingButton";
 import DeleteIcon from '@mui/icons-material/Delete';
+import CButton from "./CButton";
+import CLoadingButton from "./CLoadingButton";
 
 interface DialogState {
   open: boolean,
-  id: string
+  id: string,
+  text: string
 }
 
 export default function DeleteDialog({
+  url,
   open,
   setOpen,
-  setState,
-  state
+  setState
 }:{
+  url: string,
   open: {
     id: string,
-    open: boolean
+    open: boolean,
+    text: string
   },
   setOpen:CallableFunction,
-  setState: CallableFunction,
-  state: MenuItemDB[]
+  setState: CallableFunction
 }) {
   const [loading, setLoading] = React.useState(false);
   const handleClose = () => {
     setOpen((state:DialogState) => ({
       open: false,
       id: state.id,
+      text: state.text
     }
     ));
   };
 
   const handleDeleteElement = async () => {
     setLoading(true);
-    const res:{error: boolean} = await fetch("/api/menu", {
+    const res:{error: boolean} = await fetch(url, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -50,11 +52,11 @@ export default function DeleteDialog({
     }).then(data => data.json());
 
     if(!res.error) {
-      setTimeout(() => setState((prevState:MenuItemDB[]) => {
+      setTimeout(() => setState((prevState:any[]) => {
         return prevState.filter(item => item._id !== open.id);
       }), 250);
     } else {
-      console.log("Nie udało usunąć się węzła!")
+      console.log("Nie udało wykonać usunięcia!")
     }
     setLoading(false);
     handleClose();
@@ -70,14 +72,14 @@ export default function DeleteDialog({
       <DialogTitle id="alert-dialog-title">Usuwanie</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
-          Czy chcesz usunąć ten węzeł nawigacji? - <b>{state.find(item => item._id === open.id)?.title || ""}</b>
+          {open.text}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button disabled={loading} onClick={handleClose}>Anuluj</Button>
-        <LoadingButton loading={loading} disabled={loading} loadingPosition="start" startIcon={<DeleteIcon/>} onClick={handleDeleteElement} autoFocus>
+        <CButton disabled={loading} onClick={handleClose}>Anuluj</CButton>
+        <CLoadingButton loading={loading} disabled={loading} loadingPosition="start" startIcon={<DeleteIcon/>} onClick={handleDeleteElement} autoFocus>
           Usuń
-        </LoadingButton>
+        </CLoadingButton>
       </DialogActions>
     </Dialog>
   );

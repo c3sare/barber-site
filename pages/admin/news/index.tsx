@@ -9,13 +9,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Link from "next/link";
 import CButton from "@/componentsAdminPanel/elements/CButton";
-import DeleteDialogNews from "@/componentsAdminPanel/elements/DeleteDialogNews";
 import NewsData from "@/lib/types/NewsData";
+import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 
 const AdminPanelNews = ({permissions}: any) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [news, setNews] = useState<NewsData[]>([]);
-  const [data, setData] = useState({open: false, id: ""});
+  const [data, setData] = useState({open: false, id: "", text: ""});
 
   useEffect(() => {
     let mounted = true;
@@ -52,7 +52,7 @@ const AdminPanelNews = ({permissions}: any) => {
                     <>
                       <Tooltip title="Usuń" placement="bottom">
                         <IconButton
-                          onClick={() => setData({id: item._id, open: true})}
+                          onClick={() => setData({id: item._id, open: true, text: "Czy chcesz usunąć wybrany artykuł? - "+news.find(itemf => itemf._id === item._id)!.title})}
                           sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
                         >
                           <DeleteIcon/>
@@ -79,7 +79,7 @@ const AdminPanelNews = ({permissions}: any) => {
             Dodaj
           </CButton>
         </Box>
-        <DeleteDialogNews state={news} setState={setNews} data={data} setData={setData}/>
+        <DeleteDialog setState={setNews} open={data} setOpen={setData} url="/api/news"/>
       </Layout>
     )
 }

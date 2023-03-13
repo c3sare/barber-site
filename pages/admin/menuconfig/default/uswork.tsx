@@ -11,11 +11,11 @@ import UploadIcon from '@mui/icons-material/Upload';
 import { blueGrey } from "@mui/material/colors";
 import DeleteIcon from '@mui/icons-material/Delete';
 import Image from "next/image";
-import DeleteDialogUswork from "@/componentsAdminPanel/elements/DeleteDialogUswork";
 import Loading from "@/componentsAdminPanel/Loading";
 import WorkData from "@/lib/types/WorkData";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
+import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 
 const Input = styled("input")({
   display: "none",
@@ -25,7 +25,7 @@ const Input = styled("input")({
 const UsworkConfig = ({permissions, data}: any) => {
     const [loading, setLoading] = useState<boolean>(false);
     const [works, setWorks] = useState<WorkData[]>(data);
-    const [deleteData, setDeleteData] = useState<{open: boolean, id: string}>({open: false, id: ""})
+    const [deleteData, setDeleteData] = useState<{open: boolean, id: string, text: string}>({open: false, id: "", text: ""})
     const [image, setImage] = useState<File | null>(null);
   
     const handleAddUsWork = () => {
@@ -56,7 +56,8 @@ const UsworkConfig = ({permissions, data}: any) => {
     const handleDeleteWork = (id: string) => {
       setDeleteData({
         open: true,
-        id
+        id,
+        text: "Czy chcesz usunąć wybraną pracę?"
       });
     }
 
@@ -143,7 +144,7 @@ const UsworkConfig = ({permissions, data}: any) => {
             </div>
           }
         </div>
-        <DeleteDialogUswork state={works} setState={setWorks} data={deleteData} setData={setDeleteData}/>
+        <DeleteDialog setState={setWorks} open={deleteData} setOpen={setDeleteData} url="/api/uswork"/>
         <CButton LinkComponent={Link} href="/admin/menuconfig#edit" sx={{margin: "0 auto", display: "block", width: "80px", textAlign: "center"}}>
           Wróć
         </CButton>

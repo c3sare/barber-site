@@ -5,7 +5,7 @@ import getData from "@/utils/getData";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 export const config = {
   api: {
@@ -57,6 +57,17 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === "GET") {
     const data = await getData("slides");
     res.json(data);
+  } else if(req.method === "DELETE") {
+    const {id}:any = await handlePostFormReq(req, res);
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("slides");
+    const del = await tab.deleteOne({_id: new ObjectId(id)});
+    if(del.deletedCount === 1) {
+      res.json({error: false});
+    } else {
+      res.json({error: true});
+    }
   } else if(req.method === "PUT") {
     const pagesDirectory = path.join(process.cwd(), 'public');
     const {image, title, desc}:any = await handlePostFormReq(req, res);

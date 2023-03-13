@@ -6,13 +6,13 @@ import CButton from "../elements/CButton";
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
 import Loading from "../Loading";
-import DeleteDialogSlide from "../elements/DeleteDialogSlide";
+import DeleteDialog from "../elements/DeleteDialog";
 import SlideData from "@/lib/types/SlideData";
 
 export default function Slider() {
     const [loading, setLoading] = useState<boolean>(true);
     const [slides, setSlides] = useState<SlideData[]>([]);
-    const [data, setData] = useState({id: "", open: false});
+    const [data, setData] = useState({id: "", open: false, text: ""});
 
     useEffect(() => {
       fetch("/api/slides")
@@ -26,7 +26,6 @@ export default function Slider() {
 
     return (
         <>
-        <h1>Cennik - Kategorie</h1>
         <Box sx={{ width: '100%', bgcolor: 'rgb(45, 45, 45)', borderRadius: "5px", overflow: "hidden", textAlign: "center"}}>
           <List sx={{padding: "0"}}>
             {slides.map(item => (
@@ -39,7 +38,7 @@ export default function Slider() {
                     <>
                       <Tooltip title="Usuń" placement="bottom">
                         <IconButton
-                          onClick={() => setData({id: item._id, open: true})}
+                          onClick={() => setData({id: item._id, open: true, text: "Czy chcesz usunąć ten slajd? - "+slides.find(itemf => itemf._id === item._id)!.title})}
                           sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
                         >
                           <DeleteIcon/>
@@ -69,7 +68,7 @@ export default function Slider() {
             Dodaj
           </CButton>
         </Box>
-        <DeleteDialogSlide state={slides} setState={setSlides} data={data} setData={setData}/>
+        <DeleteDialog setState={setSlides} open={data} setOpen={setData} url="/api/slides"/>
         </>
     )
 }
