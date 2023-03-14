@@ -1,5 +1,5 @@
 export default interface NewsData {
-    _id?: string,
+    _id: string,
     desc: string,
     title: string,
     date: string,
