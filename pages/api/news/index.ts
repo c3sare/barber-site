@@ -107,7 +107,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
       const publicDir = path.join(process.cwd(), 'public');
       const newsDir = path.join(process.cwd(), 'news');
       fs.unlink(`${publicDir}/images/articles/${toDelete!.img}`);
-      fs.unlink(`${newsDir}/news/${id}.json`);
+      fs.unlink(`${newsDir}/${id}.json`);
       res.json({error: false});
     } else {
       res.json({error: true});

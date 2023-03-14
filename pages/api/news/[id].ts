@@ -8,7 +8,8 @@ import { MongoClient, ObjectId } from "mongodb";
 
 export default withIronSessionApiRoute(newsRoute, sessionOptions);
 
-const titleDescRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
+const titleRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
+const descRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
@@ -33,10 +34,10 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
     if(
         session?.isLoggedIn &&
         session.permissions.news &&
-        titleDescRegex.test(title) &&
+        titleRegex.test(title) &&
         title?.length > 0 &&
         title?.length <= 80 &&
-        titleDescRegex.test(desc) &&
+        descRegex.test(desc) &&
         desc.length > 0 &&
         desc.length <= 400 &&
         dateRegex.test(date)
@@ -53,6 +54,8 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         } else {
             res.json({error: true});
         }
+    } else {
+      res.json({error: true});
     }
   } else {
     res.json({error: true});

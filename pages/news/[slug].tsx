@@ -2,20 +2,20 @@ import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
 import getMenu from "@/lib/getMenu";
 import { getDataOne } from "@/utils/getData";
-import getPage from "@/utils/getPage";
-import pageList from "@/utils/pageList";
 import dynamic from "next/dynamic";
 const Editor = dynamic(import("@react-page/editor"))
 import React from "react";
+import newsList from "@/utils/newsList";
+import getNewsPage from "@/utils/getNewsPage";
 
 export async function getStaticPaths() {
-  const customPages = await pageList();
+  const customPages = await newsList();
 
   return {
     paths: customPages.nodes.map((item:any) => {
       return {
         params: {
-          pagelink: item.slug
+          slug: item.slug
         }
       }
     }),
@@ -27,7 +27,7 @@ export async function getStaticProps(context:any) {
   const menu = await getMenu();
   const footer = await getDataOne("footer");
   const info = await getDataOne("info");
-  const page = await getPage(context.params.pagelink);
+  const page = await getNewsPage(context.params.slug);
 
   return {
     props: {
@@ -46,6 +46,7 @@ const CustomPage = ({ page ,menu, footer, info }: any) => {
         <div
         className="container"
         >
+          <h1>{page.title}</h1>
           <Editor cellPlugins={cellPlugins} value={page.content} readOnly/>
         </div>
     </Layout>

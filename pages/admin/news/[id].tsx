@@ -57,8 +57,8 @@ const AddNews = ({permissions={}, data}: any) => {
 
     const handleSendData = (data:NewsData) => {
         setLoading(true);
-        fetch("/api/news", {
-            method: "PUT",
+        fetch("/api/news/"+router.query.id, {
+            method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },

@@ -9,7 +9,7 @@ export default async function pageList() {
   return {
     nodes: filteredChildren.map(item => {
         return ({
-          title: item.title,
+          id: item._id,
           slug: item.slug
         })
     })

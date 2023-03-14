@@ -142,17 +142,24 @@
     margin: 0 auto;
     max-width: 1200px;
     padding: 0 25px;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .infoBox {
     width: 33.33%;
     padding: 15px;
-    float: left;
+    flex-basis: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .page {
     opacity: 0;
     animation: fade 1s forwards;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 @keyframes fade {

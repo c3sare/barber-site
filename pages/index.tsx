@@ -115,10 +115,25 @@ export default function Home(
         <h2>Aktualności</h2>
         {news.map((article, index:number) => (
           <div key={index} className={styles.infoBox}>
-            <Image alt={article.title} src={`/images/articles/${article.img}`} width={384} height={229} loading="lazy"/>
-            <h4>{article.title}</h4>
-            <p>{article.desc}</p>
-            <Link href={`/news/${article.id}`} className="btn">
+            <div>
+              <div style={{width: '100%', height: "230px", position: "relative"}}>
+                <Image
+                  alt={article.title}
+                  src={`/images/articles/${article.img}`}
+                  fill
+                  loading="lazy"
+                  style={{objectFit: "cover"}}
+                  sizes="(max-width: 1200px) 355px,
+                  (max-width: 1024px) 275px,
+                  (max-width: 76px) 200px,
+                  355px"
+                />
+              </div>
+              <span style={{width: "100%", display: "block", textAlign: "right"}}>{article.date}</span>
+              <h4>{article.title}</h4>
+              <p>{article.desc}</p>
+            </div>
+            <Link href={`/news/${article.slug}`} className="btn">
               Czytaj
             </Link>
           </div>
@@ -147,11 +162,21 @@ export default function Home(
   );
 }
 
+function sortByDateNews(a:any, b:any) {
+  if(a.date > b.date) {
+    return -1;
+  } else if(a.date < b.date) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 export async function getStaticProps() {
   const descMain = await getDataOne("descMain");
   const openHours = await getData("openHours");
   const slideData = await getData("slides");
-  const news = await getData("news");
+  const news = (await getData("news")).sort(sortByDateNews).slice(0, 3);
   const info = await getDataOne("info");
   const footer = await getDataOne("footer");
   const menu = await getMenu();

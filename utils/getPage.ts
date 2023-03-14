@@ -10,10 +10,10 @@ export default async function handler(slug: string) {
 
   const pageDataDirectory = path.join(process.cwd(), 'pagecontent');
 
-  const html = findItem ? await fs.readFile(pageDataDirectory + `/${findItem._id}.json`, 'utf8') : "";
+  const content = findItem ? await fs.readFile(pageDataDirectory + `/${findItem._id}.json`, 'utf8') : "";
 
   return findItem ? {
     title: findItem.title,
-    data: JSON.parse(html)
+    content: JSON.parse(content)
   } : {};
 }
