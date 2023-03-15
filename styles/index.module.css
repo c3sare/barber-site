@@ -85,6 +85,7 @@
 
 .homeDesc p {
     font-size: 20px;
+    text-align: left;
 }
 
 .homePros {
@@ -100,10 +101,12 @@
 .homePros ul li {
     font-size: 12px;
     line-height: 230%;
+    text-align: left;
 }
 
 .homePros ul li img {
-    width: 35px;
+    width: 30px;
+    margin-right: 15px;
     height: auto;
     position: relative;
     top: 10px;
@@ -169,6 +172,11 @@
 
 .infoBox h4 {
     margin-top: 0;
+    text-shadow: none;
+}
+
+.infoBox p {
+    text-align: left;
 }
 
 .infoBox span {
@@ -194,14 +202,10 @@
 .openingHoursBox {
     width: 100%;
     padding: 30px;
-    overflow: hidden;
-    background-attachment: fixed;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    position: relative;
 }
 
 .openingHoursBox h2 {

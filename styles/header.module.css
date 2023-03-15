@@ -24,8 +24,9 @@
 }
 
 .logo {
+  width: 200px;
   height: 45px;
-  width: auto;
+  position: relative;
 }
 
 .navMenu {

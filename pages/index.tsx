@@ -76,9 +76,15 @@ export default function Home(
                 key={index}
                 className={styles.slide}
                 style={{
-                  backgroundImage: `url('/images/${sld?.image}')`,
+                  position: "relative"
                 }}
               >
+                <Image
+                  alt={sld.title}
+                  src={`/images/${sld?.image}`}
+                  fill
+                  style={{objectFit: "cover", objectPosition: "center", zIndex: "-1"}}
+                />
                 <h2>{sld?.title}</h2>
                 <p>{sld?.desc}</p>
               </div>
@@ -141,8 +147,13 @@ export default function Home(
       </div>
       <div
         className={styles.openingHoursBox}
-        style={{ backgroundImage: `url(/images/bgHour.jpg)` }}
       >
+        <Image
+          alt={"Godziny otwarcia"}
+          src={`/images/bgHour.jpg`}
+          fill
+          style={{objectFit: "cover", objectPosition: "center", zIndex: "-1"}}
+        />
         <h2>Godziny otwarcia</h2>
         {openHours.sort(sortOpenHours).map((day, index:number) => (
           <div key={index} className={styles.openHour}>

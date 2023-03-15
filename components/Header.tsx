@@ -3,6 +3,7 @@ import { useState, MouseEvent } from "react";
 import Link from "next/link";
 import MenuItem from "@/lib/types/MenuItem";
 import flatListToHierarchical from "@/utils/flatToHierarchical";
+import Image from "next/image";
 
 const generateMenu = (tab:MenuItem[], closeMenu:any) => {
   return tab.map(item => (
@@ -39,7 +40,17 @@ const Header = ({menu, logo}: {menu: MenuItem[], logo: string}) => {
   return (
     <div className={style.header}>
       <Link href="/">
-        <img className={style.logo} src={`/images/${logo}`} alt="Logo" width="200px" height="auto"/>
+        <div className={style.logo}>
+          <Image
+            src={`/images/${logo}`}
+            alt="Logo"
+            fill
+            sizes="(max-width: 1200px) 200px,
+            (max-width: 1024px) 150px,
+            (max-width: 768px) 100px,
+            100px"
+          />
+        </div>
       </Link>
       <div
         className={
