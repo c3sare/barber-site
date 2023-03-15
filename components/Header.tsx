@@ -34,7 +34,7 @@ const Header = ({menu, logo}: {menu: MenuItem[], logo: string}) => {
 
   const handleOpenCloseSubMenu = (e: MouseEvent<HTMLDivElement>) => {
     e.currentTarget.classList.toggle(`${style.rotate}`);
-    e.currentTarget!.parentNode!.querySelector(`ul`)!.style.maxHeight = e.currentTarget.classList.contains(`${style.rotate}`) ? "" : e.currentTarget.parentNode!.querySelector(`ul`)!.querySelectorAll("li").length*63+"px";
+    e.currentTarget!.parentNode!.querySelector(`ul`)!.style.maxHeight = e.currentTarget.classList.contains(`${style.rotate}`) ? "" : e.currentTarget.parentNode!.querySelector(`ul`)!.querySelectorAll("li").length*71+"px";
   };
 
   return (
@@ -64,7 +64,7 @@ const Header = ({menu, logo}: {menu: MenuItem[], logo: string}) => {
       </div>
       <div
         className={style.navMenu}
-        style={showMenu ? { maxHeight: `${58 * menu.length + 15}px` } : {}}
+        style={showMenu ? { maxHeight: `${71 * menu.length + 15}px` } : {}}
       >
         <ul>
           {generateMenu(flatListToHierarchical(menu as never[]), handleOpenCloseSubMenu)}

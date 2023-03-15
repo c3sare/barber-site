@@ -4,24 +4,28 @@ import getData, { getDataOne } from "@/utils/getData";
 import getPage from "@/utils/getPage";
 import Image from "next/image";
 import { useState } from "react";
-import MenuItem from "@/lib/types/MenuItem";
+import MenuItem, { MenuItemDB } from "@/lib/types/MenuItem";
 import FooterData from "@/lib/types/FooterData";
 import InfoData from "@/lib/types/InfoData";
 import WorkData from "@/lib/types/WorkData";
 import CustomPageData from "@/lib/types/CustomPageData";
+import dynamic from "next/dynamic";
+import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
+import { Value } from "@react-page/editor";
+const Editor = dynamic(import("@react-page/editor"));
 
 const Uswork = ({
   workData,
   menu,
   footer,
   info,
-  isCustom
+  pageData
 } : {
   workData: (WorkData[] | CustomPageData),
   menu: MenuItem[],
   footer: FooterData,
   info: InfoData,
-  isCustom: boolean
+  pageData: MenuItemDB
 }) => {
   const [showImage, setShowImage] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
@@ -35,27 +39,35 @@ const Uswork = ({
   return (
     <>
     <Layout title="Nasze Prace" menu={menu} footer={footer} info={info}>
-      {isCustom ?
-        <div className="container" dangerouslySetInnerHTML={{__html: (workData as CustomPageData).html}}/>
-        :
-        <div className="container">
-          <h1>Nasze Prace</h1>
-          <div className="photoBox">
-            {(workData as WorkData[]).map((item, index:number) => (
-              <Image
-                key={index}
-                alt={`Fryzura ${index + 1}`}
-                src={`/images/uswork/${item.image}`}
-                width={300}
-                height={300}
-                onClick={() => showImageBox(item.image)}
-              />
-            ))}
-          </div>
-        </div>
-      }
+      <div className="container">
+        <h1>{pageData.title}</h1>
+        {
+          pageData.custom ?
+            <Editor cellPlugins={cellPlugins} value={(workData as any).content} readOnly/>
+          :
+            <div className="photoBox">
+              {(workData as WorkData[]).map((item, index:number) => (
+                <div
+                  key={index}
+                  style={{position: "relative", margin: "16px", width: "350px", maxWidth: "100%", height: "350px", cursor: "pointer"}}
+                  onClick={() => showImageBox(item.image)}
+                >
+                  <Image
+                    alt={`Fryzura ${index + 1}`}
+                    src={`/images/uswork/${item.image}`}
+                    priority
+                    fill
+                    sizes="(max-width: 1200px) 350px,
+                    350px"
+                    style={{objectFit: "cover", objectPosition: "center"}}
+                  />
+                </div>
+              ))}
+            </div>
+        }
+      </div>
     </Layout>
-    {showImage && !isCustom && (
+    {showImage && !pageData.custom && (
         <div className="fullImageScreen">
           <Image alt="Fryzura" src={`/images/uswork/${imageUrl}`} width={1000} height={1000}/>
           <div
@@ -89,9 +101,9 @@ export async function getStaticProps() {
       }
     }
 
-    const isCustom = Boolean(menu.find(item => (item.slug === "uswork" && item.custom)));
+    const pageData = menu.find(item => (item.slug === "uswork"));
 
-    const workData = isCustom ? await getPage("uswork") : await getData("uswork");
+    const workData = pageData!.custom ? await getPage("uswork") : await getData("uswork");
 
     return {
       props: {
@@ -99,7 +111,7 @@ export async function getStaticProps() {
         footer,
         info,
         workData,
-        isCustom
+        pageData 
       }
     }
 }

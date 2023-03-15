@@ -5,7 +5,7 @@ import { getDataOne } from "@/utils/getData";
 import getPage from "@/utils/getPage";
 import pageList from "@/utils/pageList";
 import dynamic from "next/dynamic";
-const Editor = dynamic(import("@react-page/editor"))
+const Editor = dynamic(import("@react-page/editor"));
 import React from "react";
 
 export async function getStaticPaths() {

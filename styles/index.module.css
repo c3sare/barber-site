@@ -170,7 +170,7 @@
     to {opacity: 1;}
   }
 
-.infoBox h4 {
+.infoBox h3 {
     margin-top: 0;
     text-shadow: none;
 }
@@ -181,6 +181,15 @@
 
 .infoBox span {
     font-size: 11px;
+    text-align: right;
+    width: 100%;
+    display: block;
+}
+
+.infoBox h2 {
+    font-size: 1.17em;
+    margin-top: 0;
+    text-shadow: none;
 }
 
 .infoBox img {
@@ -191,9 +200,16 @@
 .infoBox a {
     display: block;
     margin: 0 auto;
+    width: 100%;
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: 900px) {
+    .infoBox {
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 680px) {
     .infoBox {
         width: 100%;
     }

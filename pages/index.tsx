@@ -131,12 +131,12 @@ export default function Home(
                   style={{objectFit: "cover"}}
                   sizes="(max-width: 1200px) 355px,
                   (max-width: 1024px) 275px,
-                  (max-width: 76px) 200px,
+                  (max-width: 800px) 200px,
                   355px"
                 />
               </div>
               <span style={{width: "100%", display: "block", textAlign: "right"}}>{article.date}</span>
-              <h4>{article.title}</h4>
+              <h3>{article.title}</h3>
               <p>{article.desc}</p>
             </div>
             <Link href={`/news/${article.slug}`} className="btn">

@@ -30,7 +30,7 @@ const News = ({news, menu, footer, info}: any) => {
                     />
                   </div>
                   <span>{article.date}</span>
-                  <h4>{article.title}</h4>
+                  <h2>{article.title}</h2>
                   <p>{article.desc}</p>
                 </div>
                 <Link href={`/news/${article.slug}`} className="btn">

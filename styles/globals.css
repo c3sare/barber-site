@@ -422,7 +422,7 @@ main {
 .photoBox {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-evenly;
   width: 100%;
   max-width: 1920px;
   margin: 0 auto;
