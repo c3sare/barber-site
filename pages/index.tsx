@@ -61,7 +61,7 @@ export default function Home(
   }, [actualSlide, slideData]);
 
   return (
-    <Layout info={info} menu={menu} footer={footer} title="Strona Główna">
+    <Layout info={info} menu={menu} footer={footer} title={menu.find(item => item.slug === "")!.title}>
     <div className="container" style={{ width: "100%", padding: "0" }}>
       <div className={styles.slider}>
         <div className={styles.sliderView}>

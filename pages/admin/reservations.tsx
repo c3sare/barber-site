@@ -17,7 +17,7 @@ export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req }) {
       const user = req.session.user;
   
-      if (user?.isLoggedIn !== true) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.reservations) {
         return {
           notFound: true,
         };

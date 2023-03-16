@@ -13,6 +13,7 @@ import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import SaveIcon from '@mui/icons-material/Save';
+import getMenu from "@/lib/getMenu";
 
 const AdminPanelIndex = ({permissions={}}: any) => {
   const router = useRouter();
@@ -160,10 +161,14 @@ const AdminPanelIndex = ({permissions={}}: any) => {
 export default AdminPanelIndex;
 
 export const getServerSideProps = withIronSessionSsr(
-    async function getServerSideProps({ req }) {
+    async function getServerSideProps({ req, query }) {
       const user = req.session.user;
+
+      const menu = await getMenu();
+
+      const node = menu.find((item:any) => item._id === query.id);
   
-      if (user?.isLoggedIn !== true || !user?.permissions.menu) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.menu || node === undefined) {
         return {
           notFound: true,
         };

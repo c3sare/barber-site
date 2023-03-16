@@ -568,7 +568,7 @@ export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
 
-    if (user?.isLoggedIn !== true || !user?.permissions.footer) {
+    if (user?.isLoggedIn !== true || !user?.permissions?.footer) {
       return {
         redirect: {
           destination: '/admin',

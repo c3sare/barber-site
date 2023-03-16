@@ -107,7 +107,7 @@ const AddNews = ({permissions={}, data}: any) => {
 
     return (
         <Layout perms={permissions}>
-            <h1>Tworzenie artykułu</h1>
+            <h1>Edycja artykułu</h1>
             <form onSubmit={handleSubmit(handleSendData)} style={{textAlign: "center", margin: "0 auto", maxWidth: "550px"}}>
                 <div>
                     <img
@@ -244,7 +244,7 @@ export const getServerSideProps = withIronSessionSsr(
       const data = (await getData("news")).find((item:any) => item._id === query.id);
 
   
-      if (user?.isLoggedIn !== true || !user?.permissions?.news || data === null) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.news || data === undefined) {
         return {
           notFound: true,
         };
@@ -254,7 +254,7 @@ export const getServerSideProps = withIronSessionSsr(
   
       return {
         props: {
-          data: {...data, content},
+          data: {...data, content: JSON.parse(content)},
           permissions: req.session.user?.permissions,
         },
       };

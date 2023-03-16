@@ -230,12 +230,15 @@ export const getServerSideProps = withIronSessionSsr(
       const user = req.session.user;
       const menu:MenuItemDB[] = await getMenu();
       const costs:CostsData[] = await getData("costs");
+
+      const data = costs.find(item => item._id === query.id);
   
       if(
         user?.isLoggedIn !== true ||
-        !user?.permissions.menu ||
+        !user?.permissions?.menu ||
         menu.find(item => item.slug === "costs")?.custom ||
-        !costs.find((item:any) => item._id === query.id)
+        !costs.find((item:any) => item._id === query.id) ||
+        data === undefined
       ) {
         return {
           notFound: true,
@@ -244,7 +247,7 @@ export const getServerSideProps = withIronSessionSsr(
   
       return {
         props: {
-          data: costs.find(item => item._id === query.id),
+          data,
           permissions: req.session.user?.permissions,
         },
       };

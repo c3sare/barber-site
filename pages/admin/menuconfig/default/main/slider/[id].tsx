@@ -16,6 +16,7 @@ import { blueGrey } from "@mui/material/colors";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import React from "react";
 import getData from "@/utils/getData";
+import getMenu from "@/lib/getMenu";
 
 interface Slide {
     title: string,
@@ -250,9 +251,13 @@ export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req, query }) {
       const user = req.session.user;
 
+      const menu = await getMenu();
+
+      const main = menu.find((item:any) => item.slug === "" && item.custom);
+
       const data = (await getData("slides")).find((item:any) => item._id === query.id);
   
-      if (user?.isLoggedIn !== true || data === undefined) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.menu || main === undefined || data === undefined) {
         return {
           notFound: true,
         };

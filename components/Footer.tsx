@@ -2,6 +2,7 @@ import style from "@/styles/footer.module.css";
 import Link from "next/link";
 import InfoData from "@/lib/types/InfoData";
 import FooterData from "@/lib/types/FooterData";
+import Image from "next/image";
 
 const Footer = ({footerData, info}: {footerData: FooterData, info: InfoData}) => {
 
@@ -9,15 +10,31 @@ const Footer = ({footerData, info}: {footerData: FooterData, info: InfoData}) =>
     <div className={style.footer}>
       <div className={style.mainContent}>
         <div className={style.descBox}>
-          <img className={style.logo} src={`/images/${footerData.logo}`} alt="Logo" width="200px" height="auto"/>
+          <div
+            style={{
+              width: "200px",
+              height: "45px",
+              position: "relative"
+            }}
+          >
+            <Image
+              src={`/images/${footerData.logo}`}
+              alt="Logo Dolne"
+              fill
+              sizes="(max-width: 1200px) 200px,
+              (max-width: 1024px) 150px,
+              (max-width: 768px) 100px,
+              100px"
+            />
+          </div>
           <p>{footerData?.desc}</p>
           {footerData.btnMore &&
             (footerData.btnLink!.indexOf("http") === 0 ? (
-              <a href={footerData.btnLink!} className={style.btn}>
+              <a href={footerData.btnLink!} className="btn">
                 {footerData.btnTitle}
               </a>
             ) : (
-              <Link className={style.btn} href={footerData.btnLink!}>
+              <Link className="btn" href={footerData.btnLink!}>
                 {footerData.btnTitle}
               </Link>
             ))}

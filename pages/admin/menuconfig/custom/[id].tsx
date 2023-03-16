@@ -82,7 +82,7 @@ export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req }) {
       const user = req.session.user;
   
-      if (user?.isLoggedIn !== true || !user?.permissions.menu) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.menu) {
         return {
           notFound: true,
         };

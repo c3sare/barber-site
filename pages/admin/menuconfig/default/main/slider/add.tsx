@@ -14,6 +14,7 @@ import CTextArea from "@/componentsAdminPanel/elements/CTextArea";
 import { blueGrey } from "@mui/material/colors";
 import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import React from "react";
+import getMenu from "@/lib/getMenu";
 
 interface Slide {
     title: string,
@@ -209,10 +210,14 @@ const SliderAddPage = ({permissions={}}: any) => {
 export default SliderAddPage;
 
 export const getServerSideProps = withIronSessionSsr(
-    async function getServerSideProps({ req, query }) {
+    async function getServerSideProps({ req }) {
       const user = req.session.user;
+
+      const menu = await getMenu();
+
+      const main = menu.find((item: any) => item.custom && item.slug === "");
   
-      if (user?.isLoggedIn !== true) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.menu || main === undefined) {
         return {
           notFound: true,
         };

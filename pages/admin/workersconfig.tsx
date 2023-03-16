@@ -6,7 +6,7 @@ const AdminPanelWorkersConfig = ({permissions}: any) => {
 
     return (
         <Layout perms={permissions}>
-
+          
         </Layout>
     )
 }
@@ -17,7 +17,7 @@ export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req }) {
       const user = req.session.user;
   
-      if (user?.isLoggedIn !== true) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.workers) {
         return {
           notFound: true,
         };

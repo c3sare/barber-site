@@ -127,9 +127,9 @@
   .showHideSubMenu {
     position: absolute;
     right: 10px;
-    top: 11px;
-    width: 25px;
-    height: 25px;
+    top: 19px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     transition: transform 0.3s;
   }
@@ -139,7 +139,7 @@
     position: absolute;
     top: calc(50% - 2px);
     left: 0;
-    width: 25px;
+    width: 20px;
     height: 4px;
     background-color: white;
   }
@@ -147,10 +147,10 @@
   .showHideSubMenu:after {
     content: "";
     position: absolute;
-    left: calc(50% - 3px);
+    left: calc(50% - 2px);
     top: 0;
     width: 4px;
-    height: 25px;
+    height: 20px;
     background-color: white;
     opacity: 0;
     transition: opacity .3s;

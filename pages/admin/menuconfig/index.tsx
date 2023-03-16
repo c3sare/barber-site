@@ -383,7 +383,7 @@ export const getServerSideProps = withIronSessionSsr(
       const user = req.session.user;
       const menu = await getMenu();
   
-      if (user?.isLoggedIn !== true || !user?.permissions.footer) {
+      if (user?.isLoggedIn !== true || !user?.permissions?.menu) {
         return {
           notFound: true,
         };
