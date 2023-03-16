@@ -5,7 +5,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const data = await getDataOne("barbers");
-
-  res.json(data);
+  if(req.method === "GET") {
+    const data = await getDataOne("barbers");
+    res.json(data);
+  } else {
+    res.json({error: true});
+  }
 }
