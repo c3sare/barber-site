@@ -48,7 +48,7 @@ const CTextField = styled(TextField)(({theme}) => ({
     },
     "& .MuiInput-icon": {
           color: "#ffffff"
-    },
+    }
 }));
 
   export default CTextField;

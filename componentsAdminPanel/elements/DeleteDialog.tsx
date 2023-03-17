@@ -15,11 +15,13 @@ interface DialogState {
 }
 
 export default function DeleteDialog({
+  id="_id",
   url,
   open,
   setOpen,
   setState
 }:{
+  id?: string,
   url: string,
   open: {
     id: string,
@@ -53,7 +55,7 @@ export default function DeleteDialog({
 
     if(!res.error) {
       setTimeout(() => setState((prevState:any[]) => {
-        return prevState.filter(item => item._id !== open.id);
+        return prevState.filter(item => item[id] !== open.id);
       }), 250);
     } else {
       console.log("Nie udało wykonać usunięcia!")
