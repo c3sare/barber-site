@@ -1,4 +1,4 @@
-import { getDataOne } from "@/utils/getData";
+import getData from "@/utils/getData";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -6,7 +6,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if(req.method === "GET") {
-    const data = await getDataOne("barbers");
+    const data = await getData("barbers");
     res.json(data);
   } else {
     res.json({error: true});

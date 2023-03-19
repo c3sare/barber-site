@@ -4,7 +4,11 @@ import FooterData from "@/lib/types/FooterData";
 import InfoData from "@/lib/types/InfoData";
 import MenuItem from "@/lib/types/MenuItem";
 import { getDataOne } from "@/utils/getData";
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { format } from 'date-fns';
+import { ClassNames, DayPicker } from 'react-day-picker';
+import styles from 'react-day-picker/dist/style.css';
+import {pl} from "date-fns/locale";
 
 const Reservations = ({
   menu,
@@ -26,9 +30,9 @@ const Reservations = ({
 
   const today = `${year}-${month}-${day}`;
 
-  const [currentDate, setCurrentDate] = useState<string>(today);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [barbers, setBarbers] = useState<any>([]);
-  const [currentBarber, setCurrentBarber] = useState<string>("0");
+  const [currentBarber, setCurrentBarber] = useState<number>(0);
   const [dates, setDates] = useState<any>([]);
   const [selectedTime, setSelectedTime] = useState<any>("00:00");
   const [showReservForm, setShowReservForm] = useState<any>(false);
@@ -103,8 +107,8 @@ const Reservations = ({
     };
     setSending(true);
     fetch(
-        `/api/reservations/barber/${currentBarber}/${currentDate}`, {
-            method: "POST",
+        `/api/reservations/${barbers[currentBarber]._id}/${format(currentDate || new Date(), 'yyyy-MM-dd')}`, {
+            method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=utf-8",
             },
@@ -131,26 +135,30 @@ const Reservations = ({
 
   const handleGetBarbers = () => {
     fetch(`/api/reservations/barbers`)
-      .then((barbers:any) => setBarbers(barbers.data))
-      .catch((error) => {
-        console.log(error);
-        setError(true);
-      });
+    .then(res => res.json())
+    .then((barbers:any) => setBarbers(barbers))
+    .catch((error) => {
+      console.log(error);
+      setError(true);
+    });
   };
 
   const handleGetDate = useCallback(() => {
-    setLoading(true);
-    fetch(`/api/reservations/barber/${currentBarber}/${currentDate}`)
-    .then((dates:any) => {
-        setDates(dates.data);
-        setLoading(false);
-    })
+    if(barbers.length > 0) {
+      setLoading(true);
+      fetch(`/api/reservations/${barbers[currentBarber]._id}/${format(currentDate || new Date(), 'yyyy-MM-dd')}`)
+      .then(res => res.json())
+      .then((dates:any) => {
+          setDates(dates);
+          setLoading(false);
+      })
       .catch((error) => {
         console.log(error);
         setError(true);
         setLoading(false);
       });
-  }, [currentBarber, currentDate]);
+  }
+  }, [currentBarber, currentDate, barbers]);
 
   useEffect(() => {
     handleGetBarbers();
@@ -160,24 +168,15 @@ const Reservations = ({
     handleGetDate();
   }, [handleGetDate]);
 
-  if (currentDate < today) setCurrentDate(today);
+  if (format(currentDate || new Date(), 'yyyy-MM-dd') < today) setCurrentDate(new Date());
 
-  const selectBarber = barbers?.length > 0 ? barbers.map((barber:any) => (
-    <option key={barber.id} value={`${barber.id}`}>
+  const selectBarber = barbers?.length > 0 ? barbers.map((barber:any, i:number) => (
+    <option key={barber._id} value={i}>
       {barber.name}
     </option>
   )) : [];
 
-  const reservTimeList = dates?.[0]?.times
-    ?.filter(
-      (item:any) =>
-        !item.reserved &&
-        !item.confirmed &&
-        !item.expired &&
-        (item.reservedDate < new Date().getTime() ||
-          item.reservedDate.length === 0)
-    )
-    .map((item:any) => (
+  const reservTimeList = dates.map((item:any) => (
       <li key={item.time}>
         <span>{item.time}</span>
         <button
@@ -195,29 +194,37 @@ const Reservations = ({
       </li>
     ));
 
+    const classNames: ClassNames = {
+      ...styles,
+      root: 'rdp customdp'
+    };
+
   return (
     <Layout title="Rezerwacje" menu={menu} footer={footer} info={info}>
       <div className="container">
         <h1>Rezerwacje</h1>
-        {formMsg.msg.length > 0 && (
-          <h5 style={{ color: "red" }}>{formMsg.msg}</h5>
-        )}
-        <input
-          value={currentDate}
-          onChange={(e) => setCurrentDate(e.target.value)}
-          min={today}
-          type="date"
+        <DayPicker
+          classNames={classNames}
+          mode="single"
+          locale={pl}
+          selected={currentDate}
+          defaultMonth={new Date()}
+          onSelect={setCurrentDate as any}
         />
         {barbers?.length > 0 && (
           <>
-            <label htmlFor="barber">Wybierz Fryzjera:</label>
-            <select
-              name="barber"
-              value={currentBarber}
-              onChange={(e) => setCurrentBarber(e.target.value)}
-            >
-              {selectBarber}
-            </select>
+            <div>
+              <label htmlFor="barber">
+                <span>Wybierz Fryzjera:</span>
+                <select
+                name="barber"
+                value={currentBarber}
+                onChange={(e) => setCurrentBarber(Number(e.target.value))}
+              >
+                {selectBarber}
+              </select>
+              </label>
+            </div>
           </>
         )}
         <ul className="reservList">
@@ -239,7 +246,7 @@ const Reservations = ({
       </div>
       {showReservForm && (
         <div className="reservForm">
-          <h5>Data: {currentDate}</h5>
+          <h5>Data: {format(currentDate || new Date(), 'yyyy-MM-dd')}</h5>
           <h5>Fryzjer: {barbers[Number(currentBarber)].name}</h5>
           <h5>Godzina: {selectedTime}</h5>
           <form>

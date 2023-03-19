@@ -410,6 +410,18 @@ main {
   list-style: none;
 }
 
+.customdp > div {
+  justify-content: center;
+}
+
+.customdp .rdp-day_selected, .customdp .rdp-day_selected:focus-visible, .customdp .rdp-day_selected:hover {
+  background-color: #a89d8e;
+}
+
+.customdp .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: rgb(168, 157, 142, 0.5);
+}
+
 .costBox > li > ul > li {
   width: 50%;
   border: 1px solid black;

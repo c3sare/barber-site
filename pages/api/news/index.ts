@@ -55,15 +55,6 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   } else if(req.method === "PUT") {
     const session = req.session.user;
     const {title, desc, date, content, img}:any = await handlePostFormReq(req, res);
-    console.log(titleRegex.test(title));
-    console.log(title?.length > 0);
-    console.log(title?.length <= 80);
-    console.log(descRegex.test(desc));
-    console.log(desc.length > 0);
-    console.log(desc.length <= 400);
-    console.log(dateRegex.test(date));
-    console.log(img.mimetype.indexOf("image") === 0);
-    console.log(img.size < 1024*1024*5);
     if(
       session?.isLoggedIn &&
       session.permissions.news &&

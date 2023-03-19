@@ -34,11 +34,11 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === "GET") {
     const session = req.session.user;
     if(session?.isLoggedIn && session.permissions.reservations) {
-        const {id, date, time} = req.query;
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("reservations");
-        const list = await tab.findOne({barber_id: id, date});
+      const {id, date, time} = req.query;
+      const client = new MongoClient(process.env.MONGO_URI as string);
+      const database = client.db("site");
+      const tab = database.collection("reservations");
+      const list = await tab.findOne({barber_id: id, date});
         if(list !== null) {
             const timeFromList = list.times.find((item:any) => item.time === time);
             if(timeFromList !== undefined) {
@@ -48,7 +48,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
             res.json({});
         }
     } else {
-        res.json({error: true});
+        res.json({});
     }
   } else if(req.method === "POST") {
     const session = req.session.user;
