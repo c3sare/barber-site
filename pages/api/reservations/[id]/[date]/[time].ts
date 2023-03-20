@@ -164,10 +164,10 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
               });
   
                 let mailOptions = {
-                  from: 'c3saren@gmail.com',
+                  from: config.mail,
                   to: mail,
-                  subject: 'Twoja rezerwacja została potwierdzona',
-                  text: `Witaj ${firstname} ${lastname},\nData: ${date}\nCzas:${time}\n\nRezerwacja została potwierdzona,\naby anulować rezerwację skontaktuj się z nami\nlub kliknij poniższy link.\n \n${req.headers.referer?.slice(0, req.headers.referer.indexOf("://"))+"://"+req.headers.host}/reservations/confirm/${day._id}/${token}`
+                  subject: 'Potwierdź swoją rezerwację',
+                  text: `Witaj ${firstname} ${lastname},\nData: ${date}\nCzas:${time}\n\nAby potiwierdźić rezerwację skontaktuj się z nami\nlub kliknij poniższy adres strony.\n \n${req.headers.referer?.slice(0, req.headers.referer.indexOf("://"))+"://"+req.headers.host}/reservations/confirm/${day._id}/${token}`
                 };
   
                 transporter.sendMail(mailOptions, function(err:any, data:any) {

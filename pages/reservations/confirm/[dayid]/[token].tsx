@@ -5,6 +5,7 @@ import { MongoClient, ObjectId } from 'mongodb';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import nodemailer from "nodemailer";
 
 const PageNotFound = ({menu, footer, info, result}: any) => {
     const router = useRouter();
@@ -39,7 +40,7 @@ const PageNotFound = ({menu, footer, info, result}: any) => {
  
 export default PageNotFound;
 
-export async function getServerSideProps({query}:any) {
+export async function getServerSideProps({req, query}:any) {
     const menu = await getMenu();
     const footer = await getDataOne("footer");
     const info = await getDataOne("info");
@@ -55,7 +56,6 @@ export async function getServerSideProps({query}:any) {
         const newTimes = [...day.times].map((item: any) => {
             if(item.token === token) {
                 item.reserved = true;
-                item.token = "";
                 item.reservedDate = "";
             }
             return item;
@@ -64,6 +64,37 @@ export async function getServerSideProps({query}:any) {
         const updateDay = await reservations.updateOne({_id}, {$set: {times: newTimes}});
 
         if(updateDay.acknowledged !== undefined) {
+            const mailConfig = database.collection("mailConfig");
+            const config:any = await mailConfig.findOne({});
+            if(config !== null) {
+              const transporter = nodemailer.createTransport({
+                host: config.host,
+                port: config.port,
+                secure: false,
+                auth: {
+                    user: config.mail,
+                    pass: config.pwd,
+                },
+            });
+
+            const {person, mail, time} = day.find((item:any) => item.token === token);
+
+              let mailOptions:any = {
+                from: config.mail,
+                to: mail,
+                subject: 'Twoja rezerwacja została potwierdzona',
+                text: `Witaj ${person},\nData: ${day.date}\nCzas:${time}\n\nTwoja rezerwacja została potwierdzona, skontaktuj się z nami\nlub kliknij poniższy adres strony jeśli chcesz z niej zrezygnować.\n \n${req.headers.referer?.slice(0, req.headers.referer.indexOf("://"))+"://"+req.headers.host}/reservations/cancel/${day._id}/${token}`
+              };
+
+              transporter.sendMail(mailOptions, function(err:any, data:any) {
+                if (err) {
+                  console.log("Error " + err);
+                } else {
+                  console.log("Email to confirm reservation is sent.");
+                }
+              });
+            }
+
             return {
                 props: {
                   menu,
