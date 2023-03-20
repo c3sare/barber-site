@@ -34,9 +34,11 @@
     "eslint": "8.32.0",
     "eslint-config-next": "13.1.5",
     "formidable": "^2.1.1",
+    "imapflow": "^1.0.122",
     "iron-session": "^6.3.1",
     "mongodb": "^4.13.0",
     "next": "13.1.5",
+    "nodemailer": "^6.9.1",
     "react": "18.2.0",
     "react-complex-tree": "^2.0.4",
     "react-day-picker": "^8.6.0",
@@ -58,6 +60,8 @@
     "@types/bcrypt": "^5.0.0",
     "@types/date-fns": "^2.6.0",
     "@types/formidable": "^2.0.5",
+    "@types/imapflow": "^1.0.12",
+    "@types/nodemailer": "^6.4.7",
     "@types/react-syntax-highlighter": "^15.5.6",
     "@types/styled-components": "^5.1.26"
   }

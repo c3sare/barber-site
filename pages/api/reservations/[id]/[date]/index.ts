@@ -17,10 +17,11 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     const tab = database.collection("reservations");
     const list = await tab.findOne({barber_id: id, date});
     if(list !== null) {
+      const filteredItems = list.times.filter((item:any) => (item.reserved === false && item.reservedDate < new Date().getTime()) || item.reservedDate === "" && item.token === "");
       if(session?.isLoggedIn && session.permissions.reservations) {
-        res.json(list.times);
+        res.json(filteredItems);
       } else {
-        res.json(list.times.filter((item:any) => !item.reserved).map((item:any) => ({
+        res.json(filteredItems.map((item:any) => ({
           time: item.time
         })))
       }

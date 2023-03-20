@@ -1,7 +1,8 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
+import nodemailer from "nodemailer";
 
 interface ReservationTime {
   reserved: boolean,
@@ -10,6 +11,21 @@ interface ReservationTime {
   person: string,
   phone: string
 }
+
+const getTodayDate = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month =
+    date.getMonth() + 1 < 10
+      ? "0" + (date.getMonth() + 1)
+      : date.getMonth() + 1;
+  const day = date.getDate() < 10 ? "0" + date.getDate() : date.getDate();
+
+  return `${year}-${month}-${day}`;
+}
+
+const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
+const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
 
 const checkFetchData = (data:ReservationTime) => {
   const personRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
@@ -32,6 +48,7 @@ export default withIronSessionApiRoute(reservationsRoute, sessionOptions);
 
 async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === "GET") {
+    console.log(req.url);
     const session = req.session.user;
     if(session?.isLoggedIn && session.permissions.reservations) {
       const {id, date, time} = req.query;
@@ -100,7 +117,81 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.json({error: true});
     }
+  } else if(req.method === "PUT") {
+    const {id, date, time} = req.query;
+    if(
+      id !== undefined &&
+      date !== undefined &&
+      time !== undefined &&
+      timeRegex.test(time as string) &&
+      dateRegex.test(date as string) &&
+      (date as any) >= getTodayDate()
+    ) {
+      const {firstname, lastname, phone, mail} = req.body;
+      const client = new MongoClient(process.env.MONGO_URI as string);
+      const database = client.db("site");
+      const barbers = database.collection("barbers");
+      const reservations = database.collection("reservations");
+      const checkBarber = await barbers.findOne({_id: new ObjectId(id as string)});
+      if(checkBarber !== null) {
+        const day = await reservations.findOne({date, barber_id: id});
+        if(day !== null) {
+          if(day.times.filter((item:any) => item.time === time).length === 1) {
+            const token = Math.random().toString(36).slice(-8);
+            day.times.forEach((item:any) => {
+              if(item.time === time) {
+                item.person = firstname + " " + lastname;
+                item.phone = phone;
+                item.mail = mail;
+                item.reservedDate = new Date().getTime() + (1000*60*5);
+                item.token = token;
+              }
+            });
+            const updateDay = await reservations.updateOne({barber_id: id, date}, {$set: {times: day.times}});
+
+            if(updateDay.acknowledged !== undefined) {
+              const mailConfig = database.collection("mailConfig");
+              const config:any = await mailConfig.findOne({});
+              if(config !== null) {
+                const transporter = nodemailer.createTransport({
+                  host: config.host,
+                  port: config.port,
+                  secure: false,
+                  auth: {
+                      user: config.mail,
+                      pass: config.pwd,
+                  },
+              });
+  
+                let mailOptions = {
+                  from: 'c3saren@gmail.com',
+                  to: mail,
+                  subject: 'Twoja rezerwacja została potwierdzona',
+                  text: `Witaj ${firstname} ${lastname},\nData: ${date}\nCzas:${time}\n\nRezerwacja została potwierdzona,\naby anulować rezerwację skontaktuj się z nami\nlub kliknij poniższy link.\n \n${req.headers.referer?.slice(0, req.headers.referer.indexOf("://"))+"://"+req.headers.host}/reservations/confirm/${day._id}/${token}`
+                };
+  
+                transporter.sendMail(mailOptions, function(err:any, data:any) {
+                  if (err) {
+                    console.log("Error " + err);
+                  } else {
+                    console.log("Email to confirm reservation is sent.");
+                  }
+                });
+              }
+
+              res.json({error: false, msg: "Rezerwacja została pomyślnie żłożona!"});
+            } else {
+              res.json({error: true, msg: "Wystąpił błąd przy rezerwacji!"});
+            }
+          } else res.json({error: true, msg: "Wystąpił błąd przy rezerwacji!"});
+        } else {
+          res.json({error: true, msg: "Wystąpił błąd przy rezerwacji!"});
+        }
+      } else {
+        res.json({error: true, msg: "Wystąpił błąd przy rezerwacji!"});
+      }
+    }
   } else {
-    res.json({error: true});
+    res.json({error: true, msg: "Wystąpił błąd przy rezerwacji!"});
   }
 }

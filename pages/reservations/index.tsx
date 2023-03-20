@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { ClassNames, DayPicker } from 'react-day-picker';
 import styles from 'react-day-picker/dist/style.css';
 import {pl} from "date-fns/locale";
+import { Divider } from "@mui/material";
 
 const Reservations = ({
   menu,
@@ -99,7 +100,6 @@ const Reservations = ({
     if (error) return;
 
     const reservationForm = {
-      time: selectedTime,
       firstname: formName,
       lastname: formSurName,
       mail: formMail,
@@ -107,7 +107,7 @@ const Reservations = ({
     };
     setSending(true);
     fetch(
-        `/api/reservations/${barbers[currentBarber]._id}/${format(currentDate || new Date(), 'yyyy-MM-dd')}`, {
+        `/api/reservations/${barbers[currentBarber]._id}/${format(currentDate, 'yyyy-MM-dd')}/${selectedTime}`, {
             method: "PUT",
             headers: {
                 "Content-type": "application/json; charset=utf-8",
@@ -117,20 +117,20 @@ const Reservations = ({
         }
       )
       .then((data:any) => {
-        setFormMsg({ ok: data.data.error, msg: data.data.msg });
-        setSending(false);
-        setTimeout(() => {
-          setFormMsg({ ok: false, msg: "" });
-          console.log(data.data!.data!);
-        }, 4000);
-        clearReservationForm();
-        setShowReservForm(false);
-        handleGetDate();
+        setFormMsg({ ok: data.error, msg: data.msg });
       })
       .catch((error) => {
-        setSending(false);
         setFormMsg({ ok: false, msg: `Wystąpił błąd - ${error}` });
-      });
+      })
+      .finally(() => {
+        clearReservationForm();
+        setShowReservForm(false);
+        setTimeout(() => {
+          setFormMsg({ ok: false, msg: "" });
+        }, 4000);
+        setSending(false);
+        handleGetDate();
+      })
   };
 
   const handleGetBarbers = () => {
@@ -146,7 +146,7 @@ const Reservations = ({
   const handleGetDate = useCallback(() => {
     if(barbers.length > 0) {
       setLoading(true);
-      fetch(`/api/reservations/${barbers[currentBarber]._id}/${format(currentDate || new Date(), 'yyyy-MM-dd')}`)
+      fetch(`/api/reservations/${barbers[currentBarber]._id}/${format(currentDate, 'yyyy-MM-dd')}`)
       .then(res => res.json())
       .then((dates:any) => {
           setDates(dates);
@@ -168,7 +168,7 @@ const Reservations = ({
     handleGetDate();
   }, [handleGetDate]);
 
-  if (format(currentDate || new Date(), 'yyyy-MM-dd') < today) setCurrentDate(new Date());
+  if (format(currentDate, 'yyyy-MM-dd') < today) setCurrentDate(new Date());
 
   const selectBarber = barbers?.length > 0 ? barbers.map((barber:any, i:number) => (
     <option key={barber._id} value={i}>
@@ -203,14 +203,6 @@ const Reservations = ({
     <Layout title="Rezerwacje" menu={menu} footer={footer} info={info}>
       <div className="container">
         <h1>Rezerwacje</h1>
-        <DayPicker
-          classNames={classNames}
-          mode="single"
-          locale={pl}
-          selected={currentDate}
-          defaultMonth={new Date()}
-          onSelect={setCurrentDate as any}
-        />
         {barbers?.length > 0 && (
           <>
             <div>
@@ -227,6 +219,22 @@ const Reservations = ({
             </div>
           </>
         )}
+        {formMsg.msg &&
+          <span>{formMsg.msg}</span>
+        }
+        <DayPicker
+          classNames={classNames}
+          mode="single"
+          locale={pl}
+          selected={currentDate}
+          defaultMonth={new Date()}
+          onSelect={(e) => {
+            if(e !== undefined && format(e, 'yyyy-MM-dd') >= (today as any))
+              setCurrentDate(e as any);
+          }}
+        />
+        <Divider sx={{margin: "16px"}}/>
+        <h2>Terminy dostępne w wybranym dniu</h2>
         <ul className="reservList">
           {!loading ? (
             reservTimeList?.length > 0 ? (
@@ -246,7 +254,7 @@ const Reservations = ({
       </div>
       {showReservForm && (
         <div className="reservForm">
-          <h5>Data: {format(currentDate || new Date(), 'yyyy-MM-dd')}</h5>
+          <h5>Data: {format(currentDate, 'yyyy-MM-dd')}</h5>
           <h5>Fryzjer: {barbers[Number(currentBarber)].name}</h5>
           <h5>Godzina: {selectedTime}</h5>
           <form>
