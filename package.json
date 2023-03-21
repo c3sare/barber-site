@@ -34,7 +34,6 @@
     "eslint": "8.32.0",
     "eslint-config-next": "13.1.5",
     "formidable": "^2.1.1",
-    "imapflow": "^1.0.122",
     "iron-session": "^6.3.1",
     "mongodb": "^4.13.0",
     "next": "13.1.5",
