@@ -52,7 +52,7 @@ export async function getServerSideProps({req, query}:any) {
     const _id = new ObjectId(dayid);
     const day = await reservations.findOne({_id});
 
-    if(day !== null && day.times.filter((item:any) => !item.reserved && item.token === token)) {
+    if(day !== null && day.times.filter((item:any) => !item.reserved && item.token === token).length === 1) {
         const newTimes = [...day.times].map((item: any) => {
             if(item.token === token) {
                 item.reserved = true;
@@ -77,7 +77,7 @@ export async function getServerSideProps({req, query}:any) {
                 },
             });
 
-            const {person, mail, time} = day.find((item:any) => item.token === token);
+            const {person, mail, time} = day.times.find((item:any) => item.token === token);
 
               let mailOptions:any = {
                 from: config.mail,

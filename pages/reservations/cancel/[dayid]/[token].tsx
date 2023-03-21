@@ -12,16 +12,20 @@ const PageNotFound = ({menu, footer, info, result}: any) => {
 
     useEffect(() => {
         const x = setInterval(() => {
-            if(timer > 0) {
-                setTimer(prev => prev-1);
-            } else {
-                router.push("/");
-            }
+            setTimer(prev => {
+                if(prev === 1) {
+                    router.push("/");
+                    clearInterval(x);
+                }
+                return prev-1;
+            });
         }, 1000);
+
+        return () => clearInterval(x);
     }, []);
 
     return (
-        <Layout menu={menu} footer={footer} info={info} title="404">
+        <Layout menu={menu} footer={footer} info={info} title="Anulowanie rezerwacji">
             <div className="errorPage">
                 <h1>Anulowanie rezerwacji</h1>
                 <p>
@@ -46,7 +50,7 @@ export async function getServerSideProps({req, query}:any) {
     const reservations = database.collection("reservations");
     const day = await reservations.findOne({_id: new ObjectId(dayid)});
 
-    if(day !== null && day.times.filter((item:any) => item.reserved && item.token === token)) {
+    if(day !== null && day.times.filter((item:any) => item.reserved && item.token === token).length === 1) {
         day.times.forEach((item: any) => {
             if(item.token === token && item.reserved) {
                 item.reserved = false;

@@ -110,7 +110,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
               times: [itemToAdd]
             });
             if(insert.acknowledged !== undefined) {
-              res.json({error: false});
+              res.json({error: false, item: itemToAdd});
             } else {
               res.json({error: true});
             }
