@@ -1,4 +1,4 @@
-import CButton from "@/componentsAdminPanel/elements/CButton";
+import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout"
 import { sessionOptions } from "@/lib/AuthSession/Config";
@@ -6,36 +6,21 @@ import { getDataOne } from "@/utils/getData";
 import { Box, Grid } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { FaSave } from "react-icons/fa";
 
 const AdminPanelBasicConfig = ({permissions, data}: any) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const currentYear = new Date().getFullYear();
   const [msg, setMsg] = useState("");
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const companyName = register("companyName", {
-    required: true,
-    pattern: /^[a-zA-Z][a-zA-Z0-9-_.\s]{1,20}$/i,
-    minLength: 2,
-    maxLength: 20,
-  });
-  const slogan = register("slogan", {
-    maxLength: 20,
-    pattern: /^[a-zA-Z][a-zA-Z0-9-_.\s]{1,20}$/i,
-  });
-  const {onBlur, onChange, ref, name } = register("yearOfCreate", {
-    required: true,
-    pattern: /^\d{4}$/i,
-    min: 1900,
-    max: currentYear,
-  });
-
   const handleSendForm = (data:any) => {
+    setLoading(true);
     fetch("/api/info", {
       method: "POST",
       body: JSON.stringify(data),
@@ -54,7 +39,10 @@ const AdminPanelBasicConfig = ({permissions, data}: any) => {
         console.log(error);
         setMsg("Wystąpił błąd przy wysyłaniu!");
         setTimeout(() => setMsg(""), 5000);
-      });
+      })
+      .finally(() => {
+        setLoading(false);
+      })
   };
 
     return (
@@ -66,65 +54,121 @@ const AdminPanelBasicConfig = ({permissions, data}: any) => {
             justifyContent="center"
             direction="column"
           >
-            <form onSubmit={handleSubmit(handleSendForm)} autoComplete="off">
-              <Box pb={2}>
-                <CTextField
-                  {...companyName}
+            <form onSubmit={handleSubmit(handleSendForm)} autoComplete="off" style={{width: "100%", maxWidth: "550px", margin: "0 auto", textAlign: "center"}}>
+              <Box pb={1}>
+                <Controller
+                  control={control}
                   defaultValue={data.companyName}
-                  variant="outlined"
-                  id="companyName"
-                  label="Nazwa Strony"
-                  error={errors.companyName ? true : false}
-                  helperText={
-                    errors.companyName ? "Pole nie może być puste!" : false
-                  }
-                />
-              </Box>
-
-              <Box pb={2}>
-                <CTextField
-                  {...slogan}
-                  defaultValue={data.slogan}
-                  variant="outlined"
-                  id="slogan"
-                  label="Motto"
-                  error={errors.slogan ? true : false}
-                  helperText={
-                    errors.slogan ? "Minimum 2 znaki, Maxymalnie 20!" : false
-                  }
-                />
-              </Box>
-              <Box pb={2}>
-                <CTextField
-                  fullWidth
-                  onChange={(e) => {
-                    if(Number(e.target.value) < 1900) {
-                      e.target.value = "1900"
-                    } else if(Number(e.target.value) > currentYear) {
-                      e.target.value = `${currentYear}`;
+                  name="companyName"
+                  rules={{
+                    required: "To pole jest wymagane.",
+                    pattern: {
+                      value: /^[a-zA-Z][a-zA-Z0-9-_.\s]{1,20}$/i,
+                      message: "Nieprawidłowo uzupełnione pole",
+                    },
+                    maxLength: {
+                      value: 20,
+                      message: "Max. ilość znaków to 20",
+                    },
+                    minLength: {
+                      value: 2,
+                      message: "Min. ilość znaków to 2"
                     }
-                      onChange(e);
                   }}
-                  onBlur={onBlur}
-                  name={name}
-                  inputRef={ref}
-                  defaultValue={data.yearOfCreate}
-                  variant="outlined"
-                  type="number"
-                  id="yearOfCreate"
-                  label="Rok założenia"
-                  error={errors.yearOfCreate ? true : false}
-                  helperText={
-                    errors.yearOfCreate
-                      ? `Przedział od 1900 do ${currentYear}!`
-                      : false
-                  }
-                  InputProps={{ inputProps: { min: 1900, max: currentYear } }}
+                  render={({
+                    field: { onChange, onBlur, value, ref, name },
+                  }) => (
+                    <CTextField
+                      disabled={loading}
+                      name={name}
+                      label="Nazwa strony"
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value}
+                      inputRef={ref}
+                      error={Boolean(errors.companyName)}
+                      helperText={errors.companyName?.message as string}
+                    />
+                  )}
                 />
               </Box>
-              <CButton startIcon={<FaSave />} type="submit" variant="contained" sx={{width: "100%"}}>
+              <Box pb={1}>
+                <Controller
+                  control={control}
+                  name="slogan"
+                  defaultValue={data.slogan}
+                  rules={{
+                    maxLength: {
+                      value: 20,
+                      message: "Max. długość to 20 znaków"
+                    },
+                    pattern: {
+                      value: /^[a-zA-Z][a-zA-Z0-9-_.\s]{1,20}$/i,
+                      message: "Pole nieprawidłowo uzupełnione"
+                    },
+                  }}
+                  render={({
+                    field: { onChange, onBlur, value, ref, name },
+                  }) => (
+                    <CTextField
+                      disabled={loading}
+                      name={name}
+                      label="Motto"
+                      onChange={onChange}
+                      onBlur={onBlur}
+                      value={value}
+                      inputRef={ref}
+                      error={Boolean(errors.slogan)}
+                      helperText={errors.slogan?.message as string}
+                    />
+                  )}
+                />
+              </Box>
+              <Box pb={1}>
+                <Controller
+                  control={control}
+                  name="yearOfCreate"
+                  defaultValue={data.yearOfCreate}
+                  rules={{
+                    required: "To pole jest wymagane",
+                    pattern: /^\d{4}$/i,
+                    min: {
+                      value:1900,
+                      message: "Min. wartość pola to 1900"
+                    },
+                    max: {
+                      value: currentYear,
+                      message: `Max. wartość pola to ${currentYear}`
+                    },
+                  }}
+                  render={({
+                    field: { onChange, onBlur, value, ref, name },
+                  }) => (
+                    <CTextField
+                      disabled={loading}
+                      name={name}
+                      type="number"
+                      label="Rok założenia"
+                      onChange={(e) => {
+                        if(Number(e.target.value) < 1900) {
+                          e.target.value = "1900"
+                        } else if(Number(e.target.value) > currentYear) {
+                          e.target.value = `${currentYear}`;
+                        }
+                          onChange(e);
+                      }}
+                      onBlur={onBlur}
+                      value={value}
+                      inputRef={ref}
+                      error={Boolean(errors.yearOfCreate)}
+                      helperText={errors.yearOfCreate?.message as string}
+                    />
+                  )}
+                />
+              </Box>
+              <CLoadingButton startIcon={<FaSave />} loadingPosition="start" disabled={loading} type="submit" loading={loading}>
                 Zapisz zmiany
-              </CButton>
+              </CLoadingButton>
             </form>
             {msg.length > 0 && <h5 style={{ textAlign: "center" }}>{msg}</h5>}
           </Grid>

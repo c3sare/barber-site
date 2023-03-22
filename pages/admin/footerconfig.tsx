@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
+import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextArea from "@/componentsAdminPanel/elements/CTextArea";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout"
@@ -44,7 +45,7 @@ const theme = createTheme({
 });
 
 const AdminPanelFooterConfig = ({permissions, data}: any) => {
-  const [sending, setSending] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const {
     register,
     formState: { errors },
@@ -71,32 +72,32 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
   const btnMore = watch("btnMore");
 
   const submitForm = (data:any) => {
-    console.log(data);
-    const fd = new FormData();
-    const newData = {...data};
-    if(data.logo instanceof Object) {
-      delete newData.logo;
-      fd.append("file", data.logo[0]);
-    }
-    fd.append("data", JSON.stringify(newData));
-    setSending(true);
+    setLoading(true);
 
     fetch("/api/footer", {
       method: "POST",
-      body: fd
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        linkBoxes: data.linkBoxes,
+        desc: data.desc,
+        btnMore: data.btnMore,
+        btnLink: data.btnLink,
+        btnTitle: data.btnTitle
+      })
     })
     .then(data => data.json())
     .then((data) => {
       if(!data.error) {
         createAlert("Dane zostały poprawnie wysłane!");
-        setValue("logo", data.logo);
       } else createAlert("Wystąpił problem przy aktualizacji danych!");
     })
     .catch(() => {
       createAlert("Wystąpił problem przy wysyłaniu danych!");
     })
     .finally(() => {
-      setSending(false);
+      setLoading(false);
     })
   };
 
@@ -141,6 +142,29 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
     });
   };
 
+  const {onBlur, ref, name} = register("logo");
+
+  const onChange = async (e:any) => {
+    if(e.target?.files?.length === 1) {
+      setLoading(true);
+      const fd = new FormData();
+      fd.append("logo", e.target.files[0]);
+      const data = await fetch("/api/footer/logo", {
+        method: "POST",
+        body: fd
+      }).then(res => res.json())
+      .then(data => {
+          return data;
+      })
+      if(!data.error) {
+          setValue("logo", data.img)
+      } else {
+          console.log("error");
+      }
+      setLoading(false);
+    }
+  }
+
     return (
         <Layout perms={permissions}>
       <h1>Konfiguracja Stopki</h1>
@@ -170,21 +194,20 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
             >
               <img
                 style={{ maxHeight: "72px" }}
-                src={
-                  typeof logo === "object"
-                    ? URL.createObjectURL(logo?.[0])
-                    : logo
-                    ? `/images/${logo}`
-                    : "/images/logo.png"
-                }
+                src={`/images/${logo}`}
                 alt="logo"
               />
               <ThemeProvider theme={theme}>
                 <label htmlFor="contained-button-file">
                   <Input
-                    {...register("logo")}
+                    onBlur={onBlur}
+                    ref={ref}
+                    name={name}
+                    onChange={onChange}
+                    disabled={loading}
                   />
                   <IconButton
+                    disabled={loading}
                     color="primary"
                     aria-label="upload picture"
                     component="span"
@@ -212,6 +235,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
               Opis
             </Typography>
             <CTextArea
+              disabled={loading}
               id="desc"
               style={{ height: "110px" }}
               {...register("desc", {
@@ -242,9 +266,11 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                 name="btnMore"
                 render={({ field: { onChange, onBlur, value, ref, name } }) => (
                   <FormControlLabel
+                    disabled={loading}
                     label="Pokazuj przycisk 'Więcej'"
                     control={
                       <CCheckbox
+                        disabled={loading}
                         color="default"
                         onChange={onChange}
                         name={name}
@@ -279,6 +305,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                         }}
                         render={({ field: { onChange, onBlur, value, ref, name } }) => (
                           <CTextField
+                            disabled={loading}
                             variant="outlined"
                             label="Nazwa przycisku"
                             onChange={onChange}
@@ -312,6 +339,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                         }}
                         render={({ field: { onChange, onBlur, value, ref, name } }) => (
                           <CTextField
+                            disabled={loading}
                             variant="outlined"
                             label="Link przycisku"
                             onChange={onChange}
@@ -348,6 +376,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                   <Grid item xs={5}>
                     <Box pr={3} pl={1} pb={1}>
                       <CButton
+                        disabled={loading}
                         type="button"
                         fullWidth
                         onClick={() => handleRemoveBox(boxIndex)}
@@ -379,6 +408,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                           field: { onChange, onBlur, value, ref, name },
                         }) => (
                           <CTextField
+                            disabled={loading}
                             variant="outlined"
                             name={name}
                             label="Nazwa nawigacji"
@@ -434,6 +464,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                                 field: { onChange, onBlur, value, ref, name },
                               }) => (
                                 <CTextField
+                                  disabled={loading}
                                   variant="outlined"
                                   label="Nazwa odnośnika"
                                   onChange={onChange}
@@ -474,6 +505,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                                 field: { onChange, onBlur, value, ref, name },
                               }) => (
                                 <CTextField
+                                  disabled={loading}
                                   variant="outlined"
                                   label="Adres odnośnika"
                                   onChange={onChange}
@@ -498,6 +530,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                           <Box pb={2}>
                             {fields[boxIndex].links.length > 1 && (
                               <CButton
+                                disabled={loading}
                                 type="button"
                                 onClick={() =>
                                   handleRemoveLinkFromBox(boxIndex, link.id)
@@ -514,6 +547,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                         linkIndex === fields[boxIndex].links.length - 1 &&
                           box.links.length < 5 && (
                             <CButton
+                              disabled={loading}
                               type="button"
                               onClick={() => handleAddLinkToBox(boxIndex)}
                               variant="contained"
@@ -532,6 +566,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
               <Grid item>
                 <Box>
                   <CButton
+                    disabled={loading}
                     onClick={handleAddBox}
                     startIcon={<FaPlus />}
                     type="button"
@@ -545,18 +580,19 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
           </Grid>
           <Grid item xs={12} lg={6} md={8}>
             <Box>
-              <CButton
-                disabled={sending}
+              <CLoadingButton
+                loading={loading}
+                loadingPosition="start"
+                disabled={loading}
                 startIcon={<FaSave />}
                 type="submit"
-                variant="contained"
               >
                 Zapisz zmiany
-              </CButton>
+              </CLoadingButton>
             </Box>
           </Grid>
         </Grid>
-        {msg.length > 0 ? <h5>{msg}</h5> : null}
+        {msg.length > 0 ? <span style={{display: "block", width: "100%", textAlign: "center"}}>{msg}</span> : null}
       </form>
         </Layout>
     )

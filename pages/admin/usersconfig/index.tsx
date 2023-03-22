@@ -3,15 +3,15 @@ import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import { Layout } from "@/componentsAdminPanel/Layout"
 import Loading from "@/componentsAdminPanel/Loading";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getData from "@/utils/getData";
+import PasswordIcon from '@mui/icons-material/Password';
 import { Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
-import SettingsIcon from "@mui/icons-material/Settings";
+import SecurityIcon from '@mui/icons-material/Security';
 
-const AdminPanelUsersConfig = ({permissions}: any) => {
+const AdminPanelUsersConfig = ({permissions, login}: any) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({id: "", open: false, text: ""});
@@ -41,17 +41,24 @@ const AdminPanelUsersConfig = ({permissions}: any) => {
                   }}}
                   secondaryAction={
                     <>
-                      <Tooltip title="Usuń" placement="bottom">
-                        <IconButton
-                          onClick={() => setData({id: item._id, open: true, text: "Czy chcesz usunąć wybranego użytkownika? - "+users.find((itemf:any) => itemf._id === item._id)!.login})}
-                          sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
-                        >
-                          <DeleteIcon/>
+                      {login !== item.login &&
+                        <Tooltip title="Usuń" placement="bottom">
+                          <IconButton
+                            onClick={() => setData({id: item._id, open: true, text: "Czy chcesz usunąć wybranego użytkownika? - "+users.find((itemf:any) => itemf._id === item._id)!.login})}
+                            sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
+                          >
+                            <DeleteIcon/>
+                          </IconButton>
+                        </Tooltip>
+                      }
+                      <Tooltip title="Zmień hasło" placement="bottom">
+                        <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/usersconfig/"+item._id+"/changepwd"}>
+                          <PasswordIcon/>
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Edytuj" placement="bottom">
-                        <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/usersconfig/"+item._id}>
-                          <SettingsIcon/>
+                      <Tooltip title="Uprawnienia" placement="bottom">
+                        <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/usersconfig/"+item._id+"/perms"}>
+                          <SecurityIcon/>
                         </IconButton>
                       </Tooltip>
                     </>
@@ -80,7 +87,7 @@ export default AdminPanelUsersConfig;
 export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req }) {
       const user = req.session.user;
-  
+      
       if (user?.isLoggedIn !== true || !user.permissions?.users) {
         return {
           notFound: true,
@@ -89,6 +96,7 @@ export const getServerSideProps = withIronSessionSsr(
   
       return {
         props: {
+          login: user.login,
           permissions: req.session.user?.permissions,
         },
       };

@@ -1,7 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
 import { setFooterConfig } from "@/utils/getData";
@@ -23,25 +22,6 @@ export interface FormDataFooter {
 }
 
 export default withIronSessionApiRoute(footerRoute, sessionOptions);
-  
-  async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
-    const form = formidable({ multiples: true });
-  
-    const formData = new Promise((resolve, reject) => {
-      form.parse(req, async (err, fields, files) => {
-        if (err) {
-          reject("error");
-        }
-        const data = JSON.parse(fields.data as string);
-        const logo = data?.logo ? {} : {logo: files.file};
-        resolve({ ...data, ...logo });
-      });
-    });
-
-    const data = (await formData) as FormDataFooter;
-
-    return data;
-}
 
 function createResponse(msg: string, error: boolean = true) {
   return ({error, msg})
@@ -53,26 +33,26 @@ async function checkDataFooter(data:FormDataFooter) {
   const regexDesc = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
   const regexLinkBoxName = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
 
-  if(typeof data.logo === "string") {
-    const imagesDirectory = path.join(process.cwd(), 'public');
-    const checkFile = await fs.stat(`${imagesDirectory}/images/${data.logo as string}`);
-    if(
-      !checkFile.isFile()
-    ) {
-      return createResponse("Logo nie istnieje!");
-    }
-  } else if(typeof data.logo === "object") {
-    const logo = data.logo as any;
-    if(
-      logo.mimetype.indexOf("image") < 0 ||
-      logo.size > (10 * 1024 * 1024) ||
-      logo.size === 0
-    ) {
-      return createResponse("Przesłany obraz jest nieprawidłowy lub waży więcej niż 10 MB!");
-    }
-  } else {
-    return createResponse("Logo nie może zostać zaaktualizowane!");
-  }
+  // if(typeof data.logo === "string") {
+  //   const imagesDirectory = path.join(process.cwd(), 'public');
+  //   const checkFile = await fs.stat(`${imagesDirectory}/images/${data.logo as string}`);
+  //   if(
+  //     !checkFile.isFile()
+  //   ) {
+  //     return createResponse("Logo nie istnieje!");
+  //   }
+  // } else if(typeof data.logo === "object") {
+  //   const logo = data.logo as any;
+  //   if(
+  //     logo.mimetype.indexOf("image") < 0 ||
+  //     logo.size > (10 * 1024 * 1024) ||
+  //     logo.size === 0
+  //   ) {
+  //     return createResponse("Przesłany obraz jest nieprawidłowy lub waży więcej niż 10 MB!");
+  //   }
+  // } else {
+  //   return createResponse("Logo nie może zostać zaaktualizowane!");
+  // }
 
   if(
     data.desc.length! <= 0 ||
@@ -129,12 +109,10 @@ async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === "POST") {
     const session = req.session.user;
     if(session?.isLoggedIn && session.permissions.footer) {
-        const result = {error: false};
-        const data = await handlePostFormReq(req, res);
+        const data = req.body;
         const dataCheck = await checkDataFooter(data);
         if(!dataCheck.error) {
           const result = await setFooterConfig(data);
-
           res.json(result);
         } else {
           res.json({error: true})
@@ -146,9 +124,3 @@ async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
     res.json({error: true});
   }
 }
-
-export const config = {
-    api: {
-      bodyParser: false,
-    },
-};

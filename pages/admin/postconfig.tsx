@@ -168,6 +168,7 @@ export default AdminPanelPostConfig;
 export const getServerSideProps = withIronSessionSsr(
     async function getServerSideProps({ req }) {
       const user = req.session.user;
+      console.log(req.session);
   
       if (user?.isLoggedIn !== true || !user?.permissions?.smtpconfig) {
         return {
