@@ -48,7 +48,6 @@ export default withIronSessionApiRoute(reservationsRoute, sessionOptions);
 
 async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   if(req.method === "GET") {
-    console.log(req.url);
     const session = req.session.user;
     if(session?.isLoggedIn && session.permissions.reservations) {
       const {id, date, time} = req.query;

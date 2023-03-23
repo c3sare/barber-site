@@ -1,7 +1,5 @@
 import { FormDataFooter } from "@/pages/api/footer";
 import { MongoClient } from "mongodb";
-import fs from "fs/promises";
-import path from "path";
 
 export default async function getData(name: string) {
   const client = new MongoClient(process.env.MONGO_URI as string);
@@ -70,33 +68,14 @@ export async function setBasicConfig({companyName, yearOfCreate, slogan}:BasicCo
 }
 
 export async function setFooterConfig(data:FormDataFooter) {
-  // if(typeof data.logo === "object") {
-  //   const orgName = data.logo.originalFilename;
-  //   const withoutExt = orgName?.slice(0, orgName.lastIndexOf("."));
-  //   const ext = orgName?.slice(orgName.lastIndexOf("."));
-  //   const genFragment = Math.random().toString(36).slice(2);
-  //   const fullName = withoutExt+"_"+genFragment+ext;
-  //   console.log(fullName)
-  //   const publicDirectory = path.join(process.cwd(), 'public');
-  //   const filedata = await fs.readFile(data.logo.filepath);
-  //   await fs.appendFile(publicDirectory+"/images/"+fullName, Buffer.from(filedata.buffer));
-  //   if((await fs.stat(publicDirectory+"/images/"+fullName)).isFile()) {
-  //     data.logo = fullName;
-  //   }
-  // }
 
   const client = new MongoClient(process.env.MONGO_URI as string);
   const database = client.db("site");
   const tab = database.collection("footer");
   const findOne = await tab.findOne({});
-  // if(data.logo !== findOne?.logo!) {
-  //   await fs.rm(path.join(process.cwd(), 'public')+"/images/"+findOne!.logo!);
-  // }
   const updateData = await tab.updateOne({_id: findOne!._id}, {$set: {...data}});
   client.close();
-  // const logoReturn = data.logo !== findOne?.logo! ? {logo: data.logo} : {}
   return ({
     error: !updateData.acknowledged,
-    // ...logoReturn
   });
 }

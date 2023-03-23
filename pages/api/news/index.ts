@@ -43,21 +43,13 @@ const descRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "GET") {
-    const session = req.session.user;
-    if(session?.isLoggedIn && session.permissions.news) {
-        const data = await getData("news");
-
-        res.json(data);
-    } else {
-        res.json({error: true});
-    }
-  } else if(req.method === "PUT") {
-    const session = req.session.user;
+  const session = req.session.user;
+  if(req.method === "GET" && session?.isLoggedIn && session.permissions.news) {
+    const data = await getData("news");
+    res.json(data);
+  } else if(req.method === "PUT" && session?.isLoggedIn && session?.permissions?.news) {
     const {title, desc, date, content, img}:any = await handlePostFormReq(req, res);
     if(
-      session?.isLoggedIn &&
-      session.permissions.news &&
       titleRegex.test(title) &&
       title?.length > 0 &&
       title?.length <= 80 &&
@@ -86,7 +78,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.json({error: true})
     }
-  } else if(req.method === "DELETE") {
+  } else if(req.method === "DELETE" && session?.isLoggedIn && session?.permissions?.news) {
     const {id}:any = await handlePostFormReq(req, res);
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");

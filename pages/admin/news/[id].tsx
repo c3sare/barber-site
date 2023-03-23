@@ -255,7 +255,7 @@ export const getServerSideProps = withIronSessionSsr(
       return {
         props: {
           data: {...data, content: JSON.parse(content)},
-          permissions: req.session.user?.permissions,
+          permissions: user?.permissions,
         },
       };
     },

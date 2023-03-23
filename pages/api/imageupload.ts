@@ -30,7 +30,8 @@ async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
 }
 
 async function uploadImageRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "POST") {
+  const session = req.session.user;
+  if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.menu) {
     const pagesDirectory = path.join(process.cwd(), 'public');
     const data:any = await handlePostFormReq(req, res);
     console.log(data);

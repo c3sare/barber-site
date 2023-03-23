@@ -10,7 +10,7 @@ const Logout = () => {
         if(data?.isLoggedIn === false) {
             setTimeout(() => router.push("/admin/login"), 200);
         }
-    }, [data])
+    }, [data, router]);
 }
 
 export default Logout;

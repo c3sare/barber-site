@@ -1,9 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getData from "@/utils/getData";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { MongoClient, ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
-import bcrypt from "bcrypt";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -58,23 +56,16 @@ const validPermissions = (permissions:Permissions) => {
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
-  if(req.method === "POST") {
-    if(session?.isLoggedIn && session?.permissions?.users) {
-      const {id} = req.query;
-      const permissions = req.body;
-      if(validPermissions(permissions)) {
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("users");
-        const updatePerms = await tab.updateOne({_id: new ObjectId(id as string)}, {$set: {permissions}});
-        client.close();
-        if(updatePerms.acknowledged)
-            res.json({error: false});
-        else
-            res.json({error: true});
-      } else {
-        res.json({error: true});
-      }
+  if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.users) {
+    const {id} = req.query;
+    const permissions = req.body;
+    if(validPermissions(permissions)) {
+      const client = new MongoClient(process.env.MONGO_URI as string);
+      const database = client.db("site");
+      const tab = database.collection("users");
+      const updatePerms = await tab.updateOne({_id: new ObjectId(id as string)}, {$set: {permissions}});
+      client.close();
+      res.json({error: !Boolean(updatePerms.acknowledged)});
     } else {
       res.json({error: true});
     }

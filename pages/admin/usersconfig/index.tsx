@@ -97,7 +97,7 @@ export const getServerSideProps = withIronSessionSsr(
       return {
         props: {
           login: user.login,
-          permissions: req.session.user?.permissions,
+          permissions: user?.permissions,
         },
       };
     },

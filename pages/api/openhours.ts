@@ -20,7 +20,8 @@ const checkOpenHoursData = (data:any[]) => {
 }
 
 async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "GET") {
+  const session = req.session.user;
+  if(req.method === "GET" && session?.isLoggedIn && session?.permissions?.menu) {
     const data = await getData("openHours");
     let newData:any = {};
 
@@ -37,31 +38,26 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
     });
 
     res.json(newData);
-  } else if(req.method === "POST") {
-    const data = req.body;
-    if(checkOpenHoursData(data)) {
-      const client = new MongoClient(process.env.MONGO_URI as string);
-      const database = client.db("site");
-      const tab = database.collection("openHours");
-      const results:boolean[] = [];
-      await data.forEach(async (day:any) => {
-        const $set = day.closed ? {
-          closed: true,
-          start: "",
-          end: ""
-        } : {
-          closed: false,
-          start: day.start,
-          end: day.end
-        }
+  } else if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.menu && checkOpenHoursData(req.body)) {
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("openHours");
+    const results:boolean[] = [];
+    await req.body.forEach(async (day:any) => {
+      const $set = day.closed ? {
+        closed: true,
+        start: "",
+        end: ""
+      } : {
+        closed: false,
+        start: day.start,
+        end: day.end
+      }
   
-        const update = await tab.updateOne({short: day.short}, {$set});
-        results.push(update.modifiedCount === 1);
-      });
-      res.json({error: results.filter(item => item === false).length > 0});
-    } else {
-      res.json({error: true});
-    }
+      const update = await tab.updateOne({short: day.short}, {$set});
+      results.push(update.modifiedCount === 1);
+    });
+    res.json({error: results.filter(item => item === false).length > 0});
   } else {
     res.json({error: true})
   }

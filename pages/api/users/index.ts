@@ -75,54 +75,34 @@ const validUser = (login:string, password:string, repassword:string, permissions
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
-  if(req.method === "GET") {
-    if(session?.isLoggedIn && session?.permissions?.users) {
-        const users = await getData("users");
-        res.json(users);
-    } else {
-        res.json({error: true});
-    }
-  } else if(req.method === "PUT") {
-    if(session?.isLoggedIn && session?.permissions?.users) {
-      const {login, password, repassword, permissions} = req.body;
-      if(validUser(login, password, repassword, permissions)) {
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("users");
-        const userExist = await tab.find({login}).toArray();
-        if(userExist.length === 0) {
-          const genPassword = bcrypt.hashSync(password, 10);
-          const insertUser = await tab.insertOne({login, password: genPassword, permissions});
-          if(insertUser.acknowledged) {
-            res.json({error: false});
-          } else {
-            res.json({error: true});
-          }
-        } else {
-          res.json({error: true});
-        }
-      } else {
-        res.json({error: true});
-      }
-    } else {
-      res.json({error: true});
-    }
-  } else if(req.method === "DELETE") {
-    if(session?.isLoggedIn && session?.permissions?.users) {
-      const loggedUser = session?.login;
-      const {id} = req.body;
+  if(req.method === "GET" && session?.isLoggedIn && session?.permissions?.users) {
+    const users = await getData("users");
+    res.json(users);
+  } else if(req.method === "PUT" && session?.isLoggedIn && session?.permissions?.users) {
+    const {login, password, repassword, permissions} = req.body;
+    if(validUser(login, password, repassword, permissions)) {
       const client = new MongoClient(process.env.MONGO_URI as string);
       const database = client.db("site");
       const tab = database.collection("users");
-      const checkUser = await tab.findOne({_id: new ObjectId(id)});
-      if(checkUser !== null && checkUser.login !== loggedUser) {
-        const delUser = await tab.deleteOne({_id: new ObjectId(id)});
-        if(delUser.deletedCount === 1) {
-          res.json({error: false});
-        } else res.json({error: true});
+      const userExist = await tab.find({login}).toArray();
+      if(userExist.length === 0) {
+        const genPassword = bcrypt.hashSync(password, 10);
+        const insertUser = await tab.insertOne({login, password: genPassword, permissions});
+        res.json({error: !Boolean(insertUser.acknowledged)});
       } else {
         res.json({error: true});
       }
+    } else res.json({error: true});
+  } else if(req.method === "DELETE" && session?.isLoggedIn && session?.permissions?.users) {
+    const loggedUser = session?.login;
+    const {id} = req.body;
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("users");
+    const checkUser = await tab.findOne({_id: new ObjectId(id)});
+    if(checkUser !== null && checkUser.login !== loggedUser) {
+      const delUser = await tab.deleteOne({_id: new ObjectId(id)});
+      res.json({error: !(delUser.deletedCount === 1)});
     } else {
       res.json({error: true});
     }

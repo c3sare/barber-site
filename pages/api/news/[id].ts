@@ -13,27 +13,20 @@ const descRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "GET") {
-    const session = req.session.user;
-    if(session?.isLoggedIn && session.permissions.news) {
-        const newsDirectory = path.join(process.cwd(), 'news');
-        const data = (await getData("news")).find((item:any) => item._id === req.query.id);
+  const session = req.session.user;
+  if(req.method === "GET" && session?.isLoggedIn && session.permissions.news) {
+    const newsDirectory = path.join(process.cwd(), 'news');
+    const data = (await getData("news")).find((item:any) => item._id === req.query.id);
         
-        if(data !== null) {
-            const content = await fs.readFile(`${newsDirectory}/${data._id}.json`, "utf-8");
-            res.json({...data, content: content === "" ? "" : JSON.parse(content)})
-        } else {
-            res.json({});
-        }
+    if(data !== null) {
+      const content = await fs.readFile(`${newsDirectory}/${data._id}.json`, "utf-8");
+      res.json({...data, content: content === "" ? "" : JSON.parse(content)})
     } else {
-        res.json({});
+      res.json({});
     }
-  } else if(req.method === "POST") {
-    const session = req.session.user;
+  } else if(req.method === "POST" && session?.isLoggedIn && session.permissions.news) {
     const {title, desc, date, content} = req.body;
     if(
-        session?.isLoggedIn &&
-        session.permissions.news &&
         titleRegex.test(title) &&
         title?.length > 0 &&
         title?.length <= 80 &&

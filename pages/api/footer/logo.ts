@@ -46,29 +46,34 @@ function checkData(image:any) {
 }
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
-    if(req.method === "POST") {
-        const pagesDirectory = path.join(process.cwd(), 'public');
-        const image:any = await handlePostFormReq(req, res);
-        if(checkData(image)) {
-            const newName = getNewFileName(image.originalFilename);
-            const filedata = await fs.readFile(image.filepath);
-            fs.appendFile(`${pagesDirectory}/images/${newName}`, Buffer.from(filedata.buffer));
-            const client = new MongoClient(process.env.MONGO_URI as string);
-            const database = client.db("site");
-            const tab = database.collection("footer");
-            const oldFile = await tab.findOne({});
-            const insert = await tab.updateOne({}, {$set: {logo: newName}});
-            if(insert.acknowledged !== undefined) {
-                if(oldFile !== null)
-                    fs.unlink(`${pagesDirectory}/images/${oldFile.img}`);
-                res.json({error: false, img: newName});
-            } else {
-                res.json({error: true});
-            }
+  const user = req.session.user;
+  if(req.method === "POST") {
+    if(user?.isLoggedIn) {
+      const pagesDirectory = path.join(process.cwd(), 'public');
+      const image:any = await handlePostFormReq(req, res);
+      if(checkData(image)) {
+        const newName = getNewFileName(image.originalFilename);
+        const filedata = await fs.readFile(image.filepath);
+        fs.appendFile(`${pagesDirectory}/images/${newName}`, Buffer.from(filedata.buffer));
+        const client = new MongoClient(process.env.MONGO_URI as string);
+        const database = client.db("site");
+        const tab = database.collection("footer");
+        const oldFile = await tab.findOne({});
+        const insert = await tab.updateOne({}, {$set: {logo: newName}});
+        if(insert.acknowledged !== undefined) {
+          if(oldFile !== null)
+            fs.unlink(`${pagesDirectory}/images/${oldFile.img}`);
+          res.json({error: false, img: newName});
         } else {
-            res.json({error: true});
+          res.json({error: true});
         }
-    } else {
+      } else {
         res.json({error: true});
+      }
+    } else {
+      res.json({error: true});
     }
+  } else {
+    res.json({error: true});
+  }
 }

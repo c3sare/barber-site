@@ -46,7 +46,9 @@ function checkData(image:any) {
 }
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
+  const user = req.session.user;
     if(req.method === "POST") {
+      if(user?.isLoggedIn) {
         const pagesDirectory = path.join(process.cwd(), 'public');
         const image:any = await handlePostFormReq(req, res);
         if(checkData(image)) {
@@ -69,6 +71,9 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         } else {
             res.json({error: true});
         }
+      } else {
+        res.json({error: true});
+      }
     } else {
         res.json({error: true});
     }

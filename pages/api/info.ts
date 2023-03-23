@@ -15,44 +15,36 @@ function createResponse(msg: string, error: boolean = true) {
 function checkDataInfo(data:InfoData) {
   const {companyName, slogan, yearOfCreate} = data;
   const regexCompanyNameSlogan = /^[a-zA-Z][a-zA-Z0-9-_.\s]{1,20}$/i;
+  if(!companyName || !slogan || !yearOfCreate) return createResponse("Dane są nieprawidłowe!");
   if(
-    companyName.length <= 1 ||
-    companyName.length > 20 ||
-    !regexCompanyNameSlogan.test(companyName)
-  ) return createResponse("Nazwa firmy jest nieprawidłowa!");
-
-  if(
-    slogan !== "" ||
-    slogan.length > 20 ||
-    (!regexCompanyNameSlogan.test(slogan) && slogan !== "")
-  ) return createResponse("Slogan jest nieprawidłowy!");
-
-  if(
-    yearOfCreate < 1900 ||
-    yearOfCreate > new Date().getFullYear() ||
-    !yearOfCreate
-  ) return createResponse("Rok założenia jest nieprawidłowy!");
-
-  return createResponse("Dane zostały poprawnie uzupełnione!", false);
+    companyName.length > 0 &&
+    companyName.length <= 20 &&
+    regexCompanyNameSlogan.test(companyName) &&
+    slogan.length > 0 &&
+    slogan.length <= 20 ||
+    regexCompanyNameSlogan.test(slogan) &&
+    yearOfCreate > 1900 &&
+    yearOfCreate <= new Date().getFullYear()
+  )
+    return createResponse("Dane są prawidłowe!", false);
+  else 
+    return createResponse("Dane są nieprawidłowe!");
 }
 
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
-  const data = JSON.parse(req.body);
-  if(req.method === "POST") {
-    const session = req.session.user;
-    if(session?.isLoggedIn && session.permissions.basic) {
-        const valid = checkDataInfo(data);
-        console.log(valid);
-        if(!valid.error) {
-          const result = await setBasicConfig(data);
-          res.json(result);
-        } else {
-          res.json(valid);
-        }
-    } else {
-        res.json({error: true});
-    }
-  } else {
-    res.json({error: true});
+  const session = req.session.user;
+  switch(req.method) {
+    case 'POST':
+      if(!session?.isLoggedIn || !session?.permissions?.basic) return res.status(403);
+      const data = JSON.parse(req.body);
+      const valid = checkDataInfo(data);
+      if(!valid.error) {
+        const result = await setBasicConfig(data);
+        res.status(200).json(result);
+      } else {
+        return res.status(200).json(valid);
+      }
+    default:
+      return res.status(404).redirect("/404");
   }
 }

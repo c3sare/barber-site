@@ -20,7 +20,8 @@ function checkData({title, desc}:any) {
 }
 
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "POST") {
+  const session = req.session.user;
+  if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.menu) {
     const {title, desc}:any = req.body;
     if(checkData({title, desc})) {
       const client = new MongoClient(process.env.MONGO_URI as string);

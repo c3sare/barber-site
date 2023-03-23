@@ -1,8 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs/promises";
-import path from "path";
 import { setFooterConfig } from "@/utils/getData";
 
 export interface FormDataFooter {
@@ -32,27 +30,6 @@ async function checkDataFooter(data:FormDataFooter) {
   const regexBtnLink = /(www|http:|https:|^\/)+[^\s]+[\w]/;
   const regexDesc = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
   const regexLinkBoxName = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
-
-  // if(typeof data.logo === "string") {
-  //   const imagesDirectory = path.join(process.cwd(), 'public');
-  //   const checkFile = await fs.stat(`${imagesDirectory}/images/${data.logo as string}`);
-  //   if(
-  //     !checkFile.isFile()
-  //   ) {
-  //     return createResponse("Logo nie istnieje!");
-  //   }
-  // } else if(typeof data.logo === "object") {
-  //   const logo = data.logo as any;
-  //   if(
-  //     logo.mimetype.indexOf("image") < 0 ||
-  //     logo.size > (10 * 1024 * 1024) ||
-  //     logo.size === 0
-  //   ) {
-  //     return createResponse("Przesłany obraz jest nieprawidłowy lub waży więcej niż 10 MB!");
-  //   }
-  // } else {
-  //   return createResponse("Logo nie może zostać zaaktualizowane!");
-  // }
 
   if(
     data.desc.length! <= 0 ||

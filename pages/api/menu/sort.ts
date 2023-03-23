@@ -8,36 +8,45 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
+  const user = req.session.user;
   if(req.method === "GET") {
-    const menu:MenuItemDB[] = await getMenu();
-    res.json({menu: menu.map(item => (
-      {
-          _id: item._id,
-          parent: item.parent,
-          title: item.title,
-          slug: item.slug,
-          order: item.order
-      }
-    ))});
-  } else if(req.method === "POST") {
-    const menu:MenuItemDB[] = req.body.menu;
-
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menu");
-    const updates: UpdateResult[] = [];
-    menu.forEach(async item => {
-        updates.push(await tab.updateOne({_id: new ObjectId(item._id)}, {$set: {order:item.order, parent: item.parent}}));
-    })
-    if(updates.map(item => item.acknowledged).includes(false)) {
-      res.json({
-        error: true 
-      })
+    if(user?.isLoggedIn) {
+      const menu:MenuItemDB[] = await getMenu();
+      res.json({menu: menu.map(item => (
+        {
+            _id: item._id,
+            parent: item.parent,
+            title: item.title,
+            slug: item.slug,
+            order: item.order
+        }
+      ))});
     } else {
-        res.json({
-            error: false
-        })
+      res.json({error: true});
     }
-    client.close();
+  } else if(req.method === "POST") {
+    if(user?.isLoggedIn) {
+      const menu:MenuItemDB[] = req.body.menu;
+
+      const client = new MongoClient(process.env.MONGO_URI as string);
+      const database = client.db("site");
+      const tab = database.collection("menu");
+      const updates: UpdateResult[] = [];
+      menu.forEach(async item => {
+          updates.push(await tab.updateOne({_id: new ObjectId(item._id)}, {$set: {order:item.order, parent: item.parent}}));
+      })
+      if(updates.map(item => item.acknowledged).includes(false)) {
+        res.json({
+          error: true 
+        })
+      } else {
+          res.json({
+              error: false
+          })
+      }
+      client.close();
+    } else {
+      res.json({error: true});
+    }
   }
 }

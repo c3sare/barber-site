@@ -46,7 +46,8 @@ function checkData(image:any) {
 }
 
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
-    if(req.method === "POST") {
+  const session = req.session.user;
+    if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.menu) {
         const pagesDirectory = path.join(process.cwd(), 'public');
         const image:any = await handlePostFormReq(req, res);
         if(checkData(image)) {

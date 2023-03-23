@@ -28,7 +28,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.json([]);
     }
-  } else if(req.method === "DELETE") {
+  } else if(req.method === "DELETE" && session?.isLoggedIn && session?.permissions?.reservations) {
     const {id, date} = req.query;
     const {time} = req.body;
     if(timeRegex.test(time) && dateRegex.test(date as string)) {
@@ -56,68 +56,63 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.json({error: true});
     }
-  } else if(req.method === "PUT") {
-    if(session?.isLoggedIn && session.permissions.reservations) {
-      const {id, date} = req.query;
-      const {time} = req.body;
-      if(timeRegex.test(time) && dateRegex.test(date as string)) {
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const reservations = database.collection("reservations");
-        const workers = database.collection("barbers");
-        const checkBarber = await workers.findOne({_id: new ObjectId(id as string)});
-        if(checkBarber !== null) {
-          const list = await reservations.findOne({barber_id: id, date});
-          const itemToAdd = {
-            time,
-            reserved: false,
-            mail: "",
-            confirmed: false,
-            token: "",
-            reservedDate: "",
-            person: "",
-            phone: ""
-          };
-          if(list !== null) {
-            if(list.times.filter((item:any) => item.time === time).length === 0) {
-
-              const addTime = await reservations.updateOne(
-                {
-                  barber_id: id,
-                  date
-                },
-                {
-                  $set: {
-                    times: [
-                      ...list.times,
-                      itemToAdd
-                    ]
-                  }
+  } else if(req.method === "PUT" && session?.isLoggedIn && session?.permissions?.reservations) {
+    const {id, date} = req.query;
+    const {time} = req.body;
+    if(timeRegex.test(time) && dateRegex.test(date as string)) {
+      const client = new MongoClient(process.env.MONGO_URI as string);
+      const database = client.db("site");
+      const reservations = database.collection("reservations");
+      const workers = database.collection("barbers");
+      const checkBarber = await workers.findOne({_id: new ObjectId(id as string)});
+      if(checkBarber !== null) {
+        const list = await reservations.findOne({barber_id: id, date});
+        const itemToAdd = {
+          time,
+          reserved: false,
+          mail: "",
+          confirmed: false,
+          token: "",
+          reservedDate: "",
+          person: "",
+          phone: ""
+        };
+        if(list !== null) {
+          if(list.times.filter((item:any) => item.time === time).length === 0) {
+            const addTime = await reservations.updateOne(
+              {
+                barber_id: id,
+                date
+              },
+              {
+                $set: {
+                  times: [
+                    ...list.times,
+                    itemToAdd
+                  ]
                 }
-              );
-              if(addTime.acknowledged !== undefined) {
-                res.json({error: false, item: itemToAdd});
-              } else {
-                res.json({error: true});
               }
-            } else {
-              res.json({error: true});
-            }
-          } else {
-            const insert = await reservations.insertOne({
-              date,
-              barber_id: id,
-              times: [itemToAdd]
-            });
-            if(insert.acknowledged !== undefined) {
+            );
+            if(addTime.acknowledged !== undefined) {
               res.json({error: false, item: itemToAdd});
             } else {
               res.json({error: true});
             }
+          } else {
+            res.json({error: true});
+          }
+        } else {
+          const insert = await reservations.insertOne({
+            date,
+            barber_id: id,
+            times: [itemToAdd]
+          });
+          if(insert.acknowledged !== undefined) {
+            res.json({error: false, item: itemToAdd});
+          } else {
+            res.json({error: true});
           }
         }
-      } else {
-        res.json({error: true});
       }
     } else {
       res.json({error: true});

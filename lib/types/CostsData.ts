@@ -1,5 +1,5 @@
 export interface CostsData {
-    _id: "string",
+    _id: string,
     category: string,
     services: {
         id: number,

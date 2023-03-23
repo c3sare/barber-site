@@ -54,10 +54,11 @@ function checkData({image, title, desc}:any) {
 }
 
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "GET") {
+  const session = req.session.user;
+  if(req.method === "GET" && session?.isLoggedIn && session?.permissions?.menu) {
     const data = await getData("slides");
     res.json(data);
-  } else if(req.method === "DELETE") {
+  } else if(req.method === "DELETE" && session?.isLoggedIn && session?.permissions?.menu) {
     const {id}:any = await handlePostFormReq(req, res);
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
@@ -68,7 +69,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.json({error: true});
     }
-  } else if(req.method === "PUT") {
+  } else if(req.method === "PUT" && session?.isLoggedIn && session?.permissions?.menu) {
     const pagesDirectory = path.join(process.cwd(), 'public');
     const {image, title, desc}:any = await handlePostFormReq(req, res);
     if(checkData({image, title, desc})) {

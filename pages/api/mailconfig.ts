@@ -33,53 +33,49 @@ function checkDataMailConfig(data:MailConfig) {
 }
 
 async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "POST") {
     const session = req.session.user;
-    if(session?.isLoggedIn && session?.permissions?.smtpconfig) {
-        const dataCheck = checkDataMailConfig(req.body);
-        if(dataCheck) {
-            let transport = nodemailer.createTransport({
+    if(
+        req.method === "POST" &&
+        session?.isLoggedIn &&
+        session?.permissions?.smtpconfig &&
+        checkDataMailConfig(req.body)
+    ) {
+        let transport = nodemailer.createTransport({
+            host: req.body.host,
+            port: req.body.port,
+            secure: false,
+            auth: {
+                user: req.body.mail,
+                pass: req.body.pwd
+            }
+        });
+
+        const result = await transport.verify();
+        if(result) {
+            const client = new MongoClient(process.env.MONGO_URI as string);
+            const database = client.db("site");
+            const tab = database.collection("mailConfig");
+            tab.updateOne({}, {$set: {
                 host: req.body.host,
                 port: req.body.port,
-                secure: false,
-                auth: {
-                    user: req.body.mail,
-                    pass: req.body.pwd
-                }
-            });
-
-            const result = await transport.verify();
-            if(result) {
-                const client = new MongoClient(process.env.MONGO_URI as string);
-                const database = client.db("site");
-                const tab = database.collection("mailConfig");
-                tab.updateOne({}, {$set: {
-                    host: req.body.host,
-                    port: req.body.port,
-                    mail: req.body.mail,
-                    pwd: req.body.pwd
-                }}).then(result => {
-                    if(result.acknowledged) {
-                        res.json({error: false});
-                    } else {
-                        res.json({error: true});
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
+                mail: req.body.mail,
+                pwd: req.body.pwd
+            }}).then(result => {
+                if(result.acknowledged) {
+                    res.json({error: false});
+                } else {
                     res.json({error: true});
-                })
-                .finally(() => client.close());
-            } else {
+                }
+            })
+            .catch(err => {
+                console.log(err);
                 res.json({error: true});
-            }
+            })
+            .finally(() => client.close());
         } else {
-          res.json({error: true});
+            res.json({error: true});
         }
     } else {
         res.json({error: true});
     }
-  } else {
-    res.json({error: true});
-  }
 }

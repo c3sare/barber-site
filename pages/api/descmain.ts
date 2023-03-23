@@ -60,10 +60,11 @@ function getNewFileName(orgName:string) {
 }
 
 async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
-  if(req.method === "GET") {
+  const session = req.session.user;
+  if(req.method === "GET" && session?.isLoggedIn && session.permissions?.menu) {
     const data = await getDataOne("descMain");
     res.json(data);
-  } else if(req.method === "POST") {
+  } else if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.menu) {
     const {title, description, pros}:any = await handlePostFormReq(req, res);
     const pagesDirectory = path.join(process.cwd(), 'public');
     if(checkData(title, description)) {
@@ -81,15 +82,10 @@ async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
       const oldFile = await tab.find({}).toArray();
       if(oldFile.length > 0) {
         const insert = await tab.updateOne({_id: new ObjectId(oldFile[0]._id)}, {$set: {title, description, pros}});
-        if(insert.acknowledged !== undefined) {
-          res.json({error: false});
-        } else {
-          res.json({error: true});
-        }
+        res.json({error: !(insert.acknowledged !== undefined)});
       } else {
         res.json({error: true});
       }
-
     } else {
         res.json({error: true});
     }

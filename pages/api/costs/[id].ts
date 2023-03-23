@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import { CostsData } from "@/lib/types/CostsData";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { MongoClient, ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -8,34 +9,30 @@ export default withIronSessionApiRoute(menuRoute, sessionOptions);
 const categoryServiceRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
+    const user = req.session.user;
+    const {id} = req.query;
     if(req.method === "GET") {
-        const {id} = req.query;
+        if(!user?.isLoggedIn || !user?.permissions.menu)
+            return res.status(403).json({message: "Nie posiadasz uprawnień do tej ścieżki!"});
+
         const client = new MongoClient(process.env.MONGO_URI as string);
         const database = client.db("site");
         const tab = database.collection("costs");
         const item = await tab.findOne({_id: new ObjectId(id as string)})
+        
+        if(item === null)
+            return res.status(404).json({message: `Nie znaleziono obiektu o identyfikatorze ${id}`});
 
-        if(item !== null) {
-            res.json({
-                category: item.category,
-                services: item.services
-            });
-        } else {
-            res.json({});
-        }
+        return res.status(200).json({
+            category: item.category,
+            services: item.services
+        });
+
     } else if(req.method === "POST") {
-        const {id} = req.query;
-        const {
-            category,
-            services
-        }:{
-            category: string,
-            services: {
-                service: string,
-                cost: number,
-                time: number
-            }[]
-        } = req.body;
+        if(!user?.isLoggedIn || !user?.permissions.menu)
+            return res.status(403).json({message: "Brak uprawnień!"});
+
+        const {category, services}:CostsData = req.body;
         const client = new MongoClient(process.env.MONGO_URI as string);
         const database = client.db("site");
         const tab = database.collection("costs");
@@ -68,13 +65,10 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
                     }
                 }
             );
-            if(result.acknowledged !== undefined) {
-                res.json({error: false});
-            } else {
-                res.json({error: true, msg: "Nie można wykonać zmiany!"})
-            }
+
+            res.status(200).json({error: result.acknowledged === undefined});
         }
     } else {
-        res.json({error: true});
+        return res.status(404).json({message: "Nie odnaleziono takiej ścieżki"});
     }
 }
