@@ -4,71 +4,81 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { MongoClient, ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default withIronSessionApiRoute(menuRoute, sessionOptions);
+export default withIronSessionApiRoute(costsRoute, sessionOptions);
 
 const categoryServiceRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 
-async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
-    const user = req.session.user;
-    const {id} = req.query;
-    if(req.method === "GET") {
-        if(!user?.isLoggedIn || !user?.permissions.menu)
-            return res.status(403).json({message: "Nie posiadasz uprawnień do tej ścieżki!"});
+async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
+  const user = req.session.user;
+  const { id } = req.query;
 
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("costs");
-        const item = await tab.findOne({_id: new ObjectId(id as string)})
-        
-        if(item === null)
-            return res.status(404).json({message: `Nie znaleziono obiektu o identyfikatorze ${id}`});
+  if (!ObjectId.isValid(id as string))
+    return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-        return res.status(200).json({
-            category: item.category,
-            services: item.services
-        });
+  if (req.method === "GET") {
+    if (!user?.isLoggedIn || !user?.permissions.menu)
+      return res
+        .status(403)
+        .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    } else if(req.method === "POST") {
-        if(!user?.isLoggedIn || !user?.permissions.menu)
-            return res.status(403).json({message: "Brak uprawnień!"});
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("costs");
+    const item = await tab.findOne({ _id: new ObjectId(id as string) });
 
-        const {category, services}:CostsData = req.body;
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("costs");
+    if (item === null)
+      return res
+        .status(404)
+        .json({ message: `Nie znaleziono obiektu o identyfikatorze ${id}` });
 
-        const validRegex = categoryServiceRegex.test(category);
-        const validServices = [];
+    return res.status(200).json({
+      category: item.category,
+      services: item.services,
+    });
+  } else if (req.method === "POST") {
+    if (!user?.isLoggedIn || !user?.permissions.menu)
+      return res.status(403).json({ message: "Brak uprawnień!" });
 
-        for(let i=0; i<services.length; i++) {
-            validServices.push(
-                categoryServiceRegex.test(services[i].service) &&
-                services[i].cost >= 0 &&
-                services[i].time >= 0
-            )
-        }
+    const { category, services }: CostsData = req.body;
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("costs");
 
-        if(validRegex && validServices.filter(item => item === false).length === 0) {
-            const newServices = services.map((item, i) => ({
-                ...item,
-                id: i+1
-            }))
+    const validRegex = categoryServiceRegex.test(category);
+    const validServices = [];
 
-            const result = await tab.updateOne(
-                {
-                    _id: new ObjectId(id as string)
-                },
-                {
-                    $set: {
-                        category,
-                        services: newServices
-                    }
-                }
-            );
-
-            res.status(200).json({error: result.acknowledged === undefined});
-        }
-    } else {
-        return res.status(404).json({message: "Nie odnaleziono takiej ścieżki"});
+    for (let i = 0; i < services.length; i++) {
+      validServices.push(
+        categoryServiceRegex.test(services[i].service) &&
+          services[i].cost >= 0 &&
+          services[i].time >= 0
+      );
     }
+
+    if (
+      validRegex &&
+      validServices.filter((item) => item === false).length === 0
+    ) {
+      const newServices = services.map((item, i) => ({
+        ...item,
+        id: i + 1,
+      }));
+
+      const result = await tab.updateOne(
+        {
+          _id: new ObjectId(id as string),
+        },
+        {
+          $set: {
+            category,
+            services: newServices,
+          },
+        }
+      );
+
+      res.status(200).json({ error: result.acknowledged === undefined });
+    }
+  } else {
+    return res.status(404).json({ message: "Nie odnaleziono takiej ścieżki" });
+  }
 }

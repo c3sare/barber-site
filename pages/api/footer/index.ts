@@ -1,71 +1,70 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { setFooterConfig } from "@/utils/getData";
+import { MongoClient } from "mongodb";
 
-export interface FormDataFooter {
-    btnMore: boolean,
-    btnTitle?: string,
-    btnLink?: string,
-    desc: string,
-    logo: any,
-    linkBoxes: {
-        name: string,
-        links: {
-            id: number,
-            name: string,
-            url: string
-        }[]
-    }[]
+interface FormDataFooter {
+  btnMore: boolean,
+  btnTitle?: string,
+  btnLink?: string,
+  desc: string,
+  logo: any,
+  linkBoxes: {
+      name: string,
+      links: {
+          id: number,
+          name: string,
+          url: string
+      }[]
+  }[]
 }
 
 export default withIronSessionApiRoute(footerRoute, sessionOptions);
 
-function createResponse(msg: string, error: boolean = true) {
-  return ({error, msg})
-}
-
-async function checkDataFooter(data:FormDataFooter) {
+function checkDataFooter(data:FormDataFooter) {
   const regexBtnTitle = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
   const regexBtnLink = /(www|http:|https:|^\/)+[^\s]+[\w]/;
   const regexDesc = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
   const regexLinkBoxName = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
 
+  const {desc, btnMore, btnLink, btnTitle, linkBoxes} = data;
+
+  if(!desc || !btnTitle || !btnMore || !btnLink || !linkBoxes)
+    return false;
+
+  if(btnMore === true) {
+    if(!btnTitle || !btnLink) 
+      return false;
+
+    if(
+      btnTitle.length! <= 0 ||
+      btnTitle.length! > 25 ||
+      !regexBtnTitle.test(btnTitle)
+    ) return false;
+
+    if(
+      btnLink.length! <= 0 ||
+      btnLink.length! > 256 ||
+      !regexBtnLink.test(btnLink)
+    ) return false;
+  }
+
   if(
-    data.desc.length! <= 0 ||
-    data.desc?.length! > 800 ||
-    !regexDesc.test(data.desc as string)
-  ) return createResponse("Opis jest nieprawidłowy!");
+    desc.length === 0 ||
+    desc?.length! > 800 ||
+    !regexDesc.test(desc) ||
+    linkBoxes.length > 4
+  ) return false;
 
-  if(data.btnMore === true) {
-    if(
-      data.btnTitle?.length! <= 0 ||
-      data.btnTitle?.length! > 25 ||
-      !regexBtnTitle.test(data.btnTitle as string)
-    ) return createResponse("Nazwa przycisku jest nieprawidłowa!");
-
-    if(
-      data.btnLink?.length! <= 0 ||
-      data.btnLink?.length! > 256 ||
-      !regexBtnLink.test(data.btnLink as string)
-    ) return createResponse("Adres przycisku jest nieprawidłowy!");
-  } else if(data.btnMore !== false) {
-    return createResponse("Ustawienia przycisku nie są prawidłowe!");
-  }
-
-  if(data.linkBoxes.length > 4) {
-    return createResponse("Za dużo pojemników z odnośnikami!")
-  }
-
-  for(let i=0; i<data.linkBoxes.length!;i++) {
-    const linkBox = data.linkBoxes[i];
+  for(let i=0; i<linkBoxes.length!;i++) {
+    const linkBox = linkBoxes[i];
     if(
       linkBox.name.length <= 0 ||
       linkBox.name.length > 30 ||
       !regexLinkBoxName.test(linkBox.name) ||
       linkBox.links.length <= 0 ||
       linkBox.links.length > 5
-    ) return createResponse("Nazwa kontenera na odnośniki jest nieprawidłowa!");
+    ) return false;
     for(let j=0; j<linkBox.links.length; j++) {
       const link = linkBox.links[j];
       if(
@@ -76,28 +75,34 @@ async function checkDataFooter(data:FormDataFooter) {
         link.url.length <= 0 ||
         link.url.length > 256 ||
         !regexBtnLink.test(link.url)
-      ) return createResponse("Odnośnik jest nieprawidłowo uzupełniony!");
+      ) return false;
     }
   }
-  return createResponse("Dane są prawidłowe", false);
+  return true;
 }
 
 async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
+  const session = req.session.user;
   if(req.method === "POST") {
-    const session = req.session.user;
-    if(session?.isLoggedIn && session.permissions.footer) {
-        const data = req.body;
-        const dataCheck = await checkDataFooter(data);
-        if(!dataCheck.error) {
-          const result = await setFooterConfig(data);
-          res.json(result);
-        } else {
-          res.json({error: true})
-        }
-    } else {
-        res.json({error: true});
-    }
+    if(!session?.isLoggedIn && !session?.permissions?.footer)
+      return res.status(403).json({message: "Nie posiadasz uprawnień do tej ścieżki!"});
+
+    const data = req.body;
+    const dataCheck = checkDataFooter(data);
+    if(!dataCheck)
+      return res.status(400).json({message: "Parametry zapytania są nieprawidłowe!"});
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("footer");
+    const findOne = await tab.findOne({});
+    const updateData = await tab.updateOne({_id: findOne!._id}, {$set: {...data}});
+    client.close();
+    if(!updateData.acknowledged)
+      return res.status(500).json({message: "Wystąpił problem przy aktualizacji danych!"});
+      
+    return res.status(200).json({error: false});
   } else {
-    res.json({error: true});
+    return res.status(404);
   }
 }

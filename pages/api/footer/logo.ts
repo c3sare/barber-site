@@ -5,14 +5,15 @@ import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
 import { MongoClient } from "mongodb";
+import getNewFileName from "@/utils/getNewFileName";
 
 export const config = {
-    api: {
-      bodyParser: false
-    }
+  api: {
+    bodyParser: false,
+  },
 };
 
-async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
+async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
   const form = formidable({ multiples: true });
 
   const formData = new Promise((resolve, reject) => {
@@ -28,52 +29,48 @@ async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
   return data;
 }
 
-export default withIronSessionApiRoute(newsRoute, sessionOptions);
+export default withIronSessionApiRoute(footerLogoRoute, sessionOptions);
 
-function getNewFileName(orgName:string) {
-  const withoutExt = orgName?.slice(0, orgName.lastIndexOf("."));
-  const ext = orgName?.slice(orgName.lastIndexOf("."));
-  const genFragment = Math.random().toString(36).slice(2);
-  return withoutExt+"_"+genFragment+ext;
-}
-
-function checkData(image:any) {
-  if(
-    image.mimetype.indexOf("image") === 0 &&
-    image.size < 1024*1024*5
-  ) return true;
+function checkData(image: any) {
+  if (image.mimetype.indexOf("image") === 0 && image.size < 1024 * 1024 * 5)
+    return true;
   else return false;
 }
 
-async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
+async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
-  if(req.method === "POST") {
-    if(user?.isLoggedIn) {
-      const pagesDirectory = path.join(process.cwd(), 'public');
-      const image:any = await handlePostFormReq(req, res);
-      if(checkData(image)) {
-        const newName = getNewFileName(image.originalFilename);
-        const filedata = await fs.readFile(image.filepath);
-        fs.appendFile(`${pagesDirectory}/images/${newName}`, Buffer.from(filedata.buffer));
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("footer");
-        const oldFile = await tab.findOne({});
-        const insert = await tab.updateOne({}, {$set: {logo: newName}});
-        if(insert.acknowledged !== undefined) {
-          if(oldFile !== null)
-            fs.unlink(`${pagesDirectory}/images/${oldFile.img}`);
-          res.json({error: false, img: newName});
-        } else {
-          res.json({error: true});
-        }
-      } else {
-        res.json({error: true});
-      }
-    } else {
-      res.json({error: true});
-    }
+  if (req.method === "POST") {
+    if (!user?.isLoggedIn || !user?.permissions?.footer)
+      return res
+        .status(403)
+        .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
+
+    const publicDir = path.join(process.cwd(), "public");
+    const image: any = await handlePostFormReq(req, res);
+    if (checkData(image))
+      return res
+        .status(400)
+        .json({ message: "Parametry zapytania są nieprawidłowe!" });
+
+    const newName = getNewFileName(image.originalFilename);
+    const filedata = await fs.readFile(image.filepath);
+    fs.appendFile(
+      `${publicDir}/images/${newName}`,
+      Buffer.from(filedata.buffer)
+    );
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("footer");
+    const oldFile = await tab.findOne({});
+    const insert = await tab.updateOne({}, { $set: { logo: newName } });
+    if (!insert.acknowledged)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy aktualizacji danych!" });
+    if (oldFile) fs.unlink(`${publicDir}/images/${oldFile.img}`);
+
+    return res.json({ error: false, img: newName });
   } else {
-    res.json({error: true});
+    return res.status(404);
   }
 }

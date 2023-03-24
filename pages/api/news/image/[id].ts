@@ -5,14 +5,15 @@ import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
 import { MongoClient, ObjectId } from "mongodb";
+import getNewFileName from "@/utils/getNewFileName";
 
 export const config = {
-    api: {
-      bodyParser: false
-    }
+  api: {
+    bodyParser: false,
+  },
 };
 
-async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
+async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
   const form = formidable({ multiples: true });
 
   const formData = new Promise((resolve, reject) => {
@@ -30,51 +31,63 @@ async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
 
 export default withIronSessionApiRoute(newsRoute, sessionOptions);
 
-function getNewFileName(orgName:string) {
-  const withoutExt = orgName?.slice(0, orgName.lastIndexOf("."));
-  const ext = orgName?.slice(orgName.lastIndexOf("."));
-  const genFragment = Math.random().toString(36).slice(2);
-  return withoutExt+"_"+genFragment+ext;
-}
-
-function checkData(image:any) {
-  if(
-    image.mimetype.indexOf("image") === 0 &&
-    image.size < 1024*1024*5
-  ) return true;
+function checkData(image: any) {
+  if (image.mimetype.indexOf("image") === 0 && image.size < 1024 * 1024 * 5)
+    return true;
   else return false;
 }
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
-    if(req.method === "POST") {
-      if(user?.isLoggedIn) {
-        const pagesDirectory = path.join(process.cwd(), 'public');
-        const image:any = await handlePostFormReq(req, res);
-        if(checkData(image)) {
-            const newName = getNewFileName(image.originalFilename);
-            const filedata = await fs.readFile(image.filepath);
-            fs.appendFile(`${pagesDirectory}/images/articles/${newName}`, Buffer.from(filedata.buffer));
-            const client = new MongoClient(process.env.MONGO_URI as string);
-            const database = client.db("site");
-            const tab = database.collection("news");
-            const _id = new ObjectId(req.query.id as string);
-            const oldFile = await tab.findOne({_id});
-            const insert = await tab.updateOne({_id}, {$set: {img: newName}});
-            if(insert.acknowledged !== undefined) {
-                if(oldFile !== null)
-                    fs.unlink(`${pagesDirectory}/images/articles/${oldFile.img}`);
-                res.json({error: false, img: newName});
-            } else {
-                res.json({error: true});
-            }
-        } else {
-            res.json({error: true});
-        }
-      } else {
-        res.json({error: true});
-      }
-    } else {
-        res.json({error: true});
-    }
+  if (req.method === "POST") {
+    if (!user?.isLoggedIn || !user?.permissions?.news)
+      return res
+        .status(403)
+        .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
+
+    const { id }: Partial<{ id: string }> = req.query;
+
+    if (!ObjectId.isValid(id as string))
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    const image: any = await handlePostFormReq(req, res);
+
+    if (!checkData(image))
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    const publicDir = path.join(process.cwd(), "public");
+    const newName = getNewFileName(image.originalFilename);
+    const filedata = await fs.readFile(image.filepath);
+    fs.appendFile(
+      `${publicDir}/images/articles/${newName}`,
+      Buffer.from(filedata.buffer)
+    );
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("news");
+    const _id = new ObjectId(id as string);
+    const oldFile = await tab.findOne({ _id });
+
+    if (oldFile === null)
+      return res
+        .status(404)
+        .json({ message: "Nie znaleziono artykułu o id " + id });
+
+    const insert = await tab.updateOne({ _id }, { $set: { img: newName } });
+    if (insert.acknowledged === undefined)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
+
+    if (oldFile !== null)
+      fs.unlink(`${publicDir}/images/articles/${oldFile.img}`);
+
+    res.status(200).json({ error: false, img: newName });
+  } else {
+    return res.status(404);
+  }
 }

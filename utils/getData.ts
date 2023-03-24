@@ -1,4 +1,3 @@
-import { FormDataFooter } from "@/pages/api/footer";
 import { MongoClient } from "mongodb";
 
 export default async function getData(name: string) {
@@ -64,18 +63,5 @@ export async function setBasicConfig({companyName, yearOfCreate, slogan}:BasicCo
   client.close();
   return ({
     error: !updateData.acknowledged
-  });
-}
-
-export async function setFooterConfig(data:FormDataFooter) {
-
-  const client = new MongoClient(process.env.MONGO_URI as string);
-  const database = client.db("site");
-  const tab = database.collection("footer");
-  const findOne = await tab.findOne({});
-  const updateData = await tab.updateOne({_id: findOne!._id}, {$set: {...data}});
-  client.close();
-  return ({
-    error: !updateData.acknowledged,
   });
 }

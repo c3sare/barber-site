@@ -8,79 +8,108 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
-const titleRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
+const titleRegex =
+  /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
 const slugRegex = /^[a-z](-?[a-z])*$/;
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
-  if(req.method === "GET") {
-    if(user?.isLoggedIn) {
-      const menu = await getMenu();
-      res.json({error: false, menu});
-    } else {
-      res.json({error: false});
-    }
-  } else if(req.method === "DELETE") {
-    if(user?.isLoggedIn) {
-      const {id}:{id: string} = req.body;
+  if (req.method === "GET") {
+    if (!user?.isLoggedIn || !user?.permissions?.menu)
+      return res
+        .status(403)
+        .json({ message: "Brak uprawnień dla tej ścieżki!" });
 
-      const client = new MongoClient(process.env.MONGO_URI as string);
-      const database = client.db("site");
-      const tab = database.collection("menu");
-      const deleteResult = await tab.deleteOne({_id: new ObjectId(id), default: false});
-      if(deleteResult.deletedCount === 1) {
-        const updateParentResult = await tab.updateMany({parent: id}, {$set: {parent: ""}});
-        if(updateParentResult.acknowledged) {
-          const pagesDirectory = path.join(process.cwd(), 'pagecontent');
-          fs.unlink(`${pagesDirectory}/${id}.json`);
-          res.json({error: false});
-        } else {
-          res.json({error: true});
-        }
-      } else {
-        res.json({error: true});
-      }
-  
+    const menu = await getMenu();
+    res.json(menu);
+  } else if (req.method === "DELETE") {
+    if (!user?.isLoggedIn || !user?.permissions?.menu)
+      return res
+        .status(403)
+        .json({ message: "Brak uprawnień do tej ścieżki!" });
+    const { id }: { id: string } = req.body;
+
+    if (!ObjectId.isValid(id))
+      return res
+        .status(400)
+        .json({ message: "Parametry zapytania są nieprawidłowe!" });
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("menu");
+    const deleteResult = await tab.deleteOne({
+      _id: new ObjectId(id),
+      default: false,
+    });
+
+    if (deleteResult.deletedCount !== 1) {
       client.close();
-    } else {
-      res.json({error: false});
+      return res
+        .status(404)
+        .json({ message: "Nie znaleziono elementu o id " + id });
     }
-  } else if(req.method === "PUT") {
-    if(user?.isLoggedIn) {
-      const item = req.body;
-      if(
-        titleRegex.test(item.title) &&
-        slugRegex.test(item.slug) &&
-        item.title.length <= 25 &&
-        item.slug.length <= 20
-      ) {
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("menu");
-        const allItems = (await tab.find({}).toArray()).filter(item => item.parent === "");
-        const insertResult = await tab.insertOne({
-          title: item.title,
-          slug: item.slug,
-          on: true,
-          custom: true,
-          order: allItems.length+1,
-          parent: "",
-          default: false
-        });
-        if(insertResult.acknowledged) {
-          const pagesDirectory = path.join(process.cwd(), 'pagecontent');
-          fs.appendFile(`${pagesDirectory}/${insertResult.insertedId.toString()}.json`, '{}');
-          res.json({error: false});
-        } else {
-          res.json({error: true});
-        }
-    
-        client.close();
-      } else {
-        res.json({error: true});
-      }
-    } else {
-      res.json({error: false});
+
+    const updateParentResult = await tab.updateMany(
+      { parent: id },
+      { $set: { parent: "" } }
+    );
+    if (!updateParentResult.acknowledged) {
+      client.close();
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
     }
+
+    const pagesDir = path.join(process.cwd(), "pagecontent");
+    fs.unlink(`${pagesDir}/${id}.json`);
+    res.json({ error: false });
+    client.close();
+  } else if (req.method === "PUT") {
+    if (!user?.isLoggedIn || !user?.permissions?.menu)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+    const { title, slug } = req.body;
+    if (
+      !titleRegex.test(title) &&
+      !slugRegex.test(slug) &&
+      title.length > 25 &&
+      slug.length > 20
+    )
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("menu");
+    const allItems = (await tab.find({}).toArray()).filter(
+      (item) => item.parent === ""
+    );
+    const insertResult = await tab.insertOne({
+      title,
+      slug,
+      on: true,
+      custom: true,
+      order: allItems.length + 1,
+      parent: "",
+      default: false,
+    });
+    client.close();
+
+    if (!insertResult.acknowledged)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
+
+    const pagesDirectory = path.join(process.cwd(), "pagecontent");
+    fs.appendFile(
+      `${pagesDirectory}/${insertResult.insertedId.toString()}.json`,
+      "{}"
+    );
+
+    return res.status(200).json({ error: false });
+  } else {
+    return res.status(404);
   }
 }

@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "id": "haohov",
+      "cells": [
+        {
+          "id": "7bmook",
+          "size": 6,
+          "plugin": { "id": "ory/editor/core/content/slate", "version": 1 },
+          "dataI18n": {
+            "default": {
+              "slate": [
+                {
+                  "type": "PARAGRAPH/PARAGRAPH",
+                  "children": [{ "text": "test" }]
+                }
+              ]
+            }
+          },
+          "rows": [],
+          "inline": null
+        },
+        {
+          "id": "1q1nl1",
+          "size": 6,
+          "plugin": { "id": "ory/editor/core/content/slate", "version": 1 },
+          "dataI18n": {
+            "default": {
+              "slate": [
+                {
+                  "type": "PARAGRAPH/PARAGRAPH",
+                  "children": [{ "text": "test" }]
+                }
+              ]
+            }
+          },
+          "rows": [],
+          "inline": null
+        }
+      ]
+    },
+    {
+      "id": "jg5fp8",
+      "cells": [
+        {
+          "id": "wt0aar",
+          "size": 12,
+          "plugin": { "id": "code-snippet", "version": 1 },
+          "dataI18n": {
+            "default": {
+              "rozszerzenie": "tsx",
+              "kod": "export default interface OpenHoursData {\n    _id: string,\n    short: \"pon\" | \"wto\" | \"sro\" | \"czw\" | \"pia\" | \"sob\" | \"nie\",\n    long: \"Poniedziałek\" | \"Wtorek\" | \"Środa\" | \"Czwartek\" | \"Piątek\" | \"Sobota\" | \"Niedziela\",\n    start: string,\n    end: string,\n    closed: boolean,\n    order: number\n}"
+            }
+          },
+          "rows": [],
+          "inline": null
+        }
+      ]
+    }
+  ]
+}

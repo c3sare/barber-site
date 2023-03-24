@@ -6,23 +6,17 @@ import { NextApiRequest, NextApiResponse } from "next";
 import path from "path";
 import fs from "fs/promises";
 import formidable from "formidable";
+import getNewFileName from "@/utils/getNewFileName";
 
 export const config = {
   api: {
-    bodyParser: false
-  }
+    bodyParser: false,
+  },
 };
 
 export default withIronSessionApiRoute(infoRoute, sessionOptions);
 
-function getNewFileName(orgName:string) {
-  const withoutExt = orgName?.slice(0, orgName.lastIndexOf("."));
-  const ext = orgName?.slice(orgName.lastIndexOf("."));
-  const genFragment = Math.random().toString(36).slice(2);
-  return withoutExt+"_"+genFragment+ext;
-}
-
-async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
+async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
   const form = formidable({ multiples: true });
 
   const formData = new Promise((resolve, reject) => {
@@ -31,71 +25,116 @@ async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
         reject(err);
       }
 
-      resolve({ ...{...fields, ...files} });
+      resolve({ ...{ ...fields, ...files } });
     });
   });
   const data = await formData;
   return data;
 }
 
-const titleRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
+const titleRegex =
+  /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
 const descRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
-  if(req.method === "GET" && session?.isLoggedIn && session.permissions.news) {
+  if (req.method === "GET") {
+    if (!session?.isLoggedIn || !session?.permissions?.news)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+
     const data = await getData("news");
-    res.json(data);
-  } else if(req.method === "PUT" && session?.isLoggedIn && session?.permissions?.news) {
-    const {title, desc, date, content, img}:any = await handlePostFormReq(req, res);
-    if(
-      titleRegex.test(title) &&
-      title?.length > 0 &&
-      title?.length <= 80 &&
-      descRegex.test(desc) &&
-      desc.length > 0 &&
-      desc.length <= 400 &&
-      dateRegex.test(date) &&
-      img.mimetype.indexOf("image") === 0 &&
-      img.size < 1024*1024*5
-    ) {
-      const publicDir = path.join(process.cwd(), 'public');
-      const newsDir = path.join(process.cwd(), 'news');
-      const newName = getNewFileName(img.originalFilename);
-      const filedata = await fs.readFile(img.filepath);
-      fs.appendFile(`${publicDir}/images/articles/${newName}`, Buffer.from(filedata.buffer));
-      const client = new MongoClient(process.env.MONGO_URI as string);
-      const database = client.db("site");
-      const tab = database.collection("news");
-      const insert = await tab.insertOne({title, desc, date, img: newName});
-      if(insert.acknowledged !== undefined) {
-        fs.writeFile(`${newsDir}/${insert.insertedId}.json`, content, "utf-8");
-        res.json({error: false});
-      } else {
-        res.json({error: true});
-      }
-    } else {
-      res.json({error: true})
-    }
-  } else if(req.method === "DELETE" && session?.isLoggedIn && session?.permissions?.news) {
-    const {id}:any = await handlePostFormReq(req, res);
+    res.status(200).json(data);
+  } else if (req.method === "PUT") {
+    if (!session?.isLoggedIn || !session?.permissions?.news)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+
+    const { title, desc, date, content, img }: any = await handlePostFormReq(
+      req,
+      res
+    );
+
+    if (!title || !desc || !date || !content || !img)
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    if (
+      !titleRegex.test(title) ||
+      title.length === 0 ||
+      title.length > 80 ||
+      !descRegex.test(desc) ||
+      desc.length === 0 ||
+      desc.length > 400 ||
+      !dateRegex.test(date) ||
+      img?.mimetype?.indexOf("image") !== 0 ||
+      img?.size > 1024 * 1024 * 5
+    )
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    const publicDir = path.join(process.cwd(), "public");
+    const newsDir = path.join(process.cwd(), "news");
+    const newName = getNewFileName(img.originalFilename);
+    const filedata = await fs.readFile(img.filepath);
+    fs.appendFile(
+      `${publicDir}/images/articles/${newName}`,
+      Buffer.from(filedata.buffer)
+    );
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const news = database.collection("news");
+    const insert = await news.insertOne({ title, desc, date, img: newName });
+    client.close();
+    if (insert.acknowledged === undefined)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił błąd przy wykonywaniu zapytania!" });
+
+    fs.writeFile(`${newsDir}/${insert.insertedId}.json`, content, "utf-8");
+
+    return res.status(200).json({ error: false });
+  } else if (req.method === "DELETE") {
+    if (!session?.isLoggedIn || !session?.permissions?.news)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+
+    const { id }: any = await handlePostFormReq(req, res);
+
+    if (!ObjectId.isValid(id))
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
     const tab = database.collection("news");
     const _id = new ObjectId(id);
-    const toDelete = await tab.findOne({_id});
-    const del = await tab.deleteOne({_id});
-    if(del.deletedCount === 1) {
-      const publicDir = path.join(process.cwd(), 'public');
-      const newsDir = path.join(process.cwd(), 'news');
-      fs.unlink(`${publicDir}/images/articles/${toDelete!.img}`);
-      fs.unlink(`${newsDir}/${id}.json`);
-      res.json({error: false});
-    } else {
-      res.json({error: true});
-    }
+    const toDelete = await tab.findOne({ _id });
+
+    if (toDelete === null)
+      return res
+        .status(404)
+        .json({ message: "Nie odnaleziono artykułu o id " + id });
+
+    const del = await tab.deleteOne({ _id });
+    if (del.deletedCount !== 1)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
+
+    const publicDir = path.join(process.cwd(), "public");
+    const newsDir = path.join(process.cwd(), "news");
+    fs.unlink(`${publicDir}/images/articles/${toDelete!.img}`);
+    fs.unlink(`${newsDir}/${id}.json`);
+    return res.status(200).json({ error: false });
   } else {
-    res.json({error: true});
+    return res.status(404);
   }
 }
