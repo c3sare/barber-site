@@ -6,35 +6,82 @@ import { MongoClient, ObjectId } from "mongodb";
 
 export default withIronSessionApiRoute(workersRoute, sessionOptions);
 
+const nameRegex =
+  /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
+
 async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
-    const session = req.session.user;
-    if(req.method === "GET" && session?.isLoggedIn && session?.permissions?.workers) {
-        const workers = await getData("barbers");
-        res.json(workers);
-    } else if(req.method === "PUT" && session?.isLoggedIn && session?.permissions?.workers) {
-        const nameRegex = /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
-        const {name} = req.body;
-        if(nameRegex.test(name) && name.length > 0 && name.length <= 30) {
-            const client = new MongoClient(process.env.MONGO_URI as string);
-            const database = client.db("site");
-            const tab = database.collection("barbers");
-            const insert = await tab.insertOne({name});
-            res.json({error: !Boolean(insert.acknowledged)});
-        } else
-            res.json({error: true});
-    } else if(req.method === "DELETE" && session?.isLoggedIn && session?.permissions?.workers) {
-        const {id} = req.body;
-        const client = new MongoClient(process.env.MONGO_URI as string);
-        const database = client.db("site");
-        const tab = database.collection("barbers");
-        const del = await tab.deleteOne({_id: new ObjectId(id)});
-        if(del.deletedCount === 1) {
-            tab.deleteMany({barber_id: id});
-            res.json({error: false});
-        } else {
-            res.json({error: true});
-        }
-    } else {
-        res.json({error: true})
-    }
+  const session = req.session.user;
+  if (req.method === "GET") {
+    if (!session?.isLoggedIn || !session?.permissions?.users)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+
+    const workers = await getData("barbers");
+    res.json(workers);
+  } else if (req.method === "PUT") {
+    if (!session?.isLoggedIn || !session?.permissions?.users)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+
+    const { name } = req.body;
+    if (!nameRegex.test(name) || name.length === 0 || name.length > 30)
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe argumenty zapytania!" });
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("barbers");
+    const insert = await tab.insertOne({ name });
+
+    if (!insert)
+      res
+        .status(500)
+        .json({ message: "Wystąpił błąd przy wykonywaniu zapytania!" });
+
+    res.status(200).json({ error: false });
+  } else if (req.method === "DELETE") {
+    if (!session?.isLoggedIn || !session?.permissions?.users)
+      return res
+        .status(403)
+        .json({ message: "Nie masz uprawnień do tej ścieżki!" });
+
+    const { id } = req.body;
+
+    if (!ObjectId.isValid(id as string))
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("barbers");
+    const _id = new ObjectId(id);
+    const exist = tab.findOne({ _id });
+
+    if (!exist)
+      return res
+        .status(404)
+        .json({ message: "Pracownik o id " + id + " nie istnieje!" });
+
+    const delReservations = await tab.deleteMany({ barber_id: id });
+
+    if (!delReservations)
+      return res
+        .status(500)
+        .json({ message: "Błąd przy wykonywaniu zapytania!" });
+
+    const delWorker = await tab.deleteOne({ _id });
+
+    if (!delWorker)
+      return res
+        .status(500)
+        .json({ message: "Błąd przy wykonywaniu zapytania!" });
+
+    res.status(200).json({ error: false });
+  } else {
+    res.status(404);
+  }
 }
