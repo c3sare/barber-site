@@ -1,50 +1,56 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import InfoData from "@/lib/types/InfoData";
-import { setBasicConfig } from "@/utils/getData";
 import { withIronSessionApiRoute } from "iron-session/next";
+import { MongoClient } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(infoRoute, sessionOptions);
 
-function createResponse(msg: string, error: boolean = true) {
-  return ({
-    error, msg
-  })
-}
-
-function checkDataInfo(data:InfoData) {
-  const {companyName, slogan, yearOfCreate} = data;
+function checkDataInfo(data: InfoData) {
+  const { companyName, slogan, yearOfCreate } = data;
   const regexCompanyNameSlogan = /^[a-zA-Z][a-zA-Z0-9-_.\s]{1,20}$/i;
-  if(!companyName || !slogan || !yearOfCreate) return createResponse("Dane są nieprawidłowe!");
-  if(
-    companyName.length > 0 &&
-    companyName.length <= 20 &&
-    regexCompanyNameSlogan.test(companyName) &&
-    slogan.length > 0 &&
-    slogan.length <= 20 ||
-    regexCompanyNameSlogan.test(slogan) &&
-    yearOfCreate > 1900 &&
-    yearOfCreate <= new Date().getFullYear()
+  if (!companyName || !slogan || !yearOfCreate) return false;
+  if (
+    (companyName.length > 0 &&
+      companyName.length <= 20 &&
+      regexCompanyNameSlogan.test(companyName) &&
+      slogan.length > 0 &&
+      slogan.length <= 20) ||
+    (regexCompanyNameSlogan.test(slogan) &&
+      yearOfCreate > 1900 &&
+      yearOfCreate <= new Date().getFullYear())
   )
-    return createResponse("Dane są prawidłowe!", false);
-  else 
-    return createResponse("Dane są nieprawidłowe!");
+    return true;
+  else return false;
 }
 
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
-  switch(req.method) {
-    case 'POST':
-      if(!session?.isLoggedIn || !session?.permissions?.basic) return res.status(403);
-      const data = JSON.parse(req.body);
-      const valid = checkDataInfo(data);
-      if(!valid.error) {
-        const result = await setBasicConfig(data);
-        res.status(200).json(result);
-      } else {
-        return res.status(200).json(valid);
-      }
-    default:
-      return res.status(404).redirect("/404");
+  if (req.method === "POST") {
+    if (!session?.isLoggedIn || !session?.permissions?.basic)
+      return res.status(403);
+    const { companyName, yearOfCreate, slogan } = req.body;
+    if (!checkDataInfo({ companyName, yearOfCreate, slogan }))
+      return res
+        .status(400)
+        .json({ message: "Parametry zapytania są nieprawidłowe!" });
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("info");
+    const updateData = await tab.updateOne(
+      {},
+      { companyName, yearOfCreate, slogan }
+    );
+    client.close();
+
+    if (!updateData)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił błąd przy umieszczaniu pliku!" });
+
+    res.status(200).json({ error: false });
+  } else {
+    return res.status(404);
   }
 }

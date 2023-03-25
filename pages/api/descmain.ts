@@ -6,16 +6,17 @@ import formidable from "formidable";
 import path from "path";
 import fs from "fs/promises";
 import { MongoClient, ObjectId } from "mongodb";
+import getNewFileName from "@/utils/getNewFileName";
 
 export default withIronSessionApiRoute(descMainRoute, sessionOptions);
 
 export const config = {
   api: {
-    bodyParser: false
-  }
+    bodyParser: false,
+  },
 };
 
-async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
+async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
   const form = formidable({ multiples: true });
 
   const formData = new Promise((resolve, reject) => {
@@ -24,15 +25,15 @@ async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
         reject(err);
       }
 
-      const data:any = JSON.parse(fields.data as any);
+      const data: any = JSON.parse(fields.data as any);
 
       const keys = Object.keys(files);
-      for(let i=0;i<keys.length;i++) {
+      for (let i = 0; i < keys.length; i++) {
         const index = Number(keys[i].slice(-1));
-        data.pros[index].img = files[keys[i]]
+        data.pros[index].img = files[keys[i]];
       }
 
-      resolve({ ...data});
+      resolve({ ...data });
     });
   });
   const data = await formData;
@@ -41,55 +42,69 @@ async function handlePostFormReq(req:NextApiRequest, res:NextApiResponse) {
 
 function checkData(title: string, desc: string) {
   const titleDescRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
-  if(
+  if (
     titleDescRegex.test(title) &&
     title?.length > 0 &&
     title?.length <= 80 &&
     titleDescRegex.test(desc) &&
     desc?.length > 0 &&
     desc?.length <= 800
-  ) return true;
+  )
+    return true;
   else return false;
-}
-
-function getNewFileName(orgName:string) {
-  const withoutExt = orgName?.slice(0, orgName.lastIndexOf("."));
-  const ext = orgName?.slice(orgName.lastIndexOf("."));
-  const genFragment = Math.random().toString(36).slice(2);
-  return withoutExt+"_"+genFragment+ext;
 }
 
 async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
-  if(req.method === "GET" && session?.isLoggedIn && session.permissions?.menu) {
+  if (req.method === "GET") {
+    if (!session?.isLoggedIn && !session?.permissions?.menu)
+      return res
+        .status(403)
+        .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
+
     const data = await getDataOne("descMain");
     res.json(data);
-  } else if(req.method === "POST" && session?.isLoggedIn && session?.permissions?.menu) {
-    const {title, description, pros}:any = await handlePostFormReq(req, res);
-    const pagesDirectory = path.join(process.cwd(), 'public');
-    if(checkData(title, description)) {
-      await pros.forEach(async (item:any) => {
-        if(typeof item.img === "object") {
-          const newName = getNewFileName(item.img.originalFilename);
-          const filedata = await fs.readFile(item.img.filepath);
-          fs.appendFile(`${pagesDirectory}/images/${newName}`, Buffer.from(filedata.buffer));
-          item.img = newName;
-        }
-      });
-      const client = new MongoClient(process.env.MONGO_URI as string);
-      const database = client.db("site");
-      const tab = database.collection("descMain");
-      const oldFile = await tab.find({}).toArray();
-      if(oldFile.length > 0) {
-        const insert = await tab.updateOne({_id: new ObjectId(oldFile[0]._id)}, {$set: {title, description, pros}});
-        res.json({error: !(insert.acknowledged !== undefined)});
-      } else {
-        res.json({error: true});
+  } else if (req.method === "POST") {
+    if (!session?.isLoggedIn && !session?.permissions?.menu)
+      return res
+        .status(403)
+        .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
+
+    const { title, description, pros }: any = await handlePostFormReq(req, res);
+
+    if (!checkData(title, description))
+      return res
+        .status(400)
+        .json({ message: "Parametry zapytania są nieprawidłowe!" });
+
+    const pagesDirectory = path.join(process.cwd(), "public");
+
+    await pros.forEach(async (item: any) => {
+      if (typeof item.img === "object") {
+        const newName = getNewFileName(item.img.originalFilename);
+        const filedata = await fs.readFile(item.img.filepath);
+        fs.appendFile(
+          `${pagesDirectory}/images/${newName}`,
+          Buffer.from(filedata.buffer)
+        );
+        item.img = newName;
       }
-    } else {
-        res.json({error: true});
-    }
+    });
+
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    const database = client.db("site");
+    const tab = database.collection("descMain");
+    const insert = await tab.updateOne(
+      {},
+      { $set: { title, description, pros } }
+    );
+    if (!insert)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy aktualizacji danych!" });
+
+    res.json({ error: false });
   } else {
-    res.json({error: true});
+    res.status(404);
   }
 }
