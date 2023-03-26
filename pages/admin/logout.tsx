@@ -1,16 +1,16 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import useSWR from "swr";
 
 const Logout = () => {
-    const router = useRouter()
-    const {data} = useSWR("/api/logout");
+  const router = useRouter();
 
-    useEffect(() => {
-        if(data?.isLoggedIn === false) {
-            setTimeout(() => router.push("/admin/login"), 200);
-        }
-    }, [data, router]);
-}
+  useEffect(() => {
+    fetch("/api/logout", {
+      method: "POST",
+    }).finally(() => {
+      router.push("/admin/login");
+    });
+  }, [router]);
+};
 
 export default Logout;

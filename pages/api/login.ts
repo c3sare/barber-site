@@ -12,7 +12,11 @@ const loginRegex = /^(?=.*[A-Za-z0-9]$)[A-Za-z][A-Za-z\d.-]{0,24}$/;
 export default withIronSessionApiRoute(loginRoute, sessionOptions);
 
 async function loginRoute(req: NextApiRequest, res: NextApiResponse<User>) {
+  const session = req.session.user;
   if (req.method === "POST") {
+    if (session?.isLoggedIn)
+      return res.status(403).json({ message: "Jesteś już zalogowany!" } as any);
+
     const { login, pwd } = req.body;
     if (!login || !pwd || !pwdRegex.test(pwd) || !loginRegex.test(login))
       return res.json({
@@ -45,11 +49,7 @@ async function loginRoute(req: NextApiRequest, res: NextApiResponse<User>) {
       permissions: data.permissions,
     };
     await req.session.save();
-    return res.json({
-      isLoggedIn: true,
-      login,
-      permissions: data.permissions,
-    });
+    return res.status(200).json(req.session.user);
   } else {
     return res.status(404);
   }

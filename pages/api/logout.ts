@@ -6,6 +6,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default withIronSessionApiRoute(logoutRoute, sessionOptions);
 
 function logoutRoute(req: NextApiRequest, res: NextApiResponse<User>) {
-  req.session.destroy();
-  res.json({ isLoggedIn: false, login: "", permissions: {}});
+  const session = req.session.user;
+  if (req.method === "POST") {
+    if (!session?.isLoggedIn)
+      return res.status(400).json({ message: "Nie jesteś zalogowany!" } as any);
+
+    req.session.destroy();
+    res.status(200).json({ isLoggedIn: false, login: "", permissions: {} });
+  } else {
+    return res.status(404);
+  }
 }
