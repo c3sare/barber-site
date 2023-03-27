@@ -1,11 +1,9 @@
-import getMenu from "@/lib/getMenu";
 import path from "path";
 import { promises as fs } from "fs";
+import Menu from "@/models/Menu";
 
 export default async function handler(slug: string) {
-  const menu = await getMenu();
-
-  const findItem = menu.find((item) => item.slug === slug);
+  const findItem = await Menu.findOne({ slug });
 
   const pageDataDirectory = path.join(process.cwd(), "pagecontent");
 

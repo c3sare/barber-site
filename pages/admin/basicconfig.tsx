@@ -2,7 +2,7 @@ import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import { getDataOne } from "@/utils/getData";
+import Info from "@/models/Info";
 import { Box, Grid } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { useState } from "react";
@@ -200,7 +200,7 @@ export const getServerSideProps = withIronSessionSsr(
       };
     }
 
-    const data = await getDataOne("infos");
+    const data = JSON.parse(JSON.stringify(await Info.findOne({})));
 
     return {
       props: {

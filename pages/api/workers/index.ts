@@ -1,8 +1,8 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import getData from "@/utils/getData";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import Barbers from "@/models/Barber";
 
 export default withIronSessionApiRoute(workersRoute, sessionOptions);
 
@@ -17,7 +17,7 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const workers = await getData("barbers");
+    const workers = await Barbers.find({});
     res.json(workers);
   } else if (req.method === "PUT") {
     if (!session?.isLoggedIn || !session?.permissions?.users)
@@ -31,10 +31,7 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe argumenty zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("barbers");
-    const insert = await tab.insertOne({ name });
+    const insert = await Barbers.collection.insertOne({ name });
 
     if (!insert)
       res
@@ -55,25 +52,22 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("barbers");
     const _id = new ObjectId(id);
-    const exist = tab.findOne({ _id });
+    const exist = await Barbers.findOne({ _id });
 
     if (!exist)
       return res
         .status(404)
         .json({ message: "Pracownik o id " + id + " nie istnieje!" });
 
-    const delReservations = await tab.deleteMany({ barber_id: id });
+    const delReservations = await Barbers.deleteMany({ barber_id: id });
 
     if (!delReservations)
       return res
         .status(500)
         .json({ message: "Błąd przy wykonywaniu zapytania!" });
 
-    const delWorker = await tab.deleteOne({ _id });
+    const delWorker = await Barbers.deleteOne({ _id });
 
     if (!delWorker)
       return res

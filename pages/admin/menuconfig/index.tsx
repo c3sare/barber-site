@@ -1,7 +1,6 @@
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
 import { withIronSessionSsr } from "iron-session/next";
 import {
   UncontrolledTreeEnvironment,
@@ -40,6 +39,7 @@ import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import { useRouter } from "next/router";
 import SaveIcon from "@mui/icons-material/Save";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
+import Menu from "@/models/Menu";
 
 interface MenuItemRCT {
   index: string;
@@ -424,7 +424,7 @@ export default AdminPanelMenuConfig;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
-    const menu = await getMenu();
+    const menu = JSON.parse(JSON.stringify(await Menu.find({})));
 
     if (user?.isLoggedIn !== true || !user?.permissions?.menu) {
       return {

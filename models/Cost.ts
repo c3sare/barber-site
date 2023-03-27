@@ -7,12 +7,12 @@ interface Service {
   time: number;
 }
 
-interface ICosts {
+interface ICost {
   category: string;
   services: Types.DocumentArray<Service>;
 }
 
-const costsSchema = new Schema<ICosts>({
+const costsSchema = new Schema<ICost>({
   category: { type: String, required: true },
   services: [
     {
@@ -24,9 +24,9 @@ const costsSchema = new Schema<ICosts>({
   ],
 });
 
-const Costs = createConnection(process.env.MONGO_URI as string).model<ICosts>(
-  "costs",
+const Cost = createConnection(process.env.MONGO_URI as string).model<ICost>(
+  "Cost",
   costsSchema
 );
 
-export default Costs;
+export default Cost;

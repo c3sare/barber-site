@@ -5,13 +5,13 @@ interface Pro {
   img: string;
 }
 
-interface IDescMains {
+interface IDescMain {
   title: string;
   description: string;
   pros: Types.DocumentArray<Pro>;
 }
 
-const descmainSchema = new Schema<IDescMains>({
+const descmainSchema = new Schema<IDescMain>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   pros: [
@@ -22,8 +22,8 @@ const descmainSchema = new Schema<IDescMains>({
   ],
 });
 
-const Descmains = createConnection(
+const Descmain = createConnection(
   process.env.MONGO_URI as string
-).model<IDescMains>("descmains", descmainSchema);
+).model<IDescMain>("Descmain", descmainSchema);
 
-export default Descmains;
+export default Descmain;

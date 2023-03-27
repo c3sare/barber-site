@@ -1,6 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
@@ -28,10 +29,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menus");
-    const result = await tab.updateOne(
+    const result = await Menu.updateOne(
       { _id: new ObjectId(menu._id) },
       {
         $set: {
@@ -42,7 +40,6 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         },
       }
     );
-    client.close();
 
     if (!result.acknowledged)
       res

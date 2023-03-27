@@ -1,6 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import Cost from "@/models/Cost";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(costsRoute, sessionOptions);
@@ -13,10 +14,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("costs");
-    const items = await tab.find({}).toArray();
+    const items = await Cost.find({});
     res.status(200).json(items);
   } else if (req.method === "PUT") {
     if (!user?.isLoggedIn || !user?.permissions?.menu)
@@ -37,10 +35,10 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
       category.length <= 80 &&
       categoryRegex.test(category)
     ) {
-      const client = new MongoClient(process.env.MONGO_URI as string);
-      const db = client.db("site");
-      const costs = db.collection("costs");
-      const insertCategory = await costs.insertOne({ category, services: [] });
+      const insertCategory = await Cost.collection.insertOne({
+        category,
+        services: [],
+      });
       res.status(200).json({
         error: false,
         id: insertCategory.insertedId,
@@ -66,18 +64,15 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
     if (!ObjectId.isValid(id as string))
       return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const costs = database.collection("costs");
     const _id = new ObjectId(id);
-    const findItem = await costs.findOne({ _id });
+    const findItem = await Cost.findOne({ _id });
 
     if (findItem === null)
       return res
         .status(404)
         .json({ message: "Nie znaleziono rekordu o identyfiaktorze " + id });
 
-    const deleteItem = await costs.deleteOne({ _id });
+    const deleteItem = await Cost.deleteOne({ _id });
 
     if (deleteItem.deletedCount !== 1)
       return res

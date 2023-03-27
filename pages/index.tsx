@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "@/styles/index.module.css";
-import getData, { getDataOne } from "@/utils/getData";
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
 import Image from "next/image";
 import DescMainData from "@/lib/types/DescMainData";
 import OpenHoursData from "@/lib/types/OpenHoursData";
@@ -12,6 +10,9 @@ import NewsData from "@/lib/types/NewsData";
 import InfoData from "@/lib/types/InfoData";
 import MenuItem from "@/lib/types/MenuItem";
 import FooterData from "@/lib/types/FooterData";
+import getLayoutData from "@/lib/getLayoutData";
+import getMainPageData from "@/lib/getMainPageData";
+import News from "@/models/News";
 
 const sortOpenHours = (a: OpenHoursData, b: OpenHoursData) => {
   if (a.order < b.order) {
@@ -206,24 +207,12 @@ export default function Home({
   );
 }
 
-function sortByDateNews(a: any, b: any) {
-  if (a.date > b.date) {
-    return -1;
-  } else if (a.date < b.date) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
 export async function getStaticProps() {
-  const descMain = await getDataOne("descmains");
-  const openHours = await getData("openhours");
-  const slideData = await getData("slides");
-  const news = (await getData("news")).sort(sortByDateNews).slice(0, 3);
-  const info = await getDataOne("infos");
-  const footer = await getDataOne("footers");
-  const menu = await getMenu();
+  const { info, footer, menu } = await getLayoutData();
+  const { descMain, openHours, slideData } = await getMainPageData();
+  const news = JSON.parse(
+    JSON.stringify(await News.find({}).sort({ date: -1 }).limit(3))
+  );
 
   return {
     props: {

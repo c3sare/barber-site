@@ -1,12 +1,12 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import getData from "@/utils/getData";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
+import Slide from "@/models/Slide";
 
 export const config = {
   api: {
@@ -59,7 +59,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const data = await getData("slides");
+    const data = await Slide.find({});
     res.status(200).json(data);
   } else if (req.method === "DELETE") {
     if (!session?.isLoggedIn || !session?.permissions?.menu)
@@ -74,19 +74,16 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("slides");
     const _id = new ObjectId(id);
 
-    const exist = await tab.findOne({ _id });
+    const exist = await Slide.findOne({ _id });
 
     if (!exist)
       return res
         .status(404)
         .json({ message: "Slajd o id " + id + " nie istnieje!" });
 
-    const del = await tab.deleteOne({ _id });
+    const del = await Slide.deleteOne({ _id });
     if (!del)
       return res
         .status(500)
@@ -109,10 +106,11 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
       Buffer.from(filedata.buffer)
     );
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("slides");
-    const insert = await tab.insertOne({ title, desc, image: newName });
+    const insert = await Slide.collection.insertOne({
+      title,
+      desc,
+      image: newName,
+    });
 
     if (!insert)
       return res

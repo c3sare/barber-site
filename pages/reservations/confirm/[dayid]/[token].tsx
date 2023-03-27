@@ -1,11 +1,12 @@
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import { getDataOne } from "@/utils/getData";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import nodemailer from "nodemailer";
+import getLayoutData from "@/lib/getLayoutData";
+import Reservation from "@/models/Reservation";
+import MailConfig from "@/models/MailConfigs";
 
 const PageNotFound = ({ menu, footer, info, result }: any) => {
   const router = useRouter();
@@ -50,16 +51,11 @@ const PageNotFound = ({ menu, footer, info, result }: any) => {
 export default PageNotFound;
 
 export async function getServerSideProps({ req, query }: any) {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const info = await getDataOne("infos");
+  const { menu, footer, info } = await getLayoutData();
   const { dayid, token } = query;
 
-  const client = new MongoClient(process.env.MONGO_URI as string);
-  const database = client.db("site");
-  const reservations = database.collection("reservations");
   const _id = new ObjectId(dayid);
-  const day = await reservations.findOne({ _id });
+  const day = await Reservation.findOne({ _id });
 
   if (
     day !== null &&
@@ -74,14 +70,13 @@ export async function getServerSideProps({ req, query }: any) {
       return item;
     });
 
-    const updateDay = await reservations.updateOne(
+    const updateDay = await Reservation.updateOne(
       { _id },
       { $set: { times: newTimes } }
     );
 
     if (updateDay.acknowledged !== undefined) {
-      const mailConfig = database.collection("mailconfigs");
-      const config: any = await mailConfig.findOne({});
+      const config = await MailConfig.findOne({});
       if (config !== null) {
         const transporter = nodemailer.createTransport({
           host: config.host,
@@ -93,7 +88,7 @@ export async function getServerSideProps({ req, query }: any) {
           },
         });
 
-        const { person, mail, time } = day.times.find(
+        const { person, mail, time }: any = day.times.find(
           (item: any) => item.token === token
         );
 

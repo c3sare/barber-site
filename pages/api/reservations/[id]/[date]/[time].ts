@@ -1,10 +1,13 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient, ObjectId, WithId } from "mongodb";
+import { ObjectId } from "mongodb";
 import nodemailer from "nodemailer";
 import ReservationData from "@/lib/types/ReservationData";
 import MailConfigData from "@/lib/types/MailConfigData";
+import Reservation from "@/models/Reservation";
+import Barbers from "@/models/Barber";
+import MailConfig from "@/models/MailConfigs";
 
 interface ReservationTime {
   reserved: boolean;
@@ -70,10 +73,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("reservations");
-    const list = await tab.findOne({ barber_id: id, date });
+    const list = await Reservation.findOne({ barber_id: id, date });
     if (!list)
       return res.status(404).json({
         message: "Nie odnaleziono rezerwacji dla id " + id + " w dniu " + date,
@@ -111,10 +111,8 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
     const { reserved, mail, person, phone } = req.body;
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("reservations");
-    const toUpdate = (await tab.findOne({
+
+    const toUpdate = (await Reservation.findOne({
       barber_id: id,
       date,
     })) as ReservationData;
@@ -140,7 +138,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
       }
     });
 
-    const updateTimes = await tab.updateOne(
+    const updateTimes = await Reservation.updateOne(
       {
         barber_id: id,
         date,
@@ -189,11 +187,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const barbers = database.collection("barbers");
-    const reservations = database.collection("reservations");
-    const checkBarber = await barbers.findOne({
+    const checkBarber = await Barbers.findOne({
       _id: new ObjectId(id as string),
     });
 
@@ -202,7 +196,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(404)
         .json({ message: "Nie znaleziono pracownika o id " + id });
 
-    const day = (await reservations.findOne({
+    const day = (await Reservation.findOne({
       date,
       barber_id: id,
     })) as ReservationData;
@@ -228,7 +222,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
       }
     });
 
-    const updateDay = await reservations.updateOne(
+    const updateDay = await Reservation.updateOne(
       { barber_id: id, date },
       { $set: { times: day.times } }
     );
@@ -238,8 +232,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(500)
         .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
 
-    const mailConfig = database.collection("mailConfig");
-    const config = (await mailConfig.findOne({})) as MailConfigData;
+    const config = (await MailConfig.findOne({})) as MailConfigData;
     if (!config)
       return res
         .status(500)

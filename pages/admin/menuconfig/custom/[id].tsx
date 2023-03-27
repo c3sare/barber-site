@@ -11,7 +11,8 @@ import Link from "next/link";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
 import PageEditor from "@/componentsAdminPanel/PageEditor";
-import getData from "@/utils/getData";
+import Menu from "@/models/Menu";
+import { ObjectId } from "mongodb";
 
 const AdminPanelIndex = ({ permissions = {} }: any) => {
   const router = useRouter();
@@ -86,15 +87,12 @@ export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
 
-    const menu = await getData("menus");
+    const node = await Menu.findOne({
+      _id: new ObjectId(query.id as string),
+      custom: true,
+    });
 
-    const node = menu.find((item: any) => item._id === query.id && item.custom);
-
-    if (
-      user?.isLoggedIn !== true ||
-      !user?.permissions?.menu ||
-      node === undefined
-    ) {
+    if (user?.isLoggedIn !== true || !user?.permissions?.menu || !node) {
       return {
         notFound: true,
       };

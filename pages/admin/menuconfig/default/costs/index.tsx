@@ -1,46 +1,84 @@
-import { Layout } from "@/componentsAdminPanel/Layout"
+import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
 import { CostsData } from "@/lib/types/CostsData";
-import { MenuItemDB } from "@/lib/types/MenuItem";
-import getData from "@/utils/getData";
-import { Box, Divider, IconButton, List, ListItem, ListItemText, Tooltip } from "@mui/material";
+import {
+  Box,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Tooltip,
+} from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import Link from "next/link";
 import React, { useState } from "react";
-import DeleteIcon from '@mui/icons-material/Delete';
-import SettingsIcon from '@mui/icons-material/Settings';
+import DeleteIcon from "@mui/icons-material/Delete";
+import SettingsIcon from "@mui/icons-material/Settings";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
+import Menu from "@/models/Menu";
+import Cost from "@/models/Cost";
 
-const DefaultCostsEdit = ({permissions={}, costData}: any) => {
+const DefaultCostsEdit = ({ permissions = {}, costData }: any) => {
   const [state, setState] = useState<CostsData[]>(costData);
-  const [data, setData] = useState({id: "", open: false, text: ""});
+  const [data, setData] = useState({ id: "", open: false, text: "" });
 
   return (
     <Layout perms={permissions}>
       <h1>Cennik - Kategorie</h1>
-      <Box sx={{ width: '100%', bgcolor: 'rgb(45, 45, 45)', borderRadius: "5px", overflow: "hidden", textAlign: "center"}}>
-        <List sx={{padding: "0"}}>
-          {state.map(item => (
+      <Box
+        sx={{
+          width: "100%",
+          bgcolor: "rgb(45, 45, 45)",
+          borderRadius: "5px",
+          overflow: "hidden",
+          textAlign: "center",
+        }}
+      >
+        <List sx={{ padding: "0" }}>
+          {state.map((item) => (
             <React.Fragment key={item._id}>
               <ListItem
-                sx={{"&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)"
-                }}}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  },
+                }}
                 secondaryAction={
                   <>
                     <Tooltip title="Usuń stronę" placement="bottom">
                       <IconButton
-                        onClick={() => setData({id: item._id, open: true, text: "Czy chcesz usunąć wybraną kategorię? - "+state.find(itemf => itemf._id === item._id)!.category})}
-                        sx={{margin: "0 5px", color: "white", boxShadow: "none"}}
+                        onClick={() =>
+                          setData({
+                            id: item._id,
+                            open: true,
+                            text:
+                              "Czy chcesz usunąć wybraną kategorię? - " +
+                              state.find((itemf) => itemf._id === item._id)!
+                                .category,
+                          })
+                        }
+                        sx={{
+                          margin: "0 5px",
+                          color: "white",
+                          boxShadow: "none",
+                        }}
                       >
-                        <DeleteIcon/>
+                        <DeleteIcon />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Ustawienia" placement="bottom">
-                      <IconButton LinkComponent={Link} sx={{margin: "0 5px", color: "white", boxShadow: "none"}} href={"/admin/menuconfig/default/costs/"+item._id}>
-                        <SettingsIcon/>
+                      <IconButton
+                        LinkComponent={Link}
+                        sx={{
+                          margin: "0 5px",
+                          color: "white",
+                          boxShadow: "none",
+                        }}
+                        href={"/admin/menuconfig/default/costs/" + item._id}
+                      >
+                        <SettingsIcon />
                       </IconButton>
                     </Tooltip>
                   </>
@@ -48,41 +86,56 @@ const DefaultCostsEdit = ({permissions={}, costData}: any) => {
               >
                 <ListItemText primary={`${item.category}`} />
               </ListItem>
-              <Divider sx={{borderColor: "#4c4c4c"}}/>
+              <Divider sx={{ borderColor: "#4c4c4c" }} />
             </React.Fragment>
           ))}
         </List>
-        <CButton LinkComponent={Link} href="/admin/menuconfig#edit">Wróć</CButton>
-        <CButton LinkComponent={Link} href="/admin/menuconfig/default/costs/add">
+        <CButton LinkComponent={Link} href="/admin/menuconfig#edit">
+          Wróć
+        </CButton>
+        <CButton
+          LinkComponent={Link}
+          href="/admin/menuconfig/default/costs/add"
+        >
           Dodaj
         </CButton>
       </Box>
-      <DeleteDialog setState={setState} open={data} setOpen={setData} url="/api/costs"/>
+      <DeleteDialog
+        setState={setState}
+        open={data}
+        setOpen={setData}
+        url="/api/costs"
+      />
     </Layout>
-    )
-}
+  );
+};
 
 export default DefaultCostsEdit;
 
 export const getServerSideProps = withIronSessionSsr(
-    async function getServerSideProps({ req }) {
-      const user = req.session.user;
-      const menu:MenuItemDB[] = await getMenu();
-  
-      if (user?.isLoggedIn !== true || !user?.permissions?.menu || menu.find(item => item.slug === "costs")?.custom) {
-        return {
-          notFound: true,
-        };
-      }
+  async function getServerSideProps({ req }) {
+    const user = req.session.user;
+    const menu = await Menu.findOne({ slug: "costs" });
 
-      const data = await getData("costs");
-  
+    if (
+      user?.isLoggedIn !== true ||
+      !user?.permissions?.menu ||
+      !menu ||
+      menu?.custom
+    ) {
       return {
-        props: {
-          costData: data,
-          permissions: req.session.user?.permissions,
-        },
+        notFound: true,
       };
-    },
-    sessionOptions
+    }
+
+    const data = JSON.parse(JSON.stringify(await Cost.find({})));
+
+    return {
+      props: {
+        costData: data,
+        permissions: req.session.user?.permissions,
+      },
+    };
+  },
+  sessionOptions
 );

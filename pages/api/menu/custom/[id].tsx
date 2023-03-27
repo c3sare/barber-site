@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { MongoClient, ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -30,11 +31,7 @@ async function customPageRoute(req: NextApiRequest, res: NextApiResponse) {
     if (!ObjectId.isValid(id as string))
       return res.status(400).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menus");
-    const item = await tab.findOne({ _id: new ObjectId(id as string) });
-    client.close();
+    const item = await Menu.findOne({ _id: new ObjectId(id as string) });
 
     if (item !== null) {
       res.json({
@@ -57,13 +54,10 @@ async function customPageRoute(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const menu: MenuSettings = req.body;
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menus");
-    const allMenu = (await tab.find({}).toArray()).filter(
+    const allMenu = (await Menu.find({})).filter(
       (item) => String(item._id) !== id
     );
-    const currentObject = await tab.findOne({
+    const currentObject = await Menu.findOne({
       _id: new ObjectId(id as string),
     });
     if (currentObject === null)
@@ -82,13 +76,12 @@ async function customPageRoute(req: NextApiRequest, res: NextApiResponse) {
       !titleRegex.test(menu?.title) ||
       (!slugRegex.test(menu?.slug) && !currentObject.default)
     ) {
-      client.close();
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy zapisie!" });
     }
 
-    const result = await tab.updateOne(
+    const result = await Menu.updateOne(
       { _id: new ObjectId(id as string) },
       {
         $set: {
@@ -102,7 +95,6 @@ async function customPageRoute(req: NextApiRequest, res: NextApiResponse) {
         },
       }
     );
-    client.close();
     if (!result.acknowledged)
       return res
         .status(500)

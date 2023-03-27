@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import { getDataOne } from "@/utils/getData";
+import getContact from "@/lib/getContact";
+import getLayoutData from "@/lib/getLayoutData";
 import { useRef, useState } from "react";
 
 const Contact = ({ info, contactData, menu, footer }: any) => {
@@ -175,10 +175,8 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
 export default Contact;
 
 export async function getStaticProps() {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const contactData = await getDataOne("contacts");
-  const info = await getDataOne("infos");
+  const { menu, info, footer } = await getLayoutData();
+  const contactData = await getContact();
 
   return {
     props: {

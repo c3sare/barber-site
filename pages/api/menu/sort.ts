@@ -1,8 +1,8 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
 import { MenuItemDB } from "@/lib/types/MenuItem";
+import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
@@ -15,7 +15,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Brak uprawnień do tej ścieżki!" });
 
-    const menu: MenuItemDB[] = await getMenu();
+    const menu: MenuItemDB[] = await Menu.find({});
     res.status(200).json({
       menu: menu.map((item) => ({
         _id: item._id,
@@ -33,15 +33,12 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const menu: MenuItemDB[] = req.body.menu;
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menus");
     const updates: boolean[] = [];
     menu.forEach(async (item) => {
       updates.push(
         Boolean(
           (
-            await tab.updateOne(
+            await Menu.updateOne(
               { _id: new ObjectId(item._id) },
               { $set: { order: item.order, parent: item.parent } }
             )
@@ -54,7 +51,6 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(500)
         .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
 
-    client.close();
     return res.status(200).json({ error: false });
   }
 }

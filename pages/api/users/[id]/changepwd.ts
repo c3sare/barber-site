@@ -1,8 +1,9 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
+import Users from "@/models/User";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -32,11 +33,8 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("users");
     const _id = new ObjectId(id as string);
-    const exist = await tab.findOne({ _id });
+    const exist = await Users.findOne({ _id });
 
     if (!exist)
       return res
@@ -44,11 +42,10 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Nie odnaleziono użytkownika od id " + id });
 
     const hashPwd = bcrypt.hashSync(password, 10);
-    const changePassword = await tab.updateOne(
+    const changePassword = await Users.updateOne(
       { _id },
       { $set: { password: hashPwd } }
     );
-    client.close();
 
     if (!changePassword)
       return res

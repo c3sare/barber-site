@@ -1,7 +1,8 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import Slide from "@/models/Slide";
 
 export default withIronSessionApiRoute(slidesRoute, sessionOptions);
 
@@ -41,18 +42,15 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("slides");
     const _id = new ObjectId(id as string);
-    const exist = await tab.findOne({ _id });
+    const exist = await Slide.findOne({ _id });
 
     if (!exist)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono artykułu o id " + id });
 
-    const update = await tab.updateOne({ _id }, { $set: { title, desc } });
+    const update = await Slide.updateOne({ _id }, { $set: { title, desc } });
 
     if (!update)
       res

@@ -1,10 +1,10 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
 import fs from "fs/promises";
 import path from "path";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
+import Menu from "@/models/Menu";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -20,7 +20,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Brak uprawnień dla tej ścieżki!" });
 
-    const menu = await getMenu();
+    const menu = await Menu.find({});
     res.json(menu);
   } else if (req.method === "DELETE") {
     if (!user?.isLoggedIn || !user?.permissions?.menu)
@@ -34,27 +34,22 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menus");
-    const deleteResult = await tab.deleteOne({
+    const deleteResult = await Menu.deleteOne({
       _id: new ObjectId(id),
       default: false,
     });
 
     if (deleteResult.deletedCount !== 1) {
-      client.close();
       return res
         .status(404)
         .json({ message: "Nie znaleziono elementu o id " + id });
     }
 
-    const updateParentResult = await tab.updateMany(
+    const updateParentResult = await Menu.updateMany(
       { parent: id },
       { $set: { parent: "" } }
     );
     if (!updateParentResult.acknowledged) {
-      client.close();
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
@@ -63,7 +58,6 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
     const pagesDir = path.join(process.cwd(), "pagecontent");
     fs.unlink(`${pagesDir}/${id}.json`);
     res.json({ error: false });
-    client.close();
   } else if (req.method === "PUT") {
     if (!user?.isLoggedIn || !user?.permissions?.menu)
       return res
@@ -80,13 +74,8 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("menus");
-    const allItems = (await tab.find({}).toArray()).filter(
-      (item) => item.parent === ""
-    );
-    const insertResult = await tab.insertOne({
+    const allItems = (await Menu.find({})).filter((item) => item.parent === "");
+    const insertResult = await Menu.collection.insertOne({
       title,
       slug,
       on: true,
@@ -95,7 +84,6 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
       parent: "",
       default: false,
     });
-    client.close();
 
     if (!insertResult.acknowledged)
       return res

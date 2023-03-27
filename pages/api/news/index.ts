@@ -1,12 +1,12 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getData from "@/utils/getData";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import path from "path";
 import fs from "fs/promises";
 import formidable from "formidable";
 import getNewFileName from "@/utils/getNewFileName";
+import News from "@/models/News";
 
 export const config = {
   api: {
@@ -45,7 +45,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const data = await getData("news");
+    const data = await News.find({});
     res.status(200).json(data);
   } else if (req.method === "PUT") {
     if (!session?.isLoggedIn || !session?.permissions?.news)
@@ -86,11 +86,13 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
       `${publicDir}/images/articles/${newName}`,
       Buffer.from(filedata.buffer)
     );
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const news = database.collection("news");
-    const insert = await news.insertOne({ title, desc, date, img: newName });
-    client.close();
+
+    const insert = await News.collection.insertOne({
+      title,
+      desc,
+      date,
+      img: newName,
+    });
     if (insert.acknowledged === undefined)
       return res
         .status(500)
@@ -112,18 +114,15 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("news");
     const _id = new ObjectId(id);
-    const toDelete = await tab.findOne({ _id });
+    const toDelete = await News.findOne({ _id });
 
     if (toDelete === null)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono artykułu o id " + id });
 
-    const del = await tab.deleteOne({ _id });
+    const del = await News.deleteOne({ _id });
     if (del.deletedCount !== 1)
       return res
         .status(500)

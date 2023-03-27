@@ -6,6 +6,7 @@ import fs from "fs/promises";
 import path from "path";
 import { MongoClient } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
+import Footer from "@/models/Footer";
 
 export const config = {
   api: {
@@ -58,16 +59,13 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
       `${publicDir}/images/${newName}`,
       Buffer.from(filedata.buffer)
     );
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("footers");
-    const oldFile = await tab.findOne({});
-    const insert = await tab.updateOne({}, { $set: { logo: newName } });
-    if (!insert.acknowledged)
+    const oldFile = await Footer.findOne({});
+    const insert = await Footer.updateOne({}, { $set: { logo: newName } });
+    if (!insert)
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy aktualizacji danych!" });
-    if (oldFile) fs.unlink(`${publicDir}/images/${oldFile.img}`);
+    if (oldFile) fs.unlink(`${publicDir}/images/${oldFile.logo}`);
 
     return res.json({ error: false, img: newName });
   } else {

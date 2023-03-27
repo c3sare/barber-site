@@ -1,10 +1,10 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getData from "@/utils/getData";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs/promises";
 import path from "path";
 import { MongoClient, ObjectId } from "mongodb";
+import News from "@/models/News";
 
 export default withIronSessionApiRoute(newsRoute, sessionOptions);
 
@@ -27,11 +27,8 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
     const newsDirectory = path.join(process.cwd(), "news");
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("news");
     const _id = new ObjectId(id);
-    const data = tab.findOne({ _id });
+    const data = News.findOne({ _id });
 
     if (data === null)
       return res
@@ -72,11 +69,8 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("news");
     const _id = new ObjectId(id as string);
-    const update = await tab.updateOne(
+    const update = await News.updateOne(
       { _id },
       { $set: { title, desc, date } }
     );

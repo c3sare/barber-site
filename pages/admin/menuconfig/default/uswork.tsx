@@ -1,8 +1,5 @@
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
-import getData from "@/utils/getData";
 import { Grid, IconButton, Tooltip, styled } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { ChangeEvent, useState } from "react";
@@ -16,6 +13,8 @@ import WorkData from "@/lib/types/WorkData";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
+import Uswork from "@/models/Uswork";
+import Menu from "@/models/Menu";
 
 const Input = styled("input")({
   display: "none",
@@ -200,12 +199,13 @@ export default UsworkConfig;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
-    const menu: MenuItemDB[] = await getMenu();
+    const menu = await Menu.findOne({ slug: "uswork" });
 
     if (
       user?.isLoggedIn !== true ||
       !user?.permissions?.menu ||
-      menu.find((item) => item.slug === "uswork")?.custom
+      !menu ||
+      menu?.custom
     ) {
       return {
         redirect: {
@@ -215,7 +215,7 @@ export const getServerSideProps = withIronSessionSsr(
       };
     }
 
-    const data = await getData("usworks");
+    const data = JSON.parse(JSON.stringify(await Uswork.find({})));
 
     return {
       props: {

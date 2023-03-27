@@ -1,8 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import OpenHour from "@/models/OpenHour";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import getData from "@/utils/getData";
-import { MongoClient } from "mongodb";
 
 export default withIronSessionApiRoute(openHoursRoute, sessionOptions);
 
@@ -25,7 +24,7 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const data = await getData("openhours");
+    const data = await OpenHour.find({});
     let newData: any = {};
 
     data.forEach((item: any) => {
@@ -52,9 +51,6 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("openhours");
     const results: boolean[] = [];
     await req.body.forEach(async (day: any) => {
       const $set = day.closed
@@ -69,7 +65,7 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
             end: day.end,
           };
 
-      const update = await tab.updateOne({ short: day.short }, { $set });
+      const update = await OpenHour.updateOne({ short: day.short }, { $set });
       results.push(Boolean(update));
     });
 

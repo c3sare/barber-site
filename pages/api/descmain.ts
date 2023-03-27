@@ -4,9 +4,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import path from "path";
 import fs from "fs/promises";
-import { MongoClient } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Descmains from "@/models/DescMain";
+import Descmain from "@/models/DescMain";
 
 export default withIronSessionApiRoute(descMainRoute, sessionOptions);
 
@@ -90,10 +90,7 @@ async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
       }
     });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("descmains");
-    const insert = await tab.updateOne(
+    const insert = await Descmain.updateOne(
       {},
       { $set: { title, description, pros } }
     );

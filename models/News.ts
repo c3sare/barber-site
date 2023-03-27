@@ -17,7 +17,7 @@ const newsSchema = new Schema<INews>({
 });
 
 const News = createConnection(process.env.MONGO_URI as string).model<INews>(
-  "news",
+  "New",
   newsSchema
 );
 

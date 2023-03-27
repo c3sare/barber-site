@@ -1,10 +1,10 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getData from "@/utils/getData";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import UserData from "@/lib/types/UserData";
+import Users from "@/models/User";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -64,7 +64,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const users = ((await getData("users")) as UserData[]).map((item) => ({
+    const users = (await Users.find({})).map((item) => ({
       _id: item._id,
       login: item.login,
     }));
@@ -83,10 +83,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("users");
-    const userExist = await tab.findOne({ login });
+    const userExist = await Users.findOne({ login });
 
     if (userExist)
       return res
@@ -94,7 +91,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Konto o loginie " + login + " już istnieje!" });
 
     const genPassword = bcrypt.hashSync(password, 10);
-    const insertUser = await tab.insertOne({
+    const insertUser = await Users.collection.insertOne({
       login,
       password: genPassword,
       permissions,
@@ -120,11 +117,8 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("users");
     const _id = new ObjectId(id);
-    const checkUser = await tab.findOne({ _id });
+    const checkUser = await Users.findOne({ _id });
 
     if (!checkUser)
       return res
@@ -136,7 +130,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie możesz usunąć własnego siebie!" });
 
-    const delUser = await tab.deleteOne({ _id });
+    const delUser = await Users.deleteOne({ _id });
 
     if (!delUser)
       res

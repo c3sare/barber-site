@@ -1,6 +1,4 @@
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import getData, { getDataOne } from "@/utils/getData";
 import getPage from "@/utils/getPage";
 import Image from "next/image";
 import { useState } from "react";
@@ -11,7 +9,8 @@ import WorkData from "@/lib/types/WorkData";
 import CustomPageData from "@/lib/types/CustomPageData";
 import dynamic from "next/dynamic";
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
-import { Value } from "@react-page/editor";
+import getLayoutData from "@/lib/getLayoutData";
+import getUswork from "@/lib/getUswork";
 const Editor = dynamic(import("@react-page/editor"));
 
 const Uswork = ({
@@ -102,11 +101,9 @@ const Uswork = ({
 export default Uswork;
 
 export async function getStaticProps() {
-  const menu = await getMenu();
-  const footer: FooterData = await getDataOne("footers");
-  const info: InfoData = await getDataOne("infos");
+  const { menu, footer, info } = await getLayoutData();
 
-  if (menu.find((item) => item.slug === "uswork") === undefined) {
+  if (!menu.find((item: MenuItem) => item.slug === "uswork")) {
     return {
       redirect: {
         destination: "/404",
@@ -115,11 +112,11 @@ export async function getStaticProps() {
     };
   }
 
-  const pageData = menu.find((item) => item.slug === "uswork");
+  const pageData = menu.find((item: MenuItem) => item.slug === "uswork");
 
-  const workData = pageData!.custom
+  const workData = pageData.custom
     ? await getPage("uswork")
-    : await getData("usworks");
+    : await getUswork();
 
   return {
     props: {

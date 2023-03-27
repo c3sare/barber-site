@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import getData, { getDataOne } from "@/utils/getData";
+import getCosts from "@/lib/getCosts";
+import getLayoutData from "@/lib/getLayoutData";
 import Head from "next/head";
 
 const Costs = ({ costsData, info, menu, footer }: any) => {
@@ -52,16 +52,14 @@ const Costs = ({ costsData, info, menu, footer }: any) => {
 export default Costs;
 
 export async function getStaticProps() {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const costs = await getData("costs");
-  const info = await getDataOne("infos");
+  const { menu, footer, info } = await getLayoutData();
+  const costsData = await getCosts();
 
   return {
     props: {
       menu,
       footer,
-      costsData: costs,
+      costsData,
       info,
     },
   };

@@ -7,7 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import SaveIcon from "@mui/icons-material/Save";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
-import { getDataOne } from "@/utils/getData";
+import getMailConfig from "@/lib/getMailConfig";
 
 interface MailConfig {
   host: string;
@@ -195,7 +195,7 @@ export const getServerSideProps = withIronSessionSsr(
       };
     }
 
-    const data = await getDataOne("mailconfigs");
+    const data = await getMailConfig();
 
     return {
       props: {

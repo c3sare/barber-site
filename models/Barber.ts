@@ -1,15 +1,15 @@
 import { Schema, createConnection } from "mongoose";
 
-interface IBarbers {
+interface IBarber {
   name: string;
 }
 
-const barberSchema = new Schema<IBarbers>({
+const barberSchema = new Schema<IBarber>({
   name: { type: String, required: true },
 });
 
 const Barbers = createConnection(
   process.env.MONGO_URI as string
-).model<IBarbers>("barbers", barberSchema);
+).model<IBarber>("Barber", barberSchema);
 
 export default Barbers;

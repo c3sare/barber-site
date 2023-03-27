@@ -7,7 +7,7 @@ import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import FooterData from "@/lib/types/FooterData";
-import { getDataOne } from "@/utils/getData";
+import Footer from "@/models/Footer";
 import {
   Box,
   createTheme,
@@ -652,7 +652,9 @@ export const getServerSideProps = withIronSessionSsr(
       };
     }
 
-    const data = await getDataOne("footers");
+    const data = JSON.parse(JSON.stringify(await Footer.findOne({})));
+
+    delete data._id;
 
     return {
       props: {

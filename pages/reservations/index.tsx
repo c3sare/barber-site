@@ -1,15 +1,14 @@
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
 import FooterData from "@/lib/types/FooterData";
 import InfoData from "@/lib/types/InfoData";
 import MenuItem from "@/lib/types/MenuItem";
-import { getDataOne } from "@/utils/getData";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { format } from "date-fns";
 import { ClassNames, DayPicker } from "react-day-picker";
 import styles from "react-day-picker/dist/style.css";
 import { pl } from "date-fns/locale";
 import { Divider } from "@mui/material";
+import getLayoutData from "@/lib/getLayoutData";
 
 const Reservations = ({
   menu,
@@ -366,9 +365,7 @@ const Reservations = ({
 export default Reservations;
 
 export async function getStaticProps() {
-  const menu: MenuItem[] = await getMenu();
-  const footer: FooterData = await getDataOne("footers");
-  const info: InfoData = await getDataOne("infos");
+  const { menu, footer, info } = await getLayoutData();
 
   return {
     props: {

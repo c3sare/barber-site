@@ -1,12 +1,11 @@
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import { getDataOne } from "@/utils/getData";
 import dynamic from "next/dynamic";
 const Editor = dynamic(import("@react-page/editor"));
 import React from "react";
 import newsList from "@/utils/newsList";
 import getNewsPage from "@/utils/getNewsPage";
+import getLayoutData from "@/lib/getLayoutData";
 
 export async function getStaticPaths() {
   const customPages = await newsList();
@@ -24,9 +23,7 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps(context: any) {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const info = await getDataOne("infos");
+  const { menu, footer, info } = await getLayoutData();
   const page = await getNewsPage(context.params.slug);
 
   return {

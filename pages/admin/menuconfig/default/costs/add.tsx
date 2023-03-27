@@ -1,20 +1,18 @@
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
-import { Layout } from "@/componentsAdminPanel/Layout"
+import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
 import { withIronSessionSsr } from "iron-session/next";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import SaveIcon from '@mui/icons-material/Save';
+import SaveIcon from "@mui/icons-material/Save";
 import { CostsData } from "@/lib/types/CostsData";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Menu from "@/models/Menu";
 
-
-const DefaultCostsAddItem = ({permissions={}}: any) => {
+const DefaultCostsAddItem = ({ permissions = {} }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -24,7 +22,7 @@ const DefaultCostsAddItem = ({permissions={}}: any) => {
     handleSubmit,
   } = useForm<CostsData>({});
 
-  const handleSendData = (form:any) => {
+  const handleSendData = (form: any) => {
     setLoading(true);
 
     fetch("/api/costs", {
@@ -34,25 +32,28 @@ const DefaultCostsAddItem = ({permissions={}}: any) => {
         "Content-Type": "application/json",
       },
     })
-    .then(res => res.json())
-    .then(data => {
-      if(!data.error) {
-        router.push("/admin/menuconfig/default/costs/"+data.id);
-      } else {
-        console.log("Wystąpił błąd! - "+data.msg);
-        setLoading(false)
-      }
-    })
-    .catch(err => {
-      console.log(err);
-      setLoading(false);
-    });
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) {
+          router.push("/admin/menuconfig/default/costs/" + data.id);
+        } else {
+          console.log("Wystąpił błąd! - " + data.msg);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   return (
     <Layout perms={permissions}>
       <h1>Cennik - Dodaj kategorię</h1>
-      <form onSubmit={handleSubmit(handleSendData)} style={{maxWidth: "550px", margin: "0 auto", textAlign: "center"}}>
+      <form
+        onSubmit={handleSubmit(handleSendData)}
+        style={{ maxWidth: "550px", margin: "0 auto", textAlign: "center" }}
+      >
         <Controller
           control={control}
           name="category"
@@ -83,13 +84,17 @@ const DefaultCostsAddItem = ({permissions={}}: any) => {
             />
           )}
         />
-        <CButton disabled={loading} LinkComponent={Link} href="/admin/menuconfig/default/costs">
+        <CButton
+          disabled={loading}
+          LinkComponent={Link}
+          href="/admin/menuconfig/default/costs"
+        >
           Wróć
         </CButton>
         <CLoadingButton
           loading={loading}
           disabled={loading}
-          startIcon={<SaveIcon/>}
+          startIcon={<SaveIcon />}
           loadingPosition="start"
           type="submit"
         >
@@ -97,27 +102,32 @@ const DefaultCostsAddItem = ({permissions={}}: any) => {
         </CLoadingButton>
       </form>
     </Layout>
-  )
-}
+  );
+};
 
 export default DefaultCostsAddItem;
 
 export const getServerSideProps = withIronSessionSsr(
-    async function getServerSideProps({ req }) {
-      const user = req.session.user;
-      const menu:MenuItemDB[] = await getMenu();
-  
-      if (user?.isLoggedIn !== true || !user?.permissions?.menu || menu.find(item => item.slug === "costs")?.custom) {
-        return {
-          notFound: true,
-        };
-      }
-  
+  async function getServerSideProps({ req }) {
+    const user = req.session.user;
+    const menu = await Menu.findOne({ slug: "costs" });
+
+    if (
+      user?.isLoggedIn !== true ||
+      !user?.permissions?.menu ||
+      !menu ||
+      menu?.custom
+    ) {
       return {
-        props: {
-          permissions: req.session.user?.permissions,
-        },
+        notFound: true,
       };
-    },
-    sessionOptions
+    }
+
+    return {
+      props: {
+        permissions: req.session.user?.permissions,
+      },
+    };
+  },
+  sessionOptions
 );

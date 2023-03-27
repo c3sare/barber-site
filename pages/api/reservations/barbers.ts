@@ -1,4 +1,4 @@
-import getData from "@/utils/getData";
+import Barbers from "@/models/Barber";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -6,7 +6,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === "GET") {
-    const data = await getData("barbers");
+    const data = await Barbers.find({});
     res.status(200).json(data);
   } else {
     res.status(404);

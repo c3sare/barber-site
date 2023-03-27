@@ -1,6 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import MailConfig from "@/models/MailConfigs";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
 
@@ -59,10 +59,7 @@ async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
     if (!result)
       return res.status(400).json({ message: "Dane są nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("mailconfigs");
-    const update = await tab.updateOne(
+    const update = await MailConfig.updateOne(
       {},
       {
         $set: {

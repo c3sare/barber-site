@@ -1,21 +1,21 @@
 import { Schema, createConnection } from "mongoose";
 
-interface IMailConfigs {
+interface IMailConfig {
   host: string;
   mail: string;
   pwd: string;
   port: number;
 }
 
-const mailConfigSchema = new Schema<IMailConfigs>({
+const mailConfigSchema = new Schema<IMailConfig>({
   host: { type: String, required: true },
   mail: { type: String, required: true },
   pwd: { type: String, required: true },
   port: { type: Number, required: true },
 });
 
-const MailConfigs = createConnection(
+const MailConfig = createConnection(
   process.env.MONGO_URI as string
-).model<IMailConfigs>("mailconfigs", mailConfigSchema);
+).model<IMailConfig>("Mailconfig", mailConfigSchema);
 
-export default MailConfigs;
+export default MailConfig;

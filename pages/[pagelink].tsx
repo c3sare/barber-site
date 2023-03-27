@@ -1,7 +1,6 @@
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import { getDataOne } from "@/utils/getData";
+import getLayoutData from "@/lib/getLayoutData";
 import getPage from "@/utils/getPage";
 import pageList from "@/utils/pageList";
 import dynamic from "next/dynamic";
@@ -24,9 +23,7 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps(context: any) {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const info = await getDataOne("infos");
+  const { menu, footer, info } = await getLayoutData();
   const page = await getPage(context.params.pagelink);
 
   return {

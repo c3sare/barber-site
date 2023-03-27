@@ -1,6 +1,6 @@
 import { Schema, createConnection } from "mongoose";
 
-interface IMenus {
+interface IMenu {
   title: string;
   on: boolean;
   default: boolean;
@@ -10,7 +10,7 @@ interface IMenus {
   slug: string;
 }
 
-const menuSchema = new Schema<IMenus>({
+const menuSchema = new Schema<IMenu>({
   title: { type: String, required: true },
   on: { type: Boolean, required: true },
   default: { type: Boolean, required: true },
@@ -20,8 +20,8 @@ const menuSchema = new Schema<IMenus>({
   slug: { type: String, required: true },
 });
 
-const Menu = createConnection(process.env.MONGO_URI as string).model<IMenus>(
-  "menus",
+const Menu = createConnection(process.env.MONGO_URI as string).model<IMenu>(
+  "Menu",
   menuSchema
 );
 

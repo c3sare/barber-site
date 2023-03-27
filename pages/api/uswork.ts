@@ -4,8 +4,9 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
+import Uswork from "@/models/Uswork";
 
 export default withIronSessionApiRoute(usworkRoute, sessionOptions);
 
@@ -52,10 +53,7 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
     const data: any = await handlePostFormReq(req, res);
     const fullName = getNewFileName(data.originalFilename);
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("usworks");
-    const insert = await tab.insertOne({ image: fullName });
+    const insert = await Uswork.collection.insertOne({ image: fullName });
 
     if (!insert)
       return res
@@ -82,18 +80,15 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("usworks");
     const _id = new ObjectId(id);
-    const itemToDelete = await tab.findOne({ _id });
+    const itemToDelete = await Uswork.findOne({ _id });
 
     if (!itemToDelete)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono obiektu o id " + id });
 
-    const delItem = await tab.deleteOne({ _id });
+    const delItem = await Uswork.deleteOne({ _id });
     if (!delItem)
       return res
         .status(500)

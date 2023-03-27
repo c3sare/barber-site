@@ -1,6 +1,5 @@
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import { getDataOne } from "@/utils/getData";
+import getLayoutData from "@/lib/getLayoutData";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -37,10 +36,7 @@ const PageNotFound = ({ menu, footer, info }: any) => {
 export default PageNotFound;
 
 export async function getStaticProps() {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const info = await getDataOne("infos");
-
+  const { menu, footer, info } = await getLayoutData();
   return {
     props: {
       menu,

@@ -4,8 +4,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
+import Slide from "@/models/Slide";
 
 export const config = {
   api: {
@@ -57,11 +58,8 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("slides");
     const _id = new ObjectId(id as string);
-    const oldFile = await tab.findOne({ _id });
+    const oldFile = await Slide.findOne({ _id });
 
     if (!oldFile)
       return res
@@ -76,7 +74,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
     );
     fs.unlink(`${publicDir}/images/${oldFile.image}`);
 
-    const insert = await tab.updateOne({ _id }, { $set: { image: newName } });
+    const insert = await Slide.updateOne({ _id }, { $set: { image: newName } });
 
     if (!insert)
       return res

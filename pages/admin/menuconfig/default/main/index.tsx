@@ -1,7 +1,5 @@
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
 import { BottomNavigation, BottomNavigationAction } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -12,6 +10,7 @@ import SlideshowIcon from "@mui/icons-material/Slideshow";
 import DescMain from "@/componentsAdminPanel/mainComponents/DescMain";
 import Slider from "@/componentsAdminPanel/mainComponents/Slider";
 import OpenHours from "@/componentsAdminPanel/mainComponents/OpenHours";
+import Menu from "@/models/Menu";
 
 const DefaultMainEdit = ({ permissions = {} }: any) => {
   const router = useRouter();
@@ -121,12 +120,13 @@ export default DefaultMainEdit;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
-    const menu: MenuItemDB[] = await getMenu();
+    const menu = await Menu.findOne({ slug: "" });
 
     if (
       user?.isLoggedIn !== true ||
       !user?.permissions?.menu ||
-      menu.find((item) => item.slug === "")?.custom
+      !menu ||
+      menu?.custom
     ) {
       return {
         notFound: true,

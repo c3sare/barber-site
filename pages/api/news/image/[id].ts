@@ -6,6 +6,7 @@ import fs from "fs/promises";
 import path from "path";
 import { MongoClient, ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
+import News from "@/models/News";
 
 export const config = {
   api: {
@@ -66,18 +67,15 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
       `${publicDir}/images/articles/${newName}`,
       Buffer.from(filedata.buffer)
     );
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("news");
     const _id = new ObjectId(id as string);
-    const oldFile = await tab.findOne({ _id });
+    const oldFile = await News.findOne({ _id });
 
     if (oldFile === null)
       return res
         .status(404)
         .json({ message: "Nie znaleziono artykułu o id " + id });
 
-    const insert = await tab.updateOne({ _id }, { $set: { img: newName } });
+    const insert = await News.updateOne({ _id }, { $set: { img: newName } });
     if (insert.acknowledged === undefined)
       return res
         .status(500)

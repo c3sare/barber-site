@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
-import getMenu from "@/lib/getMenu";
-import getData, { getDataOne } from "@/utils/getData";
 import Image from "next/image";
 import styles from "@/styles/index.module.css";
+import getLayoutData from "@/lib/getLayoutData";
+import getNews from "@/lib/getNews";
 
 const News = ({ news, menu, footer, info }: any) => {
   return (
@@ -63,10 +63,8 @@ function sortByDateNews(a: any, b: any) {
 }
 
 export async function getStaticProps() {
-  const menu = await getMenu();
-  const footer = await getDataOne("footers");
-  const info = await getDataOne("infos");
-  const news = await getData("news");
+  const { menu, footer, info } = await getLayoutData();
+  const news = await getNews();
 
   return {
     props: {

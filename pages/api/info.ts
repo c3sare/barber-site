@@ -1,7 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import InfoData from "@/lib/types/InfoData";
+import Info from "@/models/Info";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(infoRoute, sessionOptions);
@@ -35,14 +35,10 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("infos");
-    const updateData = await tab.updateOne(
+    const updateData = await Info.updateOne(
       {},
       { companyName, yearOfCreate, slogan }
     );
-    client.close();
 
     if (!updateData)
       return res

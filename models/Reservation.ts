@@ -10,13 +10,13 @@ interface Time {
   phone: string;
 }
 
-interface IReservations {
+interface IReservation {
   barber_id: string;
   date: string;
   times: Types.DocumentArray<Time>;
 }
 
-const reservationsSchema = new Schema<IReservations>({
+const reservationsSchema = new Schema<IReservation>({
   barber_id: { type: String, required: true },
   date: { type: String, required: true },
   times: [
@@ -32,8 +32,8 @@ const reservationsSchema = new Schema<IReservations>({
   ],
 });
 
-const Reservations = createConnection(
+const Reservation = createConnection(
   process.env.MONGO_URI as string
-).model<IReservations>("reservations", reservationsSchema);
+).model<IReservation>("Reservation", reservationsSchema);
 
-export default Reservations;
+export default Reservation;

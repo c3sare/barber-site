@@ -1,6 +1,6 @@
 import { Schema, createConnection } from "mongoose";
 
-interface IOpenHours {
+interface IOpenHour {
   short: "pon" | "wto" | "sro" | "czw" | "pia" | "sob" | "nie";
   long:
     | "Poniedziałek"
@@ -16,7 +16,7 @@ interface IOpenHours {
   closed: boolean;
 }
 
-const openHoursSchema = new Schema<IOpenHours>({
+const openHoursSchema = new Schema<IOpenHour>({
   short: { type: String, required: true },
   long: { type: String, required: true },
   order: { type: Number, required: true },
@@ -25,8 +25,8 @@ const openHoursSchema = new Schema<IOpenHours>({
   closed: { type: Boolean, required: true },
 });
 
-const OpenHours = createConnection(
+const OpenHour = createConnection(
   process.env.MONGO_URI as string
-).model<IOpenHours>("openhours", openHoursSchema);
+).model<IOpenHour>("Openhour", openHoursSchema);
 
-export default OpenHours;
+export default OpenHour;

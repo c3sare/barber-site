@@ -11,7 +11,7 @@ interface LinkBox {
   links: Types.DocumentArray<Link>;
 }
 
-interface IFooters {
+interface IFooter {
   desc: string;
   logo: string;
   btnMore: boolean;
@@ -20,7 +20,7 @@ interface IFooters {
   linkBoxes: Types.DocumentArray<LinkBox>;
 }
 
-const footerSchema = new Schema<IFooters>({
+const footerSchema = new Schema<IFooter>({
   desc: { type: String, required: true },
   logo: { type: String, required: true },
   btnMore: { type: Boolean, required: true },
@@ -34,8 +34,9 @@ const footerSchema = new Schema<IFooters>({
   ],
 });
 
-const Footers = createConnection(
-  process.env.MONGO_URI as string
-).model<IFooters>("footers", footerSchema);
+const Footer = createConnection(process.env.MONGO_URI as string).model<IFooter>(
+  "Footer",
+  footerSchema
+);
 
-export default Footers;
+export default Footer;

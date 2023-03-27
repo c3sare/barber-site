@@ -1,7 +1,8 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import Barbers from "@/models/Barber";
 
 export default withIronSessionApiRoute(workersRoute, sessionOptions);
 
@@ -20,11 +21,8 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe argumenty zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("barbers");
     const _id = new ObjectId(id as string);
-    const worker = await tab.findOne({ _id });
+    const worker = await Barbers.findOne({ _id });
     if (!worker)
       return res
         .status(404)
@@ -46,18 +44,15 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("barbers");
     const _id = new ObjectId(id);
-    const exist = await tab.findOne({ _id });
+    const exist = await Barbers.findOne({ _id });
 
     if (!exist)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono użytkownika od id " + id });
 
-    const update = await tab.updateOne({ _id }, { $set: { name } });
+    const update = await Barbers.updateOne({ _id }, { $set: { name } });
 
     if (!update)
       res

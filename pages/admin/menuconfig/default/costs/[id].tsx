@@ -1,79 +1,86 @@
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
-import { Layout } from "@/componentsAdminPanel/Layout"
+import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
 import { withIronSessionSsr } from "iron-session/next";
 import { useState } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
-import SaveIcon from '@mui/icons-material/Save';
+import SaveIcon from "@mui/icons-material/Save";
 import { CostsData } from "@/lib/types/CostsData";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import { useRouter } from "next/router";
-import {useEffect} from "react";
 import { IconButton, Tooltip } from "@mui/material";
-import DeleteIcon from '@mui/icons-material/Delete';
-import getData from "@/utils/getData";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Link from "next/link";
+import Menu from "@/models/Menu";
+import Cost from "@/models/Cost";
+import { ObjectId } from "mongodb";
 
-
-const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:CostsData}) => {
+const DefaultCostsEditItem = ({
+  permissions = {},
+  data,
+}: {
+  permissions: any;
+  data: CostsData;
+}) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const {
     formState: { errors },
     control,
     handleSubmit,
-    setValue
-  } = useForm<CostsData>({defaultValues: data});
+    setValue,
+  } = useForm<CostsData>({ defaultValues: data });
   const { fields, append, remove, update } = useFieldArray<any>({
     control,
-    name: "services"
+    name: "services",
   });
 
   const handleAddService = () => {
-    if(fields.length < 5) {
+    if (fields.length < 5) {
       append({
         service: "",
         cost: 0,
-        time: 0
-      })
+        time: 0,
+      });
     }
-  }
+  };
 
-  const handleDeleteService = (i:number) => {
-    remove(i)
-  }
+  const handleDeleteService = (i: number) => {
+    remove(i);
+  };
 
-  const handleSendData = (form:CostsData) => {
+  const handleSendData = (form: CostsData) => {
     setLoading(true);
-    fetch("/api/costs/"+router.query.id, {
+    fetch("/api/costs/" + router.query.id, {
       method: "POST",
       body: JSON.stringify(form),
       headers: {
         "Content-Type": "application/json",
       },
     })
-    .then(res => res.json())
-    .then(data => {
-      if(!data.error) {
-        router.push("/admin/menuconfig/default/costs");
-      } else {
-        console.log(data);
-        setLoading(false)
-      }
-    })
-    .catch(err => {
-      console.log(err);
-      setLoading(false);
-    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) {
+          router.push("/admin/menuconfig/default/costs");
+        } else {
+          console.log(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   };
 
   return (
     <Layout perms={permissions}>
       <h1>Edycja kategorii - {data.category}</h1>
-      <form onSubmit={handleSubmit(handleSendData)} style={{maxWidth: "550px", margin: "0 auto", textAlign: "center"}}>
+      <form
+        onSubmit={handleSubmit(handleSendData)}
+        style={{ maxWidth: "550px", margin: "0 auto", textAlign: "center" }}
+      >
         <Controller
           control={control}
           name="category"
@@ -105,7 +112,7 @@ const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:Cos
         />
         <div>
           <h2>Usługi</h2>
-          {fields.map((item:any, i:number) => (
+          {fields.map((item: any, i: number) => (
             <div key={item.id}>
               <Controller
                 control={control}
@@ -134,9 +141,7 @@ const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:Cos
                     onChange={onChange}
                     onBlur={onBlur}
                     inputRef={ref}
-                    error={Boolean(
-                      errors.services?.[i]?.service
-                    )}
+                    error={Boolean(errors.services?.[i]?.service)}
                     helperText={
                       errors.services?.[i]?.service?.message as string
                     }
@@ -160,12 +165,8 @@ const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:Cos
                     onChange={onChange}
                     onBlur={onBlur}
                     inputRef={ref}
-                    error={Boolean(
-                      errors?.services?.[i]?.cost
-                    )}
-                    helperText={
-                      errors?.services?.[i]?.cost?.message as string
-                    }
+                    error={Boolean(errors?.services?.[i]?.cost)}
+                    helperText={errors?.services?.[i]?.cost?.message as string}
                   />
                 )}
               />
@@ -186,33 +187,39 @@ const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:Cos
                     onChange={onChange}
                     onBlur={onBlur}
                     inputRef={ref}
-                    error={Boolean(
-                      errors.services?.[i]?.time
-                    )}
-                    helperText={
-                      errors.services?.[i]?.time?.message
-                    }
+                    error={Boolean(errors.services?.[i]?.time)}
+                    helperText={errors.services?.[i]?.time?.message}
                   />
                 )}
               />
               <Tooltip title="Usuń" placement="bottom">
-                <IconButton disabled={loading} onClick={() => handleDeleteService(i)} sx={{margin: "17px 0px", color: "#b0bec5", backgroundColor: "rgba(0, 0, 0, 0.06)"}}>
-                    <DeleteIcon/>
+                <IconButton
+                  disabled={loading}
+                  onClick={() => handleDeleteService(i)}
+                  sx={{
+                    margin: "17px 0px",
+                    color: "#b0bec5",
+                    backgroundColor: "rgba(0, 0, 0, 0.06)",
+                  }}
+                >
+                  <DeleteIcon />
                 </IconButton>
               </Tooltip>
             </div>
           ))}
-          {fields.length < 5 &&
+          {fields.length < 5 && (
             <CButton disabled={loading} onClick={handleAddService}>
               Dodaj usługę
             </CButton>
-          }
+          )}
         </div>
-        <CButton LinkComponent={Link} href="/admin/menuconfig/default/costs">Wróć</CButton>
+        <CButton LinkComponent={Link} href="/admin/menuconfig/default/costs">
+          Wróć
+        </CButton>
         <CLoadingButton
           loading={loading}
           disabled={loading}
-          startIcon={<SaveIcon/>}
+          startIcon={<SaveIcon />}
           loadingPosition="start"
           type="submit"
         >
@@ -220,37 +227,41 @@ const DefaultCostsEditItem = ({permissions={}, data}: {permissions:any, data:Cos
         </CLoadingButton>
       </form>
     </Layout>
-  )
-}
+  );
+};
 
 export default DefaultCostsEditItem;
 
 export const getServerSideProps = withIronSessionSsr(
-    async function getServerSideProps({ req, query }) {
-      const user = req.session.user;
-      const menu:MenuItemDB[] = await getMenu();
-      const costs:CostsData[] = await getData("costs");
+  async function getServerSideProps({ req, query }) {
+    const user = req.session.user;
+    const menu = JSON.parse(
+      JSON.stringify(await Menu.findOne({ slug: "costs", custom: false }))
+    );
 
-      const data = costs.find(item => item._id === query.id);
-  
-      if(
-        user?.isLoggedIn !== true ||
-        !user?.permissions?.menu ||
-        menu.find(item => item.slug === "costs")?.custom ||
-        !costs.find((item:any) => item._id === query.id) ||
-        data === undefined
-      ) {
-        return {
-          notFound: true,
-        };
-      }
-  
+    const data = JSON.parse(
+      JSON.stringify(
+        await Cost.findOne({ _id: new ObjectId(query.id as string) })
+      )
+    );
+
+    if (
+      user?.isLoggedIn !== true ||
+      !user?.permissions?.menu ||
+      !menu ||
+      !data
+    ) {
       return {
-        props: {
-          data,
-          permissions: req.session.user?.permissions,
-        },
+        notFound: true,
       };
-    },
-    sessionOptions
+    }
+
+    return {
+      props: {
+        data,
+        permissions: req.session.user?.permissions,
+      },
+    };
+  },
+  sessionOptions
 );

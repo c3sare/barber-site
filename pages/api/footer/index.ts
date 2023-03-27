@@ -1,7 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import Footer from "@/models/Footer";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { MongoClient } from "mongodb";
 
 interface FormDataFooter {
   btnMore: boolean;
@@ -101,15 +101,11 @@ async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("footers");
-    const findOne = await tab.findOne({});
-    const updateData = await tab.updateOne(
+    const findOne = await Footer.findOne({});
+    const updateData = await Footer.updateOne(
       { _id: findOne!._id },
       { $set: { ...data } }
     );
-    client.close();
     if (!updateData)
       return res
         .status(500)

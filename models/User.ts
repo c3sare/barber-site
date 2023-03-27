@@ -11,20 +11,20 @@ interface Permissions {
   users: boolean;
 }
 
-interface IUsers {
+interface IUser {
   login: string;
   password: string;
   permissions: Permissions;
 }
 
-const usersSchema = new Schema<IUsers>({
+const usersSchema = new Schema<IUser>({
   login: { type: String, required: true },
   password: { type: String, required: true },
   permissions: Object,
 });
 
-const Users = createConnection(process.env.MONGO_URI as string).model<IUsers>(
-  "users",
+const Users = createConnection(process.env.MONGO_URI as string).model<IUser>(
+  "User",
   usersSchema
 );
 

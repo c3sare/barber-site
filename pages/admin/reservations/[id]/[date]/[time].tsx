@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import SaveIcon from "@mui/icons-material/Save";
-import { MongoClient } from "mongodb";
+import Reservation from "@/models/Reservation";
 
 interface ReservationTime {
   reserved: boolean;
@@ -217,19 +217,18 @@ export const getServerSideProps = withIronSessionSsr(
     }
 
     const { id, date, time } = query;
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("reservations");
-    const list = await tab.findOne({ barber_id: id, date });
+    const list = JSON.parse(
+      JSON.stringify(await Reservation.findOne({ barber_id: id, date }))
+    );
     let data = null;
-    if (list !== null) {
+    if (list) {
       const timeFromList = list.times.find((item: any) => item.time === time);
-      if (timeFromList !== undefined) {
+      if (timeFromList) {
         data = timeFromList;
       }
     }
 
-    if (data === null)
+    if (!data)
       return {
         notFound: true,
       };

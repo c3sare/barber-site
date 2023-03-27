@@ -1,6 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import Users from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
@@ -47,20 +48,18 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    const database = client.db("site");
-    const tab = database.collection("users");
     const _id = new ObjectId(id as string);
-    const exist = await tab.findOne({ _id });
+    const exist = await Users.findOne({ _id });
 
     if (!exist)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono użytkownika od id " + id });
 
-    const updatePerms = await tab.updateOne({ _id }, { $set: { permissions } });
-
-    client.close();
+    const updatePerms = await Users.updateOne(
+      { _id },
+      { $set: { permissions } }
+    );
 
     if (!updatePerms)
       return res

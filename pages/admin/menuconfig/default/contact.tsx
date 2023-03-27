@@ -1,4 +1,3 @@
-import CButton from "@/componentsAdminPanel/elements/CButton";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout";
@@ -9,9 +8,10 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { IMaskInput } from "react-imask";
 import SaveIcon from "@mui/icons-material/Save";
-import { getDataOne } from "@/utils/getData";
-import getMenu from "@/lib/getMenu";
-import { MenuItemDB } from "@/lib/types/MenuItem";
+import Menu from "@/models/Menu";
+import getContact from "@/lib/getContact";
+import CButton from "@/componentsAdminPanel/elements/CButton";
+import Link from "next/link";
 
 const ZipCode = React.forwardRef(function TextMaskCustom(props: any, ref) {
   const { onChange, ...other }: any = props;
@@ -318,6 +318,13 @@ const EditDefaultPageContact = ({ permissions = {}, data }: any) => {
             )}
           />
         </div>
+        <CButton
+          LinkComponent={Link}
+          disabled={loading}
+          href="/admin/menuconfig#edit"
+        >
+          Wróć
+        </CButton>
         <CLoadingButton
           loading={loading}
           disabled={loading}
@@ -337,19 +344,20 @@ export default EditDefaultPageContact;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
-    const menu: MenuItemDB[] = await getMenu();
+    const menu = await Menu.findOne({ slug: "contact" });
 
     if (
       user?.isLoggedIn !== true ||
       !user?.permissions?.menu ||
-      menu.find((item) => item.slug === "contact")?.custom
+      !menu ||
+      menu?.custom
     ) {
       return {
         notFound: true,
       };
     }
 
-    const data = await getDataOne("contacts");
+    const data = await getContact();
 
     return {
       props: {
