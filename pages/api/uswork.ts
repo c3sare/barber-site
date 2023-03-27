@@ -54,7 +54,7 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("uswork");
+    const tab = database.collection("usworks");
     const insert = await tab.insertOne({ image: fullName });
 
     if (!insert)
@@ -84,7 +84,7 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("uswork");
+    const tab = database.collection("usworks");
     const _id = new ObjectId(id);
     const itemToDelete = await tab.findOne({ _id });
 

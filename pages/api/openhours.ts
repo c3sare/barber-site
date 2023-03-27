@@ -25,7 +25,7 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const data = await getData("openHours");
+    const data = await getData("openhours");
     let newData: any = {};
 
     data.forEach((item: any) => {
@@ -54,7 +54,7 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("openHours");
+    const tab = database.collection("openhours");
     const results: boolean[] = [];
     await req.body.forEach(async (day: any) => {
       const $set = day.closed

@@ -103,7 +103,7 @@ async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("footer");
+    const tab = database.collection("footers");
     const findOne = await tab.findOne({});
     const updateData = await tab.updateOne(
       { _id: findOne!._id },

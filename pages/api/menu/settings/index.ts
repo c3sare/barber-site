@@ -30,7 +30,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("menu");
+    const tab = database.collection("menus");
     const result = await tab.updateOne(
       { _id: new ObjectId(menu._id) },
       {

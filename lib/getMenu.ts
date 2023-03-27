@@ -1,6 +1,6 @@
-import getData from "../utils/getData";
+import Menu from "@/models/Menus";
 
 export default async function getMenu() {
-  const menu = await getData("menu");
-  return menu.filter((item:any) => item.on);
+  const menu = await Menu.find({});
+  return menu.filter((item: any) => item.on);
 }

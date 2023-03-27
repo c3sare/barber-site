@@ -37,7 +37,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("info");
+    const tab = database.collection("infos");
     const updateData = await tab.updateOne(
       {},
       { companyName, yearOfCreate, slogan }

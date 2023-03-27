@@ -1,12 +1,12 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { getDataOne } from "@/utils/getData";
 import formidable from "formidable";
 import path from "path";
 import fs from "fs/promises";
-import { MongoClient, ObjectId } from "mongodb";
+import { MongoClient } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
+import Descmains from "@/models/DescMain";
 
 export default withIronSessionApiRoute(descMainRoute, sessionOptions);
 
@@ -61,9 +61,8 @@ async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
-
-    const data = await getDataOne("descMain");
-    res.json(data);
+    const data = await Descmains.findOne({});
+    res.status(200).json(data);
   } else if (req.method === "POST") {
     if (!session?.isLoggedIn && !session?.permissions?.menu)
       return res
@@ -93,7 +92,7 @@ async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("descMain");
+    const tab = database.collection("descmains");
     const insert = await tab.updateOne(
       {},
       { $set: { title, description, pros } }

@@ -28,7 +28,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("menu");
+    const tab = database.collection("menus");
     const item = await tab.findOne({ _id: new ObjectId(id as string) });
 
     if (item === null)
@@ -63,7 +63,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("menu");
+    const tab = database.collection("menus");
     const allMenu = (await tab.find({}).toArray()).filter(
       (item) => String(item._id) !== id
     );

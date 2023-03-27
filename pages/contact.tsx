@@ -17,7 +17,7 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
   const refMail = useRef<any>(null);
   const refText = useRef<any>(null);
 
-  const handleSendMail = (e:any) => {
+  const handleSendMail = (e: any) => {
     e.preventDefault();
 
     const pattern = /^[a-zA-Z]+$/;
@@ -73,101 +73,101 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
 
   return (
     <Layout menu={menu} footer={footer} info={info} title="Kontakt">
-    <div className="container">
-      <h1>Kontakt</h1>
-      <div className="contactPage">
-        <div className="contactBg"></div>
-        <div className="contactContent">
-          {!success ? (
-            <form onSubmit={handleSendMail}>
-              <label>
-                <span>Imię:</span>{" "}
-                <input
-                  value={name}
-                  onChange={(e) => {
-                    refName.current.textContent = "";
-                    setName(e.target.value);
-                  }}
-                  type="text"
-                />
-              </label>
-              <span ref={refName} className="formError"></span>
-              <label>
-                <span>E-Mail:</span>{" "}
-                <input
-                  value={mail}
-                  onChange={(e) => {
-                    refMail.current.textContent = "";
-                    setMail(e.target.value);
-                  }}
-                  type="mail"
-                />
-              </label>
-              <span ref={refMail} className="formError"></span>
-              <label>
-                <span>Numer Telefonu:</span>{" "}
-                <input
-                  value={phone}
-                  onChange={(e) => {
-                    refPhone.current.textContent = "";
-                    setPhone(e.target.value);
-                  }}
-                  type="phone"
-                />
-              </label>
-              <span ref={refPhone} className="formError"></span>
-              <label style={{ textAlign: "center" }}>
-                Treść wiadomości:
-                <br />{" "}
-                <textarea
-                  value={text}
-                  onChange={(e) => {
-                    refText.current.textContent = "";
-                    setText(e.target.value);
-                  }}
-                />
-              </label>
-              <span ref={refText} className="formError"></span>
-              <button type="submit" className="btn">
-                Wyślij wiadomość
-              </button>
-            </form>
-          ) : (
-            <h4>Pomyślnie wysłano wiadomość!</h4>
-          )}
-          <div className="contactInfo">
-            <div className="address">
-              <h5>Informacje</h5>
-              <p>{info?.companyName}</p>
-              <p>{contactData.address}</p>
-              <p>
-                {contactData.city} {contactData.zipcode}
-              </p>
-              <p>NIP: {contactData.nip}</p>
-              <p>REGON: {contactData.regon}</p>
-            </div>
-            <div className="mail">
-              <h5>Adres E-Mail</h5>
-              <p>{contactData.mail}</p>
-            </div>
-            <div className="phone">
-              <h5>Numer Telefonu</h5>
-              <p>{contactData.phone}</p>
+      <div className="container">
+        <h1>Kontakt</h1>
+        <div className="contactPage">
+          <div className="contactBg"></div>
+          <div className="contactContent">
+            {!success ? (
+              <form onSubmit={handleSendMail}>
+                <label>
+                  <span>Imię:</span>{" "}
+                  <input
+                    value={name}
+                    onChange={(e) => {
+                      refName.current.textContent = "";
+                      setName(e.target.value);
+                    }}
+                    type="text"
+                  />
+                </label>
+                <span ref={refName} className="formError"></span>
+                <label>
+                  <span>E-Mail:</span>{" "}
+                  <input
+                    value={mail}
+                    onChange={(e) => {
+                      refMail.current.textContent = "";
+                      setMail(e.target.value);
+                    }}
+                    type="mail"
+                  />
+                </label>
+                <span ref={refMail} className="formError"></span>
+                <label>
+                  <span>Numer Telefonu:</span>{" "}
+                  <input
+                    value={phone}
+                    onChange={(e) => {
+                      refPhone.current.textContent = "";
+                      setPhone(e.target.value);
+                    }}
+                    type="phone"
+                  />
+                </label>
+                <span ref={refPhone} className="formError"></span>
+                <label style={{ textAlign: "center" }}>
+                  Treść wiadomości:
+                  <br />{" "}
+                  <textarea
+                    value={text}
+                    onChange={(e) => {
+                      refText.current.textContent = "";
+                      setText(e.target.value);
+                    }}
+                  />
+                </label>
+                <span ref={refText} className="formError"></span>
+                <button type="submit" className="btn">
+                  Wyślij wiadomość
+                </button>
+              </form>
+            ) : (
+              <h4>Pomyślnie wysłano wiadomość!</h4>
+            )}
+            <div className="contactInfo">
+              <div className="address">
+                <h5>Informacje</h5>
+                <p>{info?.companyName}</p>
+                <p>{contactData.address}</p>
+                <p>
+                  {contactData.city} {contactData.zipcode}
+                </p>
+                <p>NIP: {contactData.nip}</p>
+                <p>REGON: {contactData.regon}</p>
+              </div>
+              <div className="mail">
+                <h5>Adres E-Mail</h5>
+                <p>{contactData.mail}</p>
+              </div>
+              <div className="phone">
+                <h5>Numer Telefonu</h5>
+                <p>{contactData.phone}</p>
+              </div>
             </div>
           </div>
         </div>
+        {sending && (
+          <div className="fullLoading">
+            <div className="lds-ellipsis">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+          </div>
+        )}
       </div>
-      {sending && (
-        <div className="fullLoading">
-          <div className="lds-ellipsis">
-            <div></div>
-            <div></div>
-            <div></div>
-            <div></div>
-          </div>
-        </div>
-      )}
-    </div>
     </Layout>
   );
 };
@@ -175,17 +175,17 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
 export default Contact;
 
 export async function getStaticProps() {
-    const menu = await getMenu();
-    const footer = await getDataOne("footer");
-    const contactData = await getDataOne("contact");
-    const info = await getDataOne("info");
+  const menu = await getMenu();
+  const footer = await getDataOne("footers");
+  const contactData = await getDataOne("contacts");
+  const info = await getDataOne("infos");
 
-    return {
-      props: {
-        menu,
-        footer,
-        contactData,
-        info,
-      }
-    }
+  return {
+    props: {
+      menu,
+      footer,
+      contactData,
+      info,
+    },
+  };
 }

@@ -61,7 +61,7 @@ async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("mailConfig");
+    const tab = database.collection("mailconfigs");
     const update = await tab.updateOne(
       {},
       {

@@ -19,37 +19,46 @@ const Uswork = ({
   menu,
   footer,
   info,
-  pageData
-} : {
-  workData: (WorkData[] | CustomPageData),
-  menu: MenuItem[],
-  footer: FooterData,
-  info: InfoData,
-  pageData: MenuItemDB
+  pageData,
+}: {
+  workData: WorkData[] | CustomPageData;
+  menu: MenuItem[];
+  footer: FooterData;
+  info: InfoData;
+  pageData: MenuItemDB;
 }) => {
   const [showImage, setShowImage] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
 
-
-  const showImageBox = (url:string) => {
+  const showImageBox = (url: string) => {
     setImageUrl(url);
     setShowImage(true);
   };
 
   return (
     <>
-    <Layout title="Nasze Prace" menu={menu} footer={footer} info={info}>
-      <div className="container">
-        <h1>{pageData.title}</h1>
-        {
-          pageData.custom ?
-            <Editor cellPlugins={cellPlugins} value={(workData as any).content} readOnly/>
-          :
+      <Layout title="Nasze Prace" menu={menu} footer={footer} info={info}>
+        <div className="container">
+          <h1>{pageData.title}</h1>
+          {pageData.custom ? (
+            <Editor
+              cellPlugins={cellPlugins}
+              value={(workData as any).content}
+              readOnly
+            />
+          ) : (
             <div className="photoBox">
-              {(workData as WorkData[]).map((item, index:number) => (
+              {(workData as WorkData[]).map((item, index: number) => (
                 <div
                   key={index}
-                  style={{position: "relative", margin: "16px", width: "350px", maxWidth: "100%", height: "350px", cursor: "pointer"}}
+                  style={{
+                    position: "relative",
+                    margin: "16px",
+                    width: "350px",
+                    maxWidth: "100%",
+                    height: "350px",
+                    cursor: "pointer",
+                  }}
                   onClick={() => showImageBox(item.image)}
                 >
                   <Image
@@ -59,17 +68,22 @@ const Uswork = ({
                     fill
                     sizes="(max-width: 1200px) 350px,
                     350px"
-                    style={{objectFit: "cover", objectPosition: "center"}}
+                    style={{ objectFit: "cover", objectPosition: "center" }}
                   />
                 </div>
               ))}
             </div>
-        }
-      </div>
-    </Layout>
-    {showImage && !pageData.custom && (
+          )}
+        </div>
+      </Layout>
+      {showImage && !pageData.custom && (
         <div className="fullImageScreen">
-          <Image alt="Fryzura" src={`/images/uswork/${imageUrl}`} width={1000} height={1000}/>
+          <Image
+            alt="Fryzura"
+            src={`/images/uswork/${imageUrl}`}
+            width={1000}
+            height={1000}
+          />
           <div
             className="closeBtn"
             onClick={() => {
@@ -80,7 +94,7 @@ const Uswork = ({
             <div className="closeBtn_2"></div>
           </div>
         </div>
-    )}
+      )}
     </>
   );
 };
@@ -88,30 +102,32 @@ const Uswork = ({
 export default Uswork;
 
 export async function getStaticProps() {
-    const menu:MenuItem[] = await getMenu();
-    const footer:FooterData = await getDataOne("footer");
-    const info:InfoData = await getDataOne("info");
+  const menu = await getMenu();
+  const footer: FooterData = await getDataOne("footers");
+  const info: InfoData = await getDataOne("infos");
 
-    if(menu.find(item => item.slug === "uswork") === undefined) {
-      return {
-        redirect: {
-          destination: '/404',
-          permanent: false,
-        },
-      }
-    }
-
-    const pageData = menu.find(item => (item.slug === "uswork"));
-
-    const workData = pageData!.custom ? await getPage("uswork") : await getData("uswork");
-
+  if (menu.find((item) => item.slug === "uswork") === undefined) {
     return {
-      props: {
-        menu,
-        footer,
-        info,
-        workData,
-        pageData 
-      }
-    }
+      redirect: {
+        destination: "/404",
+        permanent: false,
+      },
+    };
+  }
+
+  const pageData = menu.find((item) => item.slug === "uswork");
+
+  const workData = pageData!.custom
+    ? await getPage("uswork")
+    : await getData("usworks");
+
+  return {
+    props: {
+      menu,
+      footer,
+      info,
+      workData,
+      pageData,
+    },
+  };
 }

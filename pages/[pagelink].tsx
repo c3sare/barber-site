@@ -12,21 +12,21 @@ export async function getStaticPaths() {
   const customPages = await pageList();
 
   return {
-    paths: customPages.nodes.map((item:any) => {
+    paths: customPages.nodes.map((item: any) => {
       return {
         params: {
-          pagelink: item.slug
-        }
-      }
+          pagelink: item.slug,
+        },
+      };
     }),
     fallback: false,
-  }
+  };
 }
 
-export async function getStaticProps(context:any) {
+export async function getStaticProps(context: any) {
   const menu = await getMenu();
-  const footer = await getDataOne("footer");
-  const info = await getDataOne("info");
+  const footer = await getDataOne("footers");
+  const info = await getDataOne("infos");
   const page = await getPage(context.params.pagelink);
 
   return {
@@ -35,19 +35,16 @@ export async function getStaticProps(context:any) {
       footer,
       info,
       page,
-    }
-  }
+    },
+  };
 }
 
-const CustomPage = ({ page ,menu, footer, info }: any) => {
-
+const CustomPage = ({ page, menu, footer, info }: any) => {
   return (
     <Layout title={page.title} info={info} footer={footer} menu={menu}>
-        <div
-        className="container"
-        >
-          <Editor cellPlugins={cellPlugins} value={page.content} readOnly/>
-        </div>
+      <div className="container">
+        <Editor cellPlugins={cellPlugins} value={page.content} readOnly />
+      </div>
     </Layout>
   );
 };

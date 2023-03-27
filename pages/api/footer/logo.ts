@@ -60,7 +60,7 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
     );
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("footer");
+    const tab = database.collection("footers");
     const oldFile = await tab.findOne({});
     const insert = await tab.updateOne({}, { $set: { logo: newName } });
     if (!insert.acknowledged)

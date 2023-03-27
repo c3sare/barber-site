@@ -36,7 +36,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("menu");
+    const tab = database.collection("menus");
     const deleteResult = await tab.deleteOne({
       _id: new ObjectId(id),
       default: false,
@@ -82,7 +82,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("menu");
+    const tab = database.collection("menus");
     const allItems = (await tab.find({}).toArray()).filter(
       (item) => item.parent === ""
     );

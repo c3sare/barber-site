@@ -35,7 +35,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const client = new MongoClient(process.env.MONGO_URI as string);
     const database = client.db("site");
-    const tab = database.collection("menu");
+    const tab = database.collection("menus");
     const updates: boolean[] = [];
     menu.forEach(async (item) => {
       updates.push(

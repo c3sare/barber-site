@@ -4,15 +4,29 @@ import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextArea from "@/componentsAdminPanel/elements/CTextArea";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
-import { Layout } from "@/componentsAdminPanel/Layout"
+import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import FooterData from "@/lib/types/FooterData";
 import { getDataOne } from "@/utils/getData";
-import { Box, createTheme, FormControlLabel, Grid, IconButton, styled, ThemeProvider, Typography } from "@mui/material";
+import {
+  Box,
+  createTheme,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  styled,
+  ThemeProvider,
+  Typography,
+} from "@mui/material";
 import { blueGrey } from "@mui/material/colors";
 import { withIronSessionSsr } from "iron-session/next";
 import React, { useState } from "react";
-import { Controller, useFieldArray, useForm, UseFormRegisterReturn } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  UseFormRegisterReturn,
+} from "react-hook-form";
 import { FaCamera, FaMinus, FaPlus, FaSave } from "react-icons/fa";
 
 const InputStyled = styled("input")({
@@ -21,19 +35,25 @@ const InputStyled = styled("input")({
 });
 
 // eslint-disable-next-line react/display-name
-const Input = React.forwardRef(({ onChange, onBlur, name }:UseFormRegisterReturn, ref:any) => (
-  <InputStyled
-    accept="image/*"
-    id="contained-button-file"
-    type="file"
-    onChange={(e:React.ChangeEvent<HTMLInputElement>) => {
-      if(e.target.files!.length > 0 && e.target.files?.[0]?.type?.indexOf("image")! >= 0) onChange(e);
-    }}
-    onBlur={onBlur}
-    name={name}
-    ref={ref}
-  />
-));
+const Input = React.forwardRef(
+  ({ onChange, onBlur, name }: UseFormRegisterReturn, ref: any) => (
+    <InputStyled
+      accept="image/*"
+      id="contained-button-file"
+      type="file"
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        if (
+          e.target.files!.length > 0 &&
+          e.target.files?.[0]?.type?.indexOf("image")! >= 0
+        )
+          onChange(e);
+      }}
+      onBlur={onBlur}
+      name={name}
+      ref={ref}
+    />
+  )
+);
 
 const theme = createTheme({
   palette: {
@@ -44,7 +64,7 @@ const theme = createTheme({
   },
 });
 
-const AdminPanelFooterConfig = ({permissions, data}: any) => {
+const AdminPanelFooterConfig = ({ permissions, data }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const {
     register,
@@ -53,8 +73,8 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
     handleSubmit,
     clearErrors,
     watch,
-    setValue
-  } = useForm<FooterData>({defaultValues: data});
+    setValue,
+  } = useForm<FooterData>({ defaultValues: data });
 
   const { fields, append, remove, update } = useFieldArray({
     control,
@@ -62,7 +82,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
   });
   const [msg, setMsg] = useState<string>("");
 
-  const createAlert = (text:string) => {
+  const createAlert = (text: string) => {
     setMsg(text);
     setTimeout(() => {
       setMsg("");
@@ -71,37 +91,37 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
   const logo = watch("logo");
   const btnMore = watch("btnMore");
 
-  const submitForm = (data:any) => {
+  const submitForm = (data: any) => {
     setLoading(true);
 
     fetch("/api/footer", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         linkBoxes: data.linkBoxes,
         desc: data.desc,
         btnMore: data.btnMore,
         btnLink: data.btnLink,
-        btnTitle: data.btnTitle
+        btnTitle: data.btnTitle,
+      }),
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        if (!data.error) {
+          createAlert("Dane zostały poprawnie wysłane!");
+        } else createAlert("Wystąpił problem przy aktualizacji danych!");
       })
-    })
-    .then(data => data.json())
-    .then((data) => {
-      if(!data.error) {
-        createAlert("Dane zostały poprawnie wysłane!");
-      } else createAlert("Wystąpił problem przy aktualizacji danych!");
-    })
-    .catch(() => {
-      createAlert("Wystąpił problem przy wysyłaniu danych!");
-    })
-    .finally(() => {
-      setLoading(false);
-    })
+      .catch(() => {
+        createAlert("Wystąpił problem przy wysyłaniu danych!");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const handleAddLinkToBox = (boxIndex:number) => {
+  const handleAddLinkToBox = (boxIndex: number) => {
     if (fields[boxIndex].links.length < 5) {
       clearErrors();
       update(boxIndex, {
@@ -129,12 +149,12 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
     }
   };
 
-  const handleRemoveBox = (boxIndex:number) => {
+  const handleRemoveBox = (boxIndex: number) => {
     clearErrors();
     remove(boxIndex);
   };
 
-  const handleRemoveLinkFromBox = (boxIndex:number, linkId:number) => {
+  const handleRemoveLinkFromBox = (boxIndex: number, linkId: number) => {
     clearErrors();
     update(boxIndex, {
       name: fields[boxIndex].name,
@@ -142,38 +162,43 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
     });
   };
 
-  const {onBlur, ref, name} = register("logo");
+  const { onBlur, ref, name } = register("logo");
 
-  const onChange = async (e:any) => {
-    if(e.target?.files?.length === 1) {
+  const onChange = async (e: any) => {
+    if (e.target?.files?.length === 1) {
       setLoading(true);
       const fd = new FormData();
       fd.append("logo", e.target.files[0]);
       const data = await fetch("/api/footer/logo", {
         method: "POST",
-        body: fd
-      }).then(res => res.json())
-      .then(data => {
-          return data;
+        body: fd,
       })
-      if(!data.error) {
-          setValue("logo", data.img)
+        .then((res) => res.json())
+        .then((data) => {
+          return data;
+        });
+      if (!data.error) {
+        setValue("logo", data.img);
       } else {
-          console.log("error");
+        console.log("error");
       }
       setLoading(false);
     }
-  }
+  };
 
-    return (
-        <Layout perms={permissions}>
+  return (
+    <Layout perms={permissions}>
       <h1>Konfiguracja Stopki</h1>
       <form onSubmit={handleSubmit((data) => submitForm(data))}>
         <Grid
           container
           alignItems="center"
           direction="column"
-          sx={{ maxWidth: "550px", margin: "0 auto", "& > *": {margin: "15px 0"} }}
+          sx={{
+            maxWidth: "550px",
+            margin: "0 auto",
+            "& > *": { margin: "15px 0" },
+          }}
         >
           <Grid
             container
@@ -218,7 +243,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
               </ThemeProvider>
             </Grid>
           </Grid>
-          <Grid container justifyContent="center" sx={{position: "relative"}}>
+          <Grid container justifyContent="center" sx={{ position: "relative" }}>
             <Typography
               component="label"
               htmlFor="desc"
@@ -229,7 +254,7 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                 fontSize: "12px",
                 padding: "0 5px",
                 color: "#cfd8dc",
-                backgroundColor: "rgb(36, 36, 36)"
+                backgroundColor: "rgb(36, 36, 36)",
               }}
             >
               Opis
@@ -303,7 +328,9 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                             message: "Max. ilość znaków to 25",
                           },
                         }}
-                        render={({ field: { onChange, onBlur, value, ref, name } }) => (
+                        render={({
+                          field: { onChange, onBlur, value, ref, name },
+                        }) => (
                           <CTextField
                             disabled={loading}
                             variant="outlined"
@@ -337,7 +364,9 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                             message: "Max. ilość znaków to 256",
                           },
                         }}
-                        render={({ field: { onChange, onBlur, value, ref, name } }) => (
+                        render={({
+                          field: { onChange, onBlur, value, ref, name },
+                        }) => (
                           <CTextField
                             disabled={loading}
                             variant="outlined"
@@ -417,7 +446,9 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                             value={value}
                             inputRef={ref}
                             error={Boolean(errors.linkBoxes?.[boxIndex]?.name)}
-                            helperText={errors.linkBoxes?.[boxIndex]?.name?.message}
+                            helperText={
+                              errors.linkBoxes?.[boxIndex]?.name?.message
+                            }
                           />
                         )}
                       />
@@ -473,12 +504,14 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                                   value={value}
                                   inputRef={ref}
                                   error={Boolean(
-                                    errors.linkBoxes?.[boxIndex]?.links?.[linkIndex]
-                                      ?.name
+                                    errors.linkBoxes?.[boxIndex]?.links?.[
+                                      linkIndex
+                                    ]?.name
                                   )}
                                   helperText={
-                                    errors.linkBoxes?.[boxIndex]?.links?.[linkIndex]
-                                      ?.name?.message
+                                    errors.linkBoxes?.[boxIndex]?.links?.[
+                                      linkIndex
+                                    ]?.name?.message
                                   }
                                 />
                               )}
@@ -514,12 +547,14 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                                   value={value}
                                   inputRef={ref}
                                   error={Boolean(
-                                    errors.linkBoxes?.[boxIndex]?.links?.[linkIndex]
-                                      ?.url
+                                    errors.linkBoxes?.[boxIndex]?.links?.[
+                                      linkIndex
+                                    ]?.url
                                   )}
                                   helperText={
-                                    errors.linkBoxes?.[boxIndex]?.links?.[linkIndex]
-                                      ?.url?.message
+                                    errors.linkBoxes?.[boxIndex]?.links?.[
+                                      linkIndex
+                                    ]?.url?.message
                                   }
                                 />
                               )}
@@ -543,19 +578,17 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
                           </Box>
                         </Grid>
                       </Grid>
-                      {
-                        linkIndex === fields[boxIndex].links.length - 1 &&
-                          box.links.length < 5 && (
-                            <CButton
-                              disabled={loading}
-                              type="button"
-                              onClick={() => handleAddLinkToBox(boxIndex)}
-                              variant="contained"
-                            >
-                              <FaPlus />
-                            </CButton>
-                          )
-                      }
+                      {linkIndex === fields[boxIndex].links.length - 1 &&
+                        box.links.length < 5 && (
+                          <CButton
+                            disabled={loading}
+                            type="button"
+                            onClick={() => handleAddLinkToBox(boxIndex)}
+                            variant="contained"
+                          >
+                            <FaPlus />
+                          </CButton>
+                        )}
                     </Grid>
                   </Grid>
                 ))}
@@ -592,11 +625,17 @@ const AdminPanelFooterConfig = ({permissions, data}: any) => {
             </Box>
           </Grid>
         </Grid>
-        {msg.length > 0 ? <span style={{display: "block", width: "100%", textAlign: "center"}}>{msg}</span> : null}
+        {msg.length > 0 ? (
+          <span
+            style={{ display: "block", width: "100%", textAlign: "center" }}
+          >
+            {msg}
+          </span>
+        ) : null}
       </form>
-        </Layout>
-    )
-}
+    </Layout>
+  );
+};
 
 export default AdminPanelFooterConfig;
 
@@ -607,13 +646,13 @@ export const getServerSideProps = withIronSessionSsr(
     if (user?.isLoggedIn !== true || !user?.permissions?.footer) {
       return {
         redirect: {
-          destination: '/admin',
+          destination: "/admin",
           permanent: false,
         },
       };
     }
 
-    const data = await getDataOne("footer");
+    const data = await getDataOne("footers");
 
     return {
       props: {
