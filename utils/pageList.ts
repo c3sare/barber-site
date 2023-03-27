@@ -1,17 +1,18 @@
-import getMenu from "@/lib/getMenu";
-import MenuItem from "@/lib/types/MenuItem";
+import Menu from "@/models/Menu";
 
 export default async function pageList() {
-  const menu:MenuItem[] = await getMenu();
+  const menu = await Menu.find({});
 
-  const filteredChildren:MenuItem[] = menu.filter((item) => item && item.custom === true && item.on === true);
+  const filteredChildren = menu.filter(
+    (item) => item.custom === true && item.on === true
+  );
 
   return {
-    nodes: filteredChildren.map(item => {
-        return ({
-          id: item._id,
-          slug: item.slug
-        })
-    })
+    nodes: filteredChildren.map((item) => {
+      return {
+        id: item._id.toString(),
+        slug: item.slug,
+      };
+    }),
   };
 }
