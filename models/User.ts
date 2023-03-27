@@ -1,4 +1,4 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 interface Permissions {
   basic: boolean;
@@ -23,9 +23,4 @@ const usersSchema = new Schema<IUser>({
   permissions: Object,
 });
 
-const Users = createConnection(process.env.MONGO_URI as string).model<IUser>(
-  "User",
-  usersSchema
-);
-
-export default Users;
+export default models.User || model<IUser>("User", usersSchema);

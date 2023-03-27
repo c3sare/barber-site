@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import Cost from "@/models/Cost";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { ObjectId } from "mongodb";
@@ -8,6 +9,7 @@ export default withIronSessionApiRoute(costsRoute, sessionOptions);
 
 async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!user?.isLoggedIn || !user?.permissions?.menu)
       return res

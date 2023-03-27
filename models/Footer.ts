@@ -1,4 +1,4 @@
-import { Schema, Types, createConnection } from "mongoose";
+import { Schema, Types, model, models } from "mongoose";
 
 interface Link {
   id: number;
@@ -34,9 +34,4 @@ const footerSchema = new Schema<IFooter>({
   ],
 });
 
-const Footer = createConnection(process.env.MONGO_URI as string).model<IFooter>(
-  "Footer",
-  footerSchema
-);
-
-export default Footer;
+export default models.Footer || model<IFooter>("Footer", footerSchema);

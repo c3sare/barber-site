@@ -15,6 +15,7 @@ import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
 import Menu from "@/models/Menu";
 import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/dbConnect";
 
 const AdminPanelIndex = ({ permissions = {} }: any) => {
   const router = useRouter();
@@ -189,7 +190,7 @@ export default AdminPanelIndex;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
-
+    await dbConnect();
     const node = JSON.parse(
       JSON.stringify(await Menu.find({ _id: new ObjectId(query.id as string) }))
     );

@@ -18,6 +18,7 @@ import React from "react";
 import Menu from "@/models/Menu";
 import Slide from "@/models/Slide";
 import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/dbConnect";
 
 interface Slide {
   title: string;
@@ -291,7 +292,7 @@ export default SliderEditPage;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
-
+    await dbConnect();
     const menu = JSON.parse(
       JSON.stringify(await Menu.findOne({ slug: "", custom: false }))
     );

@@ -1,4 +1,4 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 interface ISlide {
   title: string;
@@ -12,9 +12,4 @@ const slidesSchema = new Schema<ISlide>({
   image: { type: String, required: true },
 });
 
-const Slide = createConnection(process.env.MONGO_URI as string).model<ISlide>(
-  "Slide",
-  slidesSchema
-);
-
-export default Slide;
+export default models.Slide || model<ISlide>("Slide", slidesSchema);

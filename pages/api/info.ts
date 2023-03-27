@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import InfoData from "@/lib/types/InfoData";
 import Info from "@/models/Info";
 import { withIronSessionApiRoute } from "iron-session/next";
@@ -26,6 +27,7 @@ function checkDataInfo(data: InfoData) {
 
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn || !session?.permissions?.basic)
       return res.status(403);

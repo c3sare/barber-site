@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import Footer from "@/models/Footer";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -88,6 +89,7 @@ function checkDataFooter(data: FormDataFooter) {
 
 async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn && !session?.permissions?.footer)
       return res

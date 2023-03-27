@@ -6,6 +6,7 @@ import CTextArea from "@/componentsAdminPanel/elements/CTextArea";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import FooterData from "@/lib/types/FooterData";
 import Footer from "@/models/Footer";
 import {
@@ -651,7 +652,7 @@ export const getServerSideProps = withIronSessionSsr(
         },
       };
     }
-
+    await dbConnect();
     const data = JSON.parse(JSON.stringify(await Footer.findOne({})));
 
     delete data._id;

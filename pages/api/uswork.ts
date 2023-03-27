@@ -7,6 +7,7 @@ import path from "path";
 import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Uswork from "@/models/Uswork";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(usworkRoute, sessionOptions);
 
@@ -44,6 +45,7 @@ async function handleId(req: NextApiRequest, res: NextApiResponse) {
 
 async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "PUT") {
     if (!session?.isLoggedIn || !session?.permissions?.menu)
       return res

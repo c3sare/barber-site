@@ -15,6 +15,7 @@ import { blueGrey } from "@mui/material/colors";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import React from "react";
 import Menu from "@/models/Menu";
+import dbConnect from "@/lib/dbConnect";
 
 interface Slide {
   title: string;
@@ -253,7 +254,7 @@ export default SliderAddPage;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
-
+    await dbConnect();
     const menu = await Menu.findOne({ slug: "" });
 
     if (

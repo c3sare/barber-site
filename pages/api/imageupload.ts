@@ -5,6 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 import formidable from "formidable";
 import getNewFileName from "@/utils/getNewFileName";
+import dbConnect from "@/lib/dbConnect";
 
 export const config = {
   api: {
@@ -32,6 +33,7 @@ async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
 
 async function uploadImageRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn && !session?.permissions?.menu)
       return res

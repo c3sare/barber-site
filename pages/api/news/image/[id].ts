@@ -7,6 +7,7 @@ import path from "path";
 import { MongoClient, ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
+import dbConnect from "@/lib/dbConnect";
 
 export const config = {
   api: {
@@ -40,6 +41,7 @@ function checkData(image: any) {
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!user?.isLoggedIn || !user?.permissions?.news)
       return res

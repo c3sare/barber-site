@@ -40,6 +40,7 @@ import { useRouter } from "next/router";
 import SaveIcon from "@mui/icons-material/Save";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import Menu from "@/models/Menu";
+import dbConnect from "@/lib/dbConnect";
 
 interface MenuItemRCT {
   index: string;
@@ -424,6 +425,7 @@ export default AdminPanelMenuConfig;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = JSON.parse(JSON.stringify(await Menu.find({})));
 
     if (user?.isLoggedIn !== true || !user?.permissions?.menu) {

@@ -13,6 +13,7 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import SaveIcon from "@mui/icons-material/Save";
 import Reservation from "@/models/Reservation";
+import dbConnect from "@/lib/dbConnect";
 
 interface ReservationTime {
   reserved: boolean;
@@ -217,6 +218,7 @@ export const getServerSideProps = withIronSessionSsr(
     }
 
     const { id, date, time } = query;
+    await dbConnect();
     const list = JSON.parse(
       JSON.stringify(await Reservation.findOne({ barber_id: id, date }))
     );

@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import Users from "@/models/User";
+import dbConnect from "@/lib/dbConnect";
 
 const pwdRegex =
   /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
@@ -13,6 +14,7 @@ export default withIronSessionApiRoute(loginRoute, sessionOptions);
 
 async function loginRoute(req: NextApiRequest, res: NextApiResponse<User>) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (session?.isLoggedIn)
       return res.status(403).json({ message: "Jesteś już zalogowany!" } as any);

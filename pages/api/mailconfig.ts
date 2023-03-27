@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import MailConfig from "@/models/MailConfigs";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -34,6 +35,7 @@ function checkDataMailConfig(data: MailConfig) {
 
 async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn || !session?.permissions?.smtpconfig)
       return res

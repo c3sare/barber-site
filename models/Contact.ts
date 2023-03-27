@@ -1,6 +1,6 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
-interface IContact {
+interface IContacts {
   address: string;
   city: string;
   zipcode: string;
@@ -10,7 +10,7 @@ interface IContact {
   regon: number;
 }
 
-const contactSchema = new Schema<IContact>({
+const contactSchema = new Schema<IContacts>({
   address: { type: String, required: true },
   city: { type: String, required: true },
   zipcode: { type: String, required: true },
@@ -20,8 +20,4 @@ const contactSchema = new Schema<IContact>({
   regon: { type: Number, required: true },
 });
 
-const Contact = createConnection(
-  process.env.MONGO_URI as string
-).model<IContact>("Contact", contactSchema);
-
-export default Contact;
+export default models.Contact || model<IContacts>("Contact", contactSchema);

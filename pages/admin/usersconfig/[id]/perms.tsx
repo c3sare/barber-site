@@ -13,6 +13,7 @@ import { Box, FormControlLabel } from "@mui/material";
 import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
 import { ObjectId } from "mongodb";
 import Users from "@/models/User";
+import dbConnect from "@/lib/dbConnect";
 
 interface Permissions {
   [key: string]: boolean;
@@ -116,7 +117,7 @@ export default AdminPanelIndex;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
-
+    await dbConnect();
     const data = JSON.parse(
       JSON.stringify(
         await Users.findOne({

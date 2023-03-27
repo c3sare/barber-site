@@ -15,6 +15,7 @@ import Link from "next/link";
 import Menu from "@/models/Menu";
 import Cost from "@/models/Cost";
 import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/dbConnect";
 
 const DefaultCostsEditItem = ({
   permissions = {},
@@ -235,6 +236,7 @@ export default DefaultCostsEditItem;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = JSON.parse(
       JSON.stringify(await Menu.findOne({ slug: "costs", custom: false }))
     );

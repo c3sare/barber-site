@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import dbConnect from "@/lib/dbConnect";
 import getCosts from "@/lib/getCosts";
 import getLayoutData from "@/lib/getLayoutData";
 import Head from "next/head";
@@ -52,6 +53,7 @@ const Costs = ({ costsData, info, menu, footer }: any) => {
 export default Costs;
 
 export async function getStaticProps() {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
   const costsData = await getCosts();
 

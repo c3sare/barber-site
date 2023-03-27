@@ -7,6 +7,7 @@ import fs from "fs/promises";
 import getNewFileName from "@/utils/getNewFileName";
 import Descmains from "@/models/DescMain";
 import Descmain from "@/models/DescMain";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(descMainRoute, sessionOptions);
 
@@ -56,6 +57,7 @@ function checkData(title: string, desc: string) {
 
 async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn && !session?.permissions?.menu)
       return res

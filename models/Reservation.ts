@@ -1,4 +1,4 @@
-import { Schema, Types, createConnection } from "mongoose";
+import { Schema, Types, model, models } from "mongoose";
 
 interface Time {
   time: string;
@@ -32,8 +32,5 @@ const reservationsSchema = new Schema<IReservation>({
   ],
 });
 
-const Reservation = createConnection(
-  process.env.MONGO_URI as string
-).model<IReservation>("Reservation", reservationsSchema);
-
-export default Reservation;
+export default models.Reservation ||
+  model<IReservation>("Reservation", reservationsSchema);

@@ -1,4 +1,4 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 interface INews {
   desc: string;
@@ -16,9 +16,4 @@ const newsSchema = new Schema<INews>({
   slug: { type: String, required: true },
 });
 
-const News = createConnection(process.env.MONGO_URI as string).model<INews>(
-  "New",
-  newsSchema
-);
-
-export default News;
+export default models.New || model<INews>("New", newsSchema);

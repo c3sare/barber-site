@@ -5,6 +5,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import UserData from "@/lib/types/UserData";
 import Users from "@/models/User";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -58,6 +59,7 @@ const validUser = (
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn || !session?.permissions?.users)
       return res

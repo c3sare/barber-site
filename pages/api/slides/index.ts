@@ -7,6 +7,7 @@ import path from "path";
 import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Slide from "@/models/Slide";
+import dbConnect from "@/lib/dbConnect";
 
 export const config = {
   api: {
@@ -53,6 +54,7 @@ function checkData({ image, title, desc }: any) {
 
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn || !session?.permissions?.menu)
       return res

@@ -13,6 +13,8 @@ import FooterData from "@/lib/types/FooterData";
 import getLayoutData from "@/lib/getLayoutData";
 import getMainPageData from "@/lib/getMainPageData";
 import News from "@/models/News";
+import mongoose from "mongoose";
+import dbConnect from "@/lib/dbConnect";
 
 const sortOpenHours = (a: OpenHoursData, b: OpenHoursData) => {
   if (a.order < b.order) {
@@ -208,6 +210,7 @@ export default function Home({
 }
 
 export async function getStaticProps() {
+  await dbConnect();
   const { info, footer, menu } = await getLayoutData();
   const { descMain, openHours, slideData } = await getMainPageData();
   const news = JSON.parse(

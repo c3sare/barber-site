@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import ReservationData from "@/lib/types/ReservationData";
 import Reservation from "@/models/Reservation";
 import Barbers from "@/models/Barber";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(reservationsRoute, sessionOptions);
 
@@ -13,6 +14,7 @@ const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
 
 async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     const { id, date } = req.query;
 

@@ -15,6 +15,7 @@ import Link from "next/link";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import Uswork from "@/models/Uswork";
 import Menu from "@/models/Menu";
+import dbConnect from "@/lib/dbConnect";
 
 const Input = styled("input")({
   display: "none",
@@ -199,6 +200,7 @@ export default UsworkConfig;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = await Menu.findOne({ slug: "uswork" });
 
     if (

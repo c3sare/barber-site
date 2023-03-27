@@ -12,6 +12,7 @@ import Menu from "@/models/Menu";
 import getContact from "@/lib/getContact";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
+import dbConnect from "@/lib/dbConnect";
 
 const ZipCode = React.forwardRef(function TextMaskCustom(props: any, ref) {
   const { onChange, ...other }: any = props;
@@ -344,6 +345,7 @@ export default EditDefaultPageContact;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = await Menu.findOne({ slug: "contact" });
 
     if (

@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import dbConnect from "@/lib/dbConnect";
 import getContact from "@/lib/getContact";
 import getLayoutData from "@/lib/getLayoutData";
 import { useRef, useState } from "react";
@@ -175,6 +176,7 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
 export default Contact;
 
 export async function getStaticProps() {
+  await dbConnect();
   const { menu, info, footer } = await getLayoutData();
   const contactData = await getContact();
 

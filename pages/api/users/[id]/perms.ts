@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import Users from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { ObjectId } from "mongodb";
@@ -35,6 +36,7 @@ const validPermissions = (permissions: Permissions) => {
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn || !session?.permissions?.users)
       return res

@@ -3,6 +3,7 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ObjectId } from "mongodb";
 import Barbers from "@/models/Barber";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(workersRoute, sessionOptions);
 
@@ -11,6 +12,7 @@ const nameRegex =
 
 async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn || !session?.permissions?.users)
       return res

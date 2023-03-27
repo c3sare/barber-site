@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import Users from "@/models/User";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -12,6 +13,7 @@ const pwdRegex =
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn || !session?.permissions?.users)
       return res

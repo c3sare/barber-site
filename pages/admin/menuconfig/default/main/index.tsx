@@ -11,6 +11,7 @@ import DescMain from "@/componentsAdminPanel/mainComponents/DescMain";
 import Slider from "@/componentsAdminPanel/mainComponents/Slider";
 import OpenHours from "@/componentsAdminPanel/mainComponents/OpenHours";
 import Menu from "@/models/Menu";
+import dbConnect from "@/lib/dbConnect";
 
 const DefaultMainEdit = ({ permissions = {} }: any) => {
   const router = useRouter();
@@ -120,6 +121,7 @@ export default DefaultMainEdit;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = await Menu.findOne({ slug: "" });
 
     if (

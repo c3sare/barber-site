@@ -1,4 +1,4 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 interface IOpenHour {
   short: "pon" | "wto" | "sro" | "czw" | "pia" | "sob" | "nie";
@@ -25,8 +25,4 @@ const openHoursSchema = new Schema<IOpenHour>({
   closed: { type: Boolean, required: true },
 });
 
-const OpenHour = createConnection(
-  process.env.MONGO_URI as string
-).model<IOpenHour>("Openhour", openHoursSchema);
-
-export default OpenHour;
+export default models.Openhour || model<IOpenHour>("Openhour", openHoursSchema);

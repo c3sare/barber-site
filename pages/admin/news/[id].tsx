@@ -22,6 +22,7 @@ import path from "path";
 import fs from "fs/promises";
 import News from "@/models/News";
 import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/dbConnect";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -269,7 +270,7 @@ export default AddNews;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
-
+    await dbConnect();
     const data = JSON.parse(
       JSON.stringify(
         await News.findOne({ _id: new ObjectId(query.id as string) })

@@ -12,6 +12,7 @@ import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
 import Barbers from "@/models/Barber";
 import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/dbConnect";
 
 interface Worker {
   name: string;
@@ -116,7 +117,7 @@ export default AdminPanelIndex;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
-
+    await dbConnect();
     const worker = JSON.parse(
       JSON.stringify(
         await Barbers.findOne({

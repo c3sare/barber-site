@@ -1,4 +1,4 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 interface IMenu {
   title: string;
@@ -20,9 +20,4 @@ const menuSchema = new Schema<IMenu>({
   slug: { type: String, required: true },
 });
 
-const Menu = createConnection(process.env.MONGO_URI as string).model<IMenu>(
-  "Menu",
-  menuSchema
-);
-
-export default Menu;
+export default models.Menu || model<IMenu>("Menu", menuSchema);

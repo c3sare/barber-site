@@ -1,4 +1,4 @@
-import { Schema, Types, createConnection } from "mongoose";
+import { Schema, Types, model, models } from "mongoose";
 
 interface Pro {
   desc: string;
@@ -22,8 +22,4 @@ const descmainSchema = new Schema<IDescMain>({
   ],
 });
 
-const Descmain = createConnection(
-  process.env.MONGO_URI as string
-).model<IDescMain>("Descmain", descmainSchema);
-
-export default Descmain;
+export default models.Descmain || model<IDescMain>("Descmain", descmainSchema);

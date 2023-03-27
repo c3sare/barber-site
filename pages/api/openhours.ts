@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import OpenHour from "@/models/OpenHour";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -18,6 +19,7 @@ const checkOpenHoursData = (data: any[]) => {
 
 async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn || !session?.permissions?.menu)
       return res

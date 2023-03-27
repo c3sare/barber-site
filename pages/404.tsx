@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,6 +37,7 @@ const PageNotFound = ({ menu, footer, info }: any) => {
 export default PageNotFound;
 
 export async function getStaticProps() {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
   return {
     props: {

@@ -2,6 +2,7 @@ import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import Info from "@/models/Info";
 import { Box, Grid } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
@@ -199,7 +200,7 @@ export const getServerSideProps = withIronSessionSsr(
         },
       };
     }
-
+    await dbConnect();
     const data = JSON.parse(JSON.stringify(await Info.findOne({})));
 
     return {

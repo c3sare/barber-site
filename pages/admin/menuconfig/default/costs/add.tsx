@@ -11,6 +11,7 @@ import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Menu from "@/models/Menu";
+import dbConnect from "@/lib/dbConnect";
 
 const DefaultCostsAddItem = ({ permissions = {} }: any) => {
   const router = useRouter();
@@ -110,6 +111,7 @@ export default DefaultCostsAddItem;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = await Menu.findOne({ slug: "costs" });
 
     if (

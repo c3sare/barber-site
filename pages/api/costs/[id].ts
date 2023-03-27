@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import { CostsData } from "@/lib/types/CostsData";
 import Cost from "@/models/Cost";
 import { withIronSessionApiRoute } from "iron-session/next";
@@ -11,6 +12,7 @@ const categoryServiceRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 
 async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
+  await dbConnect();
   const { id } = req.query;
 
   if (!ObjectId.isValid(id as string))

@@ -1,4 +1,4 @@
-import { Schema, Types, createConnection } from "mongoose";
+import { Schema, Types, model, models } from "mongoose";
 
 interface Service {
   cost: number;
@@ -24,9 +24,4 @@ const costsSchema = new Schema<ICost>({
   ],
 });
 
-const Cost = createConnection(process.env.MONGO_URI as string).model<ICost>(
-  "Cost",
-  costsSchema
-);
-
-export default Cost;
+export default models.Cost || model<ICost>("Cost", costsSchema);

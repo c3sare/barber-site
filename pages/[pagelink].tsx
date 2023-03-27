@@ -1,5 +1,6 @@
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
+import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
 import getPage from "@/utils/getPage";
 import pageList from "@/utils/pageList";
@@ -23,6 +24,7 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps(context: any) {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
   const page = await getPage(context.params.pagelink);
 

@@ -12,6 +12,7 @@ import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
 import Users from "@/models/User";
 import { ObjectId } from "mongodb";
+import dbConnect from "@/lib/dbConnect";
 
 interface ChangePWD {
   password: string;
@@ -175,7 +176,7 @@ export default AdminPanelIndex;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
     const user = req.session.user;
-
+    await dbConnect();
     const data = JSON.parse(
       JSON.stringify(
         await Users.findOne({

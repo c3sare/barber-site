@@ -19,6 +19,7 @@ import CButton from "@/componentsAdminPanel/elements/CButton";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import Menu from "@/models/Menu";
 import Cost from "@/models/Cost";
+import dbConnect from "@/lib/dbConnect";
 
 const DefaultCostsEdit = ({ permissions = {}, costData }: any) => {
   const [state, setState] = useState<CostsData[]>(costData);
@@ -115,6 +116,7 @@ export default DefaultCostsEdit;
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
     const user = req.session.user;
+    await dbConnect();
     const menu = await Menu.findOne({ slug: "costs" });
 
     if (

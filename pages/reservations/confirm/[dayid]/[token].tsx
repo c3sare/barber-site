@@ -7,6 +7,7 @@ import nodemailer from "nodemailer";
 import getLayoutData from "@/lib/getLayoutData";
 import Reservation from "@/models/Reservation";
 import MailConfig from "@/models/MailConfigs";
+import dbConnect from "@/lib/dbConnect";
 
 const PageNotFound = ({ menu, footer, info, result }: any) => {
   const router = useRouter();
@@ -51,6 +52,7 @@ const PageNotFound = ({ menu, footer, info, result }: any) => {
 export default PageNotFound;
 
 export async function getServerSideProps({ req, query }: any) {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
   const { dayid, token } = query;
 

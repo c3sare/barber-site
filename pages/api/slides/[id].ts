@@ -3,6 +3,7 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ObjectId } from "mongodb";
 import Slide from "@/models/Slide";
+import dbConnect from "@/lib/dbConnect";
 
 export default withIronSessionApiRoute(slidesRoute, sessionOptions);
 
@@ -22,6 +23,7 @@ function checkData({ title, desc }: any) {
 
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!session?.isLoggedIn || !session?.permissions?.menu)
       return res

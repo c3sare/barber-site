@@ -1,4 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { ObjectId } from "mongodb";
@@ -16,6 +17,7 @@ interface MenuSettings {
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
+  await dbConnect();
   if (req.method === "POST") {
     if (!user?.isLoggedIn || !user?.permissions?.menu)
       return res

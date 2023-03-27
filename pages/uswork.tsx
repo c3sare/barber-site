@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
 import getLayoutData from "@/lib/getLayoutData";
 import getUswork from "@/lib/getUswork";
+import dbConnect from "@/lib/dbConnect";
 const Editor = dynamic(import("@react-page/editor"));
 
 const Uswork = ({
@@ -101,9 +102,12 @@ const Uswork = ({
 export default Uswork;
 
 export async function getStaticProps() {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
 
-  if (!menu.find((item: MenuItem) => item.slug === "uswork")) {
+  const pageData = menu.find((item: MenuItem) => item.slug === "uswork");
+
+  if (!pageData) {
     return {
       redirect: {
         destination: "/404",
@@ -111,8 +115,6 @@ export async function getStaticProps() {
       },
     };
   }
-
-  const pageData = menu.find((item: MenuItem) => item.slug === "uswork");
 
   const workData = pageData.custom
     ? await getPage("uswork")

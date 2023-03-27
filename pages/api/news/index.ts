@@ -7,6 +7,7 @@ import fs from "fs/promises";
 import formidable from "formidable";
 import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
+import dbConnect from "@/lib/dbConnect";
 
 export const config = {
   api: {
@@ -39,6 +40,7 @@ const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn || !session?.permissions?.news)
       return res

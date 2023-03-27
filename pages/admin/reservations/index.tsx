@@ -31,6 +31,7 @@ import { DateCalendar, LocalizationProvider } from "@mui/x-date-pickers";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/pl";
 import Barbers from "@/models/Barber";
+import dbConnect from "@/lib/dbConnect";
 
 dayjs.locale("pl");
 
@@ -326,7 +327,7 @@ export const getServerSideProps = withIronSessionSsr(
         notFound: true,
       };
     }
-
+    await dbConnect();
     const workers = JSON.parse(JSON.stringify(await Barbers.find({})));
 
     return {

@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
 import Reservation from "@/models/Reservation";
 import { MongoClient, ObjectId } from "mongodb";
@@ -49,6 +50,7 @@ const PageNotFound = ({ menu, footer, info, result }: any) => {
 export default PageNotFound;
 
 export async function getServerSideProps({ req, query }: any) {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
   const { dayid, token } = query;
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import styles from "@/styles/index.module.css";
 import getLayoutData from "@/lib/getLayoutData";
 import getNews from "@/lib/getNews";
+import dbConnect from "@/lib/dbConnect";
 
 const News = ({ news, menu, footer, info }: any) => {
   return (
@@ -63,6 +64,7 @@ function sortByDateNews(a: any, b: any) {
 }
 
 export async function getStaticProps() {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
   const news = await getNews();
 

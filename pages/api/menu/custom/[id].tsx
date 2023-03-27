@@ -1,7 +1,8 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
+import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(customPageRoute, sessionOptions);
@@ -20,6 +21,7 @@ const slugRegex = /^[a-z](-?[a-z])*$/;
 
 async function customPageRoute(req: NextApiRequest, res: NextApiResponse) {
   const user = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!user?.isLoggedIn || !user?.permissions?.menu)
       return res

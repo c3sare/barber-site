@@ -8,6 +8,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
 import getMailConfig from "@/lib/getMailConfig";
+import dbConnect from "@/lib/dbConnect";
 
 interface MailConfig {
   host: string;
@@ -194,7 +195,7 @@ export const getServerSideProps = withIronSessionSsr(
         notFound: true,
       };
     }
-
+    await dbConnect();
     const data = await getMailConfig();
 
     return {

@@ -9,6 +9,7 @@ import styles from "react-day-picker/dist/style.css";
 import { pl } from "date-fns/locale";
 import { Divider } from "@mui/material";
 import getLayoutData from "@/lib/getLayoutData";
+import dbConnect from "@/lib/dbConnect";
 
 const Reservations = ({
   menu,
@@ -365,6 +366,7 @@ const Reservations = ({
 export default Reservations;
 
 export async function getStaticProps() {
+  await dbConnect();
   const { menu, footer, info } = await getLayoutData();
 
   return {

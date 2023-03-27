@@ -8,6 +8,7 @@ import MailConfigData from "@/lib/types/MailConfigData";
 import Reservation from "@/models/Reservation";
 import Barbers from "@/models/Barber";
 import MailConfig from "@/models/MailConfigs";
+import dbConnect from "@/lib/dbConnect";
 
 interface ReservationTime {
   reserved: boolean;
@@ -56,6 +57,7 @@ export default withIronSessionApiRoute(reservationsRoute, sessionOptions);
 
 async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
+  await dbConnect();
   if (req.method === "GET") {
     if (!session?.isLoggedIn || !session?.permissions?.reservations)
       return res

@@ -1,4 +1,4 @@
-import { Schema, createConnection } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 interface IInfo {
   companyName: string;
@@ -12,9 +12,4 @@ const infoSchema = new Schema<IInfo>({
   slogan: { type: String, required: true },
 });
 
-const Info = createConnection(process.env.MONGO_URI as string).model<IInfo>(
-  "Info",
-  infoSchema
-);
-
-export default Info;
+export default models.Info || model<IInfo>("Info", infoSchema);

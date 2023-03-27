@@ -6,8 +6,10 @@ import React from "react";
 import newsList from "@/utils/newsList";
 import getNewsPage from "@/utils/getNewsPage";
 import getLayoutData from "@/lib/getLayoutData";
+import dbConnect from "@/lib/dbConnect";
 
 export async function getStaticPaths() {
+  await dbConnect();
   const customPages = await newsList();
 
   return {
