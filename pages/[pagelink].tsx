@@ -9,6 +9,7 @@ const Editor = dynamic(import("@react-page/editor"));
 import React from "react";
 
 export async function getStaticPaths() {
+  await dbConnect();
   const customPages = await pageList();
 
   return {
