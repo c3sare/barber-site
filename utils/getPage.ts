@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 import Menu from "@/models/Menu";
 
 export default async function handler(slug: string) {
-  const findItem = await Menu.findOne({ slug });
+  const findItem = JSON.parse(JSON.stringify(await Menu.findOne({ slug })));
 
   const pageDataDirectory = path.join(process.cwd(), "pagecontent");
 
@@ -14,7 +14,7 @@ export default async function handler(slug: string) {
   return findItem
     ? {
         title: findItem.title,
-        content: JSON.parse(content),
+        content: content === "" ? "" : JSON.parse(content),
       }
     : {};
 }
