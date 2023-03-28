@@ -3,7 +3,7 @@ import Menu from "@/models/Menu";
 
 export default async function pageList() {
   const filteredChildren: MenuItem[] = JSON.parse(
-    JSON.stringify(await Menu.find({ default: false, custom: true, on: true }))
+    JSON.stringify(await Menu.find({ custom: true, on: true }))
   );
 
   return {
