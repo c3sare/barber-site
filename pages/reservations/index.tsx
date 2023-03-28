@@ -20,7 +20,7 @@ const Reservations = ({
   footer: FooterData;
   info: InfoData;
 }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const date = new Date();
   const year = date.getFullYear();
   const month =
@@ -136,16 +136,6 @@ const Reservations = ({
       });
   };
 
-  const handleGetBarbers = () => {
-    fetch(`/api/reservations/barbers`)
-      .then((res) => res.json())
-      .then((barbers: any) => setBarbers(barbers))
-      .catch((error) => {
-        console.log(error);
-        setError(true);
-      });
-  };
-
   const handleGetDate = useCallback(() => {
     if (barbers.length > 0) {
       setLoading(true);
@@ -169,14 +159,21 @@ const Reservations = ({
   }, [currentBarber, currentDate, barbers]);
 
   useEffect(() => {
-    handleGetBarbers();
+    fetch(`/api/reservations/barbers`)
+      .then((res) => res.json())
+      .then((barbers: any) => setBarbers(barbers))
+      .catch((error) => {
+        console.log(error);
+        setError(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     handleGetDate();
   }, [handleGetDate]);
-
-  if (format(currentDate, "yyyy-MM-dd") < today) setCurrentDate(new Date());
 
   const selectBarber =
     barbers?.length > 0
@@ -232,6 +229,7 @@ const Reservations = ({
         )}
         {formMsg.msg && <span>{formMsg.msg}</span>}
         <DayPicker
+          disabled={loading}
           classNames={classNames}
           mode="single"
           locale={pl}
