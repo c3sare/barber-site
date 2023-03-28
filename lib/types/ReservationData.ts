@@ -1,7 +1,5 @@
-import { ObjectId } from "mongodb";
-
 export default interface ReservationData {
-  _id: string | ObjectId;
+  _id: string;
   barber_id: string;
   date: string;
   times: {

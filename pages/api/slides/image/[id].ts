@@ -4,10 +4,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export const config = {
   api: {
@@ -50,7 +50,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id } = req.query;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res.status(400).json("Nieprawidłowe parametry zapytania!");
 
     const publicDir = path.join(process.cwd(), "public");
@@ -60,7 +60,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id as string);
+    const _id = new Types.ObjectId(id as string);
     const oldFile = await Slide.findOne({ _id });
 
     if (!oldFile)

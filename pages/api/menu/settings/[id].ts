@@ -2,7 +2,7 @@ import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { MongoClient, ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
@@ -26,10 +26,10 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id } = req.query;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res.status(400).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-    const item = await Menu.findOne({ _id: new ObjectId(id as string) });
+    const item = await Menu.findOne({ _id: new Types.ObjectId(id as string) });
 
     if (item === null)
       return res
@@ -52,7 +52,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id } = req.query;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res.status(400).json({ message: "Zapytanie jest nieprawidłowe!" });
 
     const menu: MenuSettings = req.body;
@@ -65,7 +65,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
       (item) => String(item._id) !== id
     );
     const currentObject = await Menu.findOne({
-      _id: new ObjectId(id as string),
+      _id: new Types.ObjectId(id as string),
     });
     if (currentObject === null)
       return res.status(404).json("Nie znaleziono obiektu o id " + id);
@@ -86,7 +86,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
     const result = await Menu.updateOne(
-      { _id: new ObjectId(id as string) },
+      { _id: new Types.ObjectId(id as string) },
       {
         $set: {
           custom: currentObject.default ? menu.custom || false : true,

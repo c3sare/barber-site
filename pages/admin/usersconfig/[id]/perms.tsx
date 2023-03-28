@@ -11,9 +11,9 @@ import SaveIcon from "@mui/icons-material/Save";
 import perms from "@/lib/permissions";
 import { Box, FormControlLabel } from "@mui/material";
 import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
-import { ObjectId } from "mongodb";
 import Users from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 interface Permissions {
   [key: string]: boolean;
@@ -121,7 +121,7 @@ export const getServerSideProps = withIronSessionSsr(
     const data = JSON.parse(
       JSON.stringify(
         await Users.findOne({
-          _id: new ObjectId(query.id as string),
+          _id: new Types.ObjectId(query.id as string),
         })
       )
     );

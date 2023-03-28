@@ -4,10 +4,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export const config = {
   api: {
@@ -71,12 +71,12 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id }: any = await handlePostFormReq(req, res);
 
-    if (!id || !ObjectId.isValid(id as string))
+    if (!id || !Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
 
     const exist = await Slide.findOne({ _id });
 

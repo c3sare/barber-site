@@ -3,9 +3,9 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient, ObjectId } from "mongodb";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(newsRoute, sessionOptions);
 
@@ -23,13 +23,13 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id }: Partial<{ id: string }> = req.query;
 
-    if (ObjectId.isValid(id as string))
+    if (Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
     const newsDirectory = path.join(process.cwd(), "news");
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const data = News.findOne({ _id });
 
     if (data === null)
@@ -48,7 +48,7 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
     const { title, desc, date, content } = req.body;
     const { id } = req.query;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
@@ -71,7 +71,7 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id as string);
+    const _id = new Types.ObjectId(id as string);
     const update = await News.updateOne(
       { _id },
       { $set: { title, desc, date } }

@@ -14,8 +14,8 @@ import Link from "next/link";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import SaveIcon from "@mui/icons-material/Save";
 import Menu from "@/models/Menu";
-import { ObjectId } from "mongodb";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 const AdminPanelIndex = ({ permissions = {} }: any) => {
   const router = useRouter();
@@ -192,7 +192,9 @@ export const getServerSideProps = withIronSessionSsr(
     const user = req.session.user;
     await dbConnect();
     const node = JSON.parse(
-      JSON.stringify(await Menu.find({ _id: new ObjectId(query.id as string) }))
+      JSON.stringify(
+        await Menu.find({ _id: new Types.ObjectId(query.id as string) })
+      )
     );
 
     if (user?.isLoggedIn !== true || !user?.permissions?.menu || !node) {

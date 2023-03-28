@@ -4,10 +4,10 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs/promises";
 import path from "path";
-import { ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Uswork from "@/models/Uswork";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(usworkRoute, sessionOptions);
 
@@ -77,12 +77,12 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id } = (await handleId(req, res)) as { id: string };
 
-    if (!ObjectId.isValid(id))
+    if (!Types.ObjectId.isValid(id))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const itemToDelete = await Uswork.findOne({ _id });
 
     if (!itemToDelete)

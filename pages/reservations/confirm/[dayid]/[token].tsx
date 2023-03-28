@@ -1,5 +1,4 @@
 import Layout from "@/components/Layout";
-import { ObjectId } from "mongodb";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -8,6 +7,7 @@ import getLayoutData from "@/lib/getLayoutData";
 import Reservation from "@/models/Reservation";
 import MailConfig from "@/models/MailConfigs";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 const PageNotFound = ({ menu, footer, info, result }: any) => {
   const router = useRouter();
@@ -56,7 +56,7 @@ export async function getServerSideProps({ req, query }: any) {
   const { menu, footer, info } = await getLayoutData();
   const { dayid, token } = query;
 
-  const _id = new ObjectId(dayid);
+  const _id = new Types.ObjectId(dayid);
   const day = await Reservation.findOne({ _id });
 
   if (

@@ -1,11 +1,11 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ObjectId } from "mongodb";
 import ReservationData from "@/lib/types/ReservationData";
 import Reservation from "@/models/Reservation";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(reservationsRoute, sessionOptions);
 
@@ -18,7 +18,10 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const { id, date } = req.query;
 
-    if (!ObjectId.isValid(id as string) || !dateRegex.test(date as string))
+    if (
+      !Types.ObjectId.isValid(id as string) ||
+      !dateRegex.test(date as string)
+    )
       return res
         .status(500)
         .json({ message: "Parametry zapytnia są nieprawidłowe!" });
@@ -52,7 +55,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     const { time } = req.body;
 
     if (
-      !ObjectId.isValid(id as string) ||
+      !Types.ObjectId.isValid(id as string) ||
       !dateRegex.test(date as string) ||
       !timeRegex.test(time as string)
     )
@@ -91,7 +94,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     const { id, date } = req.query;
     const { time } = req.body;
     if (
-      !ObjectId.isValid(id as string) ||
+      !Types.ObjectId.isValid(id as string) ||
       !timeRegex.test(time as string) ||
       !dateRegex.test(date as string)
     )
@@ -100,7 +103,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
     const checkBarber = await Barbers.findOne({
-      _id: new ObjectId(id as string),
+      _id: new Types.ObjectId(id as string),
     });
 
     if (!checkBarber)

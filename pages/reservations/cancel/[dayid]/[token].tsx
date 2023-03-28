@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
 import Reservation from "@/models/Reservation";
-import { MongoClient, ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -54,7 +54,7 @@ export async function getServerSideProps({ req, query }: any) {
   const { menu, footer, info } = await getLayoutData();
   const { dayid, token } = query;
 
-  const day = await Reservation.findOne({ _id: new ObjectId(dayid) });
+  const day = await Reservation.findOne({ _id: new Types.ObjectId(dayid) });
 
   if (
     day !== null &&
@@ -73,7 +73,7 @@ export async function getServerSideProps({ req, query }: any) {
     });
 
     const updateDay = await Reservation.updateOne(
-      { _id: new ObjectId(dayid) },
+      { _id: new Types.ObjectId(dayid) },
       { $set: { times: day.times } }
     );
 

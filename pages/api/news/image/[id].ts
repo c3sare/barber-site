@@ -4,10 +4,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient, ObjectId } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export const config = {
   api: {
@@ -50,7 +50,7 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id }: Partial<{ id: string }> = req.query;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
@@ -69,7 +69,7 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
       `${publicDir}/images/articles/${newName}`,
       Buffer.from(filedata.buffer)
     );
-    const _id = new ObjectId(id as string);
+    const _id = new Types.ObjectId(id as string);
     const oldFile = await News.findOne({ _id });
 
     if (oldFile === null)

@@ -3,7 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import { MenuItemDB } from "@/lib/types/MenuItem";
 import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
@@ -41,7 +41,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         Boolean(
           (
             await Menu.updateOne(
-              { _id: new ObjectId(item._id) },
+              { _id: new Types.ObjectId(item._id) },
               { $set: { order: item.order, parent: item.parent } }
             )
           ).acknowledged

@@ -1,9 +1,9 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ObjectId } from "mongodb";
 import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(slidesRoute, sessionOptions);
 
@@ -38,13 +38,13 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
       !title ||
       !desc ||
       !checkData({ title, desc }) ||
-      !ObjectId.isValid(id as string)
+      !Types.ObjectId.isValid(id as string)
     )
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id as string);
+    const _id = new Types.ObjectId(id as string);
     const exist = await Slide.findOne({ _id });
 
     if (!exist)

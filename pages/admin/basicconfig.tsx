@@ -8,7 +8,7 @@ import { Box, Grid } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { FaSave } from "react-icons/fa";
+import SaveIcon from "@mui/icons-material/Save";
 
 const AdminPanelBasicConfig = ({ permissions, data }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -171,7 +171,7 @@ const AdminPanelBasicConfig = ({ permissions, data }: any) => {
             />
           </Box>
           <CLoadingButton
-            startIcon={<FaSave />}
+            startIcon={<SaveIcon />}
             loadingPosition="start"
             disabled={loading}
             type="submit"

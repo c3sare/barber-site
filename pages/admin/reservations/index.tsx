@@ -26,24 +26,11 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import AddIcon from "@mui/icons-material/Add";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateCalendar, LocalizationProvider } from "@mui/x-date-pickers";
-import dayjs, { Dayjs } from "dayjs";
-import "dayjs/locale/pl";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
-
-dayjs.locale("pl");
-
-function getTodayDate() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month =
-    date.getMonth() + 1 > 9 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1);
-  const day = date.getDate() > 9 ? date.getDate() : "0" + date.getDate();
-
-  return `${year}-${month}-${day}`;
-}
+import format from "date-fns/format";
 
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -65,13 +52,13 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
   const [currentWorker, setCurrentWorker] = useState<string>(
     workers?.[0]?._id || ""
   );
-  const [currentDate, setCurrentDate] = useState<Dayjs>(dayjs(getTodayDate()));
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [time, setTime] = useState("00:00");
 
   useEffect(() => {
     setLoading(true);
     fetch(
-      `/api/reservations/${currentWorker}/${currentDate.format("YYYY-MM-DD")}`
+      `/api/reservations/${currentWorker}/${format(currentDate, "yyyy-MM-dd")}`
     )
       .then((res) => res.json())
       .then((res) => {
@@ -92,8 +79,9 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
     if (list.filter((item) => item.time === time).length === 0) {
       setLoading(true);
       fetch(
-        `/api/reservations/${currentWorker}/${currentDate.format(
-          "YYYY-MM-DD"
+        `/api/reservations/${currentWorker}/${format(
+          currentDate,
+          "yyyy-MM-dd"
         )}`,
         {
           headers: {
@@ -154,11 +142,11 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
             ))}
           </Select>
         </FormControl>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
           <DateCalendar
             disabled={loading}
             value={currentDate}
-            onChange={(e) => setCurrentDate(dayjs(e))}
+            onChange={(e: any) => setCurrentDate(e)}
             sx={{
               maxWidth: "100%",
               "& button": {
@@ -247,8 +235,9 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
                                 text: `Czy chcesz usunąć godzinę ${
                                   list.find((itemf) => itemf._id === item._id)!
                                     .time
-                                } z dnia ${currentDate.format(
-                                  "YYYY-MM-DD"
+                                } z dnia ${format(
+                                  currentDate,
+                                  "yyyy-MM-dd"
                                 )} u Pracownika - ${
                                   workers.find(
                                     (item: any) => item._id === currentWorker
@@ -277,7 +266,7 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
                               "/admin/reservations/" +
                               currentWorker +
                               "/" +
-                              currentDate.format("YYYY-MM-DD") +
+                              format(currentDate, "yyyy-MM-dd") +
                               "/" +
                               item.time
                             }
@@ -308,8 +297,9 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
         open={data}
         id="time"
         setOpen={setData}
-        url={`/api/reservations/${currentWorker}/${currentDate.format(
-          "YYYY-MM-DD"
+        url={`/api/reservations/${currentWorker}/${format(
+          currentDate,
+          "yyyy-MM-dd"
         )}`}
       />
     </Layout>

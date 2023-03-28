@@ -3,7 +3,7 @@ import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs/promises";
 import path from "path";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(customPageContentRoute, sessionOptions);
 
@@ -21,7 +21,7 @@ async function customPageContentRoute(
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
     fs.readFile(`${pagesDir}/${id}.json`, { encoding: "utf-8" })
@@ -37,7 +37,7 @@ async function customPageContentRoute(
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej strony!" });
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
     try {

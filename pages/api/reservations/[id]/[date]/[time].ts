@@ -1,7 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ObjectId } from "mongodb";
 import nodemailer from "nodemailer";
 import ReservationData from "@/lib/types/ReservationData";
 import MailConfigData from "@/lib/types/MailConfigData";
@@ -9,6 +8,7 @@ import Reservation from "@/models/Reservation";
 import Barbers from "@/models/Barber";
 import MailConfig from "@/models/MailConfigs";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 interface ReservationTime {
   reserved: boolean;
@@ -67,7 +67,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
     const { id, date, time } = req.query;
 
     if (
-      !ObjectId.isValid(id as string) ||
+      !Types.ObjectId.isValid(id as string) ||
       !dateRegex.test(date as string) ||
       !timeRegex.test(time as string)
     )
@@ -104,7 +104,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
 
     if (
       !checkFetchData(req.body) ||
-      !ObjectId.isValid(id as string) ||
+      !Types.ObjectId.isValid(id as string) ||
       !dateRegex.test(date as string) ||
       !timeRegex.test(time as string)
     )
@@ -164,7 +164,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
       !id ||
       !date ||
       !time ||
-      !ObjectId.isValid(id as string) ||
+      !Types.ObjectId.isValid(id as string) ||
       !timeRegex.test(time as string) ||
       !dateRegex.test(date as string) ||
       date < getTodayDate()
@@ -190,7 +190,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
     const checkBarber = await Barbers.findOne({
-      _id: new ObjectId(id as string),
+      _id: new Types.ObjectId(id as string),
     });
 
     if (!checkBarber)

@@ -17,8 +17,8 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import React from "react";
 import Menu from "@/models/Menu";
 import Slide from "@/models/Slide";
-import { ObjectId } from "mongodb";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 interface Slide {
   title: string;
@@ -299,7 +299,7 @@ export const getServerSideProps = withIronSessionSsr(
 
     const data = JSON.parse(
       JSON.stringify(
-        await Slide.findOne({ _id: new ObjectId(query.id as string) })
+        await Slide.findOne({ _id: new Types.ObjectId(query.id as string) })
       )
     );
 

@@ -2,7 +2,7 @@ import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
@@ -26,13 +26,13 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const menu: MenuSettings = req.body.menu;
 
-    if (!ObjectId.isValid(menu._id))
+    if (!Types.ObjectId.isValid(menu._id))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
     const result = await Menu.updateOne(
-      { _id: new ObjectId(menu._id) },
+      { _id: new Types.ObjectId(menu._id) },
       {
         $set: {
           custom: menu.custom,

@@ -14,8 +14,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Link from "next/link";
 import Menu from "@/models/Menu";
 import Cost from "@/models/Cost";
-import { ObjectId } from "mongodb";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 const DefaultCostsEditItem = ({
   permissions = {},
@@ -243,7 +243,7 @@ export const getServerSideProps = withIronSessionSsr(
 
     const data = JSON.parse(
       JSON.stringify(
-        await Cost.findOne({ _id: new ObjectId(query.id as string) })
+        await Cost.findOne({ _id: new Types.ObjectId(query.id as string) })
       )
     );
 

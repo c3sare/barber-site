@@ -1,11 +1,10 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
-import UserData from "@/lib/types/UserData";
 import Users from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -114,12 +113,12 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
     const loggedUser = session?.login;
     const { id } = req.body;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const checkUser = await Users.findOne({ _id });
 
     if (!checkUser)

@@ -4,7 +4,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import { MongoClient } from "mongodb";
 import getNewFileName from "@/utils/getNewFileName";
 import Footer from "@/models/Footer";
 import dbConnect from "@/lib/dbConnect";

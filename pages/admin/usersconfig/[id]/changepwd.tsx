@@ -11,8 +11,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
 import Users from "@/models/User";
-import { ObjectId } from "mongodb";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 interface ChangePWD {
   password: string;
@@ -180,7 +180,7 @@ export const getServerSideProps = withIronSessionSsr(
     const data = JSON.parse(
       JSON.stringify(
         await Users.findOne({
-          _id: new ObjectId(query.id as string),
+          _id: new Types.ObjectId(query.id as string),
         })
       )
     );

@@ -2,10 +2,10 @@ import { sessionOptions } from "@/lib/AuthSession/Config";
 import fs from "fs/promises";
 import path from "path";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -31,13 +31,13 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Brak uprawnień do tej ścieżki!" });
     const { id }: { id: string } = req.body;
 
-    if (!ObjectId.isValid(id))
+    if (!Types.ObjectId.isValid(id))
       return res
         .status(400)
         .json({ message: "Parametry zapytania są nieprawidłowe!" });
 
     const deleteResult = await Menu.deleteOne({
-      _id: new ObjectId(id),
+      _id: new Types.ObjectId(id),
       default: false,
     });
 

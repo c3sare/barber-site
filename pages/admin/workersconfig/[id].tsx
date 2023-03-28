@@ -11,8 +11,8 @@ import { useRouter } from "next/router";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
 import Barbers from "@/models/Barber";
-import { ObjectId } from "mongodb";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 interface Worker {
   name: string;
@@ -121,7 +121,7 @@ export const getServerSideProps = withIronSessionSsr(
     const worker = JSON.parse(
       JSON.stringify(
         await Barbers.findOne({
-          _id: new ObjectId(query.id as string),
+          _id: new Types.ObjectId(query.id as string),
         })
       )
     );

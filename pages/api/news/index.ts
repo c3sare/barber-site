@@ -1,6 +1,5 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
 import { NextApiRequest, NextApiResponse } from "next";
 import path from "path";
 import fs from "fs/promises";
@@ -8,6 +7,7 @@ import formidable from "formidable";
 import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export const config = {
   api: {
@@ -111,12 +111,12 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id }: any = await handlePostFormReq(req, res);
 
-    if (!ObjectId.isValid(id))
+    if (!Types.ObjectId.isValid(id))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const toDelete = await News.findOne({ _id });
 
     if (toDelete === null)

@@ -21,8 +21,8 @@ import { useRouter } from "next/router";
 import path from "path";
 import fs from "fs/promises";
 import News from "@/models/News";
-import { ObjectId } from "mongodb";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -273,7 +273,7 @@ export const getServerSideProps = withIronSessionSsr(
     await dbConnect();
     const data = JSON.parse(
       JSON.stringify(
-        await News.findOne({ _id: new ObjectId(query.id as string) })
+        await News.findOne({ _id: new Types.ObjectId(query.id as string) })
       )
     );
 

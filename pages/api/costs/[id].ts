@@ -3,7 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import { CostsData } from "@/lib/types/CostsData";
 import Cost from "@/models/Cost";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(costsRoute, sessionOptions);
@@ -15,7 +15,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
   await dbConnect();
   const { id } = req.query;
 
-  if (!ObjectId.isValid(id as string))
+  if (!Types.ObjectId.isValid(id as string))
     return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
   if (req.method === "GET") {
@@ -24,7 +24,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    const item = await Cost.findOne({ _id: new ObjectId(id as string) });
+    const item = await Cost.findOne({ _id: new Types.ObjectId(id as string) });
 
     if (item === null)
       return res
@@ -63,7 +63,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
 
       const result = await Cost.updateOne(
         {
-          _id: new ObjectId(id as string),
+          _id: new Types.ObjectId(id as string),
         },
         {
           $set: {

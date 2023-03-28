@@ -1,7 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
 
@@ -49,12 +49,12 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id } = req.body;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const exist = await Barbers.findOne({ _id });
 
     if (!exist)

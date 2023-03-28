@@ -1,7 +1,5 @@
-import { ObjectId } from "mongodb";
-
 export default interface UserData {
-  _id: string | ObjectId;
+  _id: string;
   login: string;
   password: string;
   permissions: {

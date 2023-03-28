@@ -2,7 +2,7 @@ import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import Cost from "@/models/Cost";
 import { withIronSessionApiRoute } from "iron-session/next";
-import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(costsRoute, sessionOptions);
@@ -63,10 +63,10 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
       id: string;
     } = req.body;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const findItem = await Cost.findOne({ _id });
 
     if (findItem === null)

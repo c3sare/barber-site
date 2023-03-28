@@ -28,7 +28,10 @@ import {
   useForm,
   UseFormRegisterReturn,
 } from "react-hook-form";
-import { FaCamera, FaMinus, FaPlus, FaSave } from "react-icons/fa";
+import CameraAlt from "@mui/icons-material/CameraAlt";
+import RemoveIcon from "@mui/icons-material/Remove";
+import AddIcon from "@mui/icons-material/Add";
+import SaveIcon from "@mui/icons-material/Save";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -238,7 +241,7 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
                     aria-label="upload picture"
                     component="span"
                   >
-                    <FaCamera />
+                    <CameraAlt />
                   </IconButton>
                 </label>
               </ThemeProvider>
@@ -573,7 +576,7 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
                                 }
                                 variant="contained"
                               >
-                                <FaMinus />
+                                <RemoveIcon />
                               </CButton>
                             )}
                           </Box>
@@ -587,7 +590,7 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
                             onClick={() => handleAddLinkToBox(boxIndex)}
                             variant="contained"
                           >
-                            <FaPlus />
+                            <AddIcon />
                           </CButton>
                         )}
                     </Grid>
@@ -602,7 +605,7 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
                   <CButton
                     disabled={loading}
                     onClick={handleAddBox}
-                    startIcon={<FaPlus />}
+                    startIcon={<AddIcon />}
                     type="button"
                     variant="contained"
                   >
@@ -618,7 +621,7 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
                 loading={loading}
                 loadingPosition="start"
                 disabled={loading}
-                startIcon={<FaSave />}
+                startIcon={<SaveIcon />}
                 type="submit"
               >
                 Zapisz zmiany

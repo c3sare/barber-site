@@ -1,9 +1,9 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ObjectId } from "mongodb";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(workersRoute, sessionOptions);
 
@@ -18,12 +18,12 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const { id } = req.query;
 
-    if (!ObjectId.isValid(id as string))
+    if (!Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe argumenty zapytania!" });
 
-    const _id = new ObjectId(id as string);
+    const _id = new Types.ObjectId(id as string);
     const worker = await Barbers.findOne({ _id });
     if (!worker)
       return res
@@ -37,7 +37,7 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
     const { id, name } = req.body;
     if (
       !name ||
-      !ObjectId.isValid(id as string) ||
+      !Types.ObjectId.isValid(id as string) ||
       nameRegex.test(name) ||
       name.length === 0 ||
       name.length > 30
@@ -46,7 +46,7 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const _id = new ObjectId(id);
+    const _id = new Types.ObjectId(id);
     const exist = await Barbers.findOne({ _id });
 
     if (!exist)
