@@ -14,6 +14,7 @@ import CCheckbox from "@/componentsAdminPanel/elements/CCheckBox";
 import Users from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import CTextField from "@/componentsAdminPanel/elements/CTextField";
 
 interface Permissions {
   [key: string]: boolean;
@@ -22,7 +23,7 @@ interface Permissions {
 const AdminPanelIndex = ({ permissions = {}, data }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const { control, handleSubmit, getValues } = useForm<Permissions>();
+  const { control, handleSubmit } = useForm<Permissions>();
 
   const sendData = (data: Permissions) => {
     setLoading(true);
@@ -52,7 +53,7 @@ const AdminPanelIndex = ({ permissions = {}, data }: any) => {
 
   return (
     <Layout perms={permissions}>
-      <h1>Zmiana uprawnień dla użytkownika - {data.login}</h1>
+      <h1>Zmiana uprawnień</h1>
       <form
         onSubmit={handleSubmit(sendData)}
         style={{
@@ -62,6 +63,17 @@ const AdminPanelIndex = ({ permissions = {}, data }: any) => {
           margin: "0 auto",
         }}
       >
+        <Box>
+          <CTextField
+            fullWidth
+            disabled={true}
+            type="text"
+            variant="outlined"
+            label="Login"
+            value={data.login}
+            autoComplete="username"
+          />
+        </Box>
         <Box>
           {allPermissions.map((perm) => {
             return (

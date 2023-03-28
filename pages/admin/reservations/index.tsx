@@ -31,6 +31,7 @@ import { DateCalendar, LocalizationProvider } from "@mui/x-date-pickers";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
 import format from "date-fns/format";
+import { useRouter } from "next/router";
 
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -46,19 +47,23 @@ function sortByTime(a: any, b: any) {
 }
 
 const AdminPanelReservations = ({ permissions, workers }: any) => {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({ open: false, id: "", text: "" });
   const [list, setList] = useState<any[]>([]);
-  const [currentWorker, setCurrentWorker] = useState<string>(
-    workers?.[0]?._id || ""
+  const [currentWorker, setCurrentWorker] = useState<number>(0);
+  const [currentDate, setCurrentDate] = useState<Date>(
+    router.query.date ? new Date(router.query.date as string) : new Date()
   );
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [time, setTime] = useState("00:00");
 
   useEffect(() => {
     setLoading(true);
     fetch(
-      `/api/reservations/${currentWorker}/${format(currentDate, "yyyy-MM-dd")}`
+      `/api/reservations/${workers[currentWorker]?._id}/${format(
+        currentDate,
+        "yyyy-MM-dd"
+      )}`
     )
       .then((res) => res.json())
       .then((res) => {
@@ -72,14 +77,14 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
   }, [currentWorker, currentDate]);
 
   const handleChange = (e: SelectChangeEvent) => {
-    setCurrentWorker(e.target.value);
+    setCurrentWorker(Number(e.target.value));
   };
 
   const handleAddTime = () => {
     if (list.filter((item) => item.time === time).length === 0) {
       setLoading(true);
       fetch(
-        `/api/reservations/${currentWorker}/${format(
+        `/api/reservations/${workers[currentWorker]?._id}/${format(
           currentDate,
           "yyyy-MM-dd"
         )}`,
@@ -131,12 +136,12 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
           <Select
             labelId="select-worker-label"
             id="select-worker"
-            value={currentWorker}
+            value={currentWorker as unknown as string}
             label="Pracownik"
             onChange={handleChange}
           >
-            {workers.map((worker: any) => (
-              <MenuItem key={worker._id} value={worker._id}>
+            {workers.map((worker: any, i: number) => (
+              <MenuItem key={worker._id} value={i}>
                 {worker.name}
               </MenuItem>
             ))}
@@ -146,7 +151,15 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
           <DateCalendar
             disabled={loading}
             value={currentDate}
-            onChange={(e: any) => setCurrentDate(e)}
+            onChange={(e: any) => {
+              setCurrentDate(e);
+              router.push({
+                pathname: "/admin/reservations",
+                query: {
+                  date: format(e, "yyyy-MM-dd"),
+                },
+              });
+            }}
             sx={{
               maxWidth: "100%",
               "& button": {
@@ -185,7 +198,6 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
           >
             <CTextField
               type="time"
-              defaultValue="00:00"
               disabled={loading}
               value={time}
               onChange={(e) => {
@@ -240,7 +252,8 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
                                   "yyyy-MM-dd"
                                 )} u Pracownika - ${
                                   workers.find(
-                                    (item: any) => item._id === currentWorker
+                                    (item: any) =>
+                                      item._id === workers[currentWorker]?._id
                                   ).name
                                 }?`,
                               })
@@ -264,7 +277,7 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
                             }}
                             href={
                               "/admin/reservations/" +
-                              currentWorker +
+                              workers[currentWorker]?._id +
                               "/" +
                               format(currentDate, "yyyy-MM-dd") +
                               "/" +
@@ -297,7 +310,7 @@ const AdminPanelReservations = ({ permissions, workers }: any) => {
         open={data}
         id="time"
         setOpen={setData}
-        url={`/api/reservations/${currentWorker}/${format(
+        url={`/api/reservations/${workers[currentWorker]?._id}/${format(
           currentDate,
           "yyyy-MM-dd"
         )}`}

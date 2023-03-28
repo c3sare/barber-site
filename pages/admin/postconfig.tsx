@@ -102,6 +102,7 @@ const AdminPanelPostConfig = ({ permissions, data }: any) => {
               <CTextField
                 variant="outlined"
                 label="E-Mail"
+                autoComplete="username"
                 onChange={onChange}
                 onBlur={onBlur}
                 name={name}
@@ -125,6 +126,7 @@ const AdminPanelPostConfig = ({ permissions, data }: any) => {
               <CTextField
                 variant="outlined"
                 label="Hasło"
+                autoComplete="current-password"
                 type="password"
                 onChange={onChange}
                 onBlur={onBlur}

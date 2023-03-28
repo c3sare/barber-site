@@ -55,7 +55,7 @@ const AdminPanelIndex = ({ permissions = {}, data }: any) => {
 
   return (
     <Layout perms={permissions}>
-      <h1>Zmiana hasła dla użytkownika - {data.login}</h1>
+      <h1>Zmiana hasła</h1>
       <form
         onSubmit={handleSubmit(sendData)}
         style={{
@@ -65,6 +65,17 @@ const AdminPanelIndex = ({ permissions = {}, data }: any) => {
           margin: "0 auto",
         }}
       >
+        <Box>
+          <CTextField
+            fullWidth
+            disabled={true}
+            type="text"
+            variant="outlined"
+            label="Login"
+            value={data.login}
+            autoComplete="username"
+          />
+        </Box>
         <Box>
           <Controller
             defaultValue=""

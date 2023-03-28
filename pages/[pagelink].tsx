@@ -43,6 +43,7 @@ const CustomPage = ({ page, menu, footer, info }: any) => {
   return (
     <Layout title={page.title} info={info} footer={footer} menu={menu}>
       <div className="container">
+        <h1>{page.title}</h1>
         <Editor cellPlugins={cellPlugins} value={page.content} readOnly />
       </div>
     </Layout>
