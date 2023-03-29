@@ -8,6 +8,7 @@ import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export const config = {
   api: {
@@ -40,10 +41,14 @@ function checkData(image: any) {
 }
 
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
-  const user = req.session.user;
+  const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "POST") {
-    if (!user?.isLoggedIn || !user?.permissions?.news)
+    if (!session?.isLoggedIn || !user?.permissions?.news)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });

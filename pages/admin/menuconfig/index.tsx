@@ -41,6 +41,8 @@ import SaveIcon from "@mui/icons-material/Save";
 import CLoadingButton from "@/componentsAdminPanel/elements/CLoadingButton";
 import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import { Types } from "mongoose";
 
 interface MenuItemRCT {
   index: string;
@@ -424,20 +426,37 @@ export default AdminPanelMenuConfig;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
-    await dbConnect();
-    const menu = JSON.parse(JSON.stringify(await Menu.find({})));
+    const session = req.session?.user;
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.menu) {
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
+    ) {
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
     }
+    await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+
+    if (!user || !user?.permissions?.menu)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+
+    const menu = JSON.parse(JSON.stringify(await Menu.find({})));
 
     return {
       props: {
-        permissions: req.session.user?.permissions,
         menu,
+        permissions: user.permissions,
       },
     };
   },

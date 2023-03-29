@@ -14,8 +14,9 @@ import PageEditor from "@/componentsAdminPanel/PageEditor";
 import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
-const AdminPanelIndex = ({ permissions = {} }: any) => {
+const AdminPanelIndex = ({ permissions }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { data, error, isLoading } = useSWR(
@@ -86,22 +87,39 @@ export default AdminPanelIndex;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
+    const session = req.session?.user;
+
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(query.id as string)
+    ) {
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+    }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
     const node = await Menu.findOne({
       _id: new Types.ObjectId(query.id as string),
       custom: true,
     });
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.menu || !node) {
+    if (!user || !user?.permissions?.menu || !node)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
-    }
 
     return {
       props: {
-        permissions: req.session.user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

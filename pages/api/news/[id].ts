@@ -6,6 +6,7 @@ import path from "path";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export default withIronSessionApiRoute(newsRoute, sessionOptions);
 
@@ -17,8 +18,12 @@ const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (session?.isLoggedIn || session?.permissions?.news)
+    if (!session?.isLoggedIn || !user?.permissions?.news)
       return res.status(403).json({ message: "Brak uprawnień do tej ścieżki" });
 
     const { id }: Partial<{ id: string }> = req.query;
@@ -40,7 +45,7 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
     const content = await fs.readFile(`${newsDirectory}/${id}.json`, "utf-8");
     res.json({ ...data, content: content === "" ? "" : JSON.parse(content) });
   } else if (req.method === "POST") {
-    if (!session?.isLoggedIn || !session?.permissions?.news)
+    if (!session?.isLoggedIn || !user?.permissions?.news)
       return res
         .status(403)
         .json({ message: "Brak uprawnień do tej ścieżki!" });

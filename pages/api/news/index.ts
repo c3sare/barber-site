@@ -8,6 +8,7 @@ import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export const config = {
   api: {
@@ -41,8 +42,12 @@ const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn || !session?.permissions?.news)
+    if (!session?.isLoggedIn || !user?.permissions?.news)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -50,7 +55,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
     const data = await News.find({});
     res.status(200).json(data);
   } else if (req.method === "PUT") {
-    if (!session?.isLoggedIn || !session?.permissions?.news)
+    if (!session?.isLoggedIn || !user?.permissions?.news)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -104,7 +109,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
 
     return res.status(200).json({ error: false });
   } else if (req.method === "DELETE") {
-    if (!session?.isLoggedIn || !session?.permissions?.news)
+    if (!session?.isLoggedIn || !user?.permissions?.news)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

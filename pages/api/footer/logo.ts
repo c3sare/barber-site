@@ -7,6 +7,8 @@ import path from "path";
 import getNewFileName from "@/utils/getNewFileName";
 import Footer from "@/models/Footer";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import { Types } from "mongoose";
 
 export const config = {
   api: {
@@ -39,10 +41,14 @@ function checkData(image: any) {
 }
 
 async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
-  const user = req.session.user;
+  const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "POST") {
-    if (!user?.isLoggedIn || !user?.permissions?.footer)
+    if (!session?.isLoggedIn || !user?.permissions?.footer)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });

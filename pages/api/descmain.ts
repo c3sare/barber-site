@@ -8,6 +8,8 @@ import getNewFileName from "@/utils/getNewFileName";
 import Descmains from "@/models/DescMain";
 import Descmain from "@/models/DescMain";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import { Types } from "mongoose";
 
 export default withIronSessionApiRoute(descMainRoute, sessionOptions);
 
@@ -58,15 +60,19 @@ function checkData(title: string, desc: string) {
 async function descMainRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn && !session?.permissions?.menu)
+    if (!session?.isLoggedIn && !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
     const data = await Descmains.findOne({});
     res.status(200).json(data);
   } else if (req.method === "POST") {
-    if (!session?.isLoggedIn && !session?.permissions?.menu)
+    if (!session?.isLoggedIn && !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });

@@ -1,7 +1,9 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import OpenHour from "@/models/OpenHour";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(openHoursRoute, sessionOptions);
@@ -20,8 +22,12 @@ const checkOpenHoursData = (data: any[]) => {
 async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn || !session?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -43,7 +49,7 @@ async function openHoursRoute(req: NextApiRequest, res: NextApiResponse) {
 
     res.json(newData);
   } else if (req.method === "POST") {
-    if (!session?.isLoggedIn || !session?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

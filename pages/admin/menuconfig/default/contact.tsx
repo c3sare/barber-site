@@ -9,10 +9,12 @@ import { Controller, useForm } from "react-hook-form";
 import { IMaskInput } from "react-imask";
 import SaveIcon from "@mui/icons-material/Save";
 import Menu from "@/models/Menu";
-import getContact from "@/lib/getContact";
 import CButton from "@/componentsAdminPanel/elements/CButton";
 import Link from "next/link";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
+import Contact from "@/models/Contact";
+import User from "@/models/User";
 
 const ZipCode = React.forwardRef(function TextMaskCustom(props: any, ref) {
   const { onChange, ...other }: any = props;
@@ -344,27 +346,33 @@ export default EditDefaultPageContact;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
-    await dbConnect();
-    const menu = await Menu.findOne({ slug: "contact" });
+    const session = req.session?.user;
 
     if (
-      user?.isLoggedIn !== true ||
-      !user?.permissions?.menu ||
-      !menu ||
-      menu?.custom
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
     ) {
       return {
         notFound: true,
       };
     }
+    await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+    const node = await Menu.findOne({ slug: "contact", custom: false });
 
-    const data = await getContact();
+    if (!user || !user?.permissions?.menu || !node)
+      return {
+        notFound: true,
+      };
+
+    const data = JSON.parse(JSON.stringify(await Contact.findOne({})));
+    delete data._id;
 
     return {
       props: {
         data,
-        permissions: req.session.user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

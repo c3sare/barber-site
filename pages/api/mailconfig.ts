@@ -1,7 +1,9 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import MailConfig from "@/models/MailConfigs";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
 
@@ -36,8 +38,12 @@ function checkDataMailConfig(data: MailConfig) {
 async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "POST") {
-    if (!session?.isLoggedIn || !session?.permissions?.smtpconfig)
+    if (!session?.isLoggedIn || !user?.permissions?.smtpconfig)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

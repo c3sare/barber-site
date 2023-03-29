@@ -10,9 +10,9 @@ import { Controller, useForm } from "react-hook-form";
 import SaveIcon from "@mui/icons-material/Save";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
-import Users from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 interface ChangePWD {
   password: string;
@@ -186,21 +186,38 @@ export default AdminPanelIndex;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
+    const session = req.session?.user;
+
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(query.id as string)
+    ) {
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+    }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
     const data = JSON.parse(
       JSON.stringify(
-        await Users.findOne({
+        await User.findOne({
           _id: new Types.ObjectId(query.id as string),
         })
       )
     );
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.users || !data) {
+    if (!user || !user?.permissions?.users || !data)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
-    }
 
     return {
       props: {
@@ -208,7 +225,7 @@ export const getServerSideProps = withIronSessionSsr(
           login: data.login,
           id: data._id,
         },
-        permissions: user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

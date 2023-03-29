@@ -16,6 +16,7 @@ import Menu from "@/models/Menu";
 import Cost from "@/models/Cost";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 const DefaultCostsEditItem = ({
   permissions = {},
@@ -235,33 +236,42 @@ export default DefaultCostsEditItem;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
-    await dbConnect();
-    const menu = JSON.parse(
-      JSON.stringify(await Menu.findOne({ slug: "costs", custom: false }))
-    );
+    const session = req.session?.user;
 
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(query.id as string)
+    ) {
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+    }
+    await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+    const node = await Menu.findOne({ slug: "costs", custom: false });
     const data = JSON.parse(
       JSON.stringify(
         await Cost.findOne({ _id: new Types.ObjectId(query.id as string) })
       )
     );
 
-    if (
-      user?.isLoggedIn !== true ||
-      !user?.permissions?.menu ||
-      !menu ||
-      !data
-    ) {
+    if (!user || !user?.permissions?.menu || !node || !data)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
-    }
 
     return {
       props: {
         data,
-        permissions: req.session.user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

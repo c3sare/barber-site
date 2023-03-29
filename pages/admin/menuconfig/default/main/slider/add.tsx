@@ -16,6 +16,8 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import React from "react";
 import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
+import User from "@/models/User";
 
 interface Slide {
   title: string;
@@ -253,24 +255,35 @@ export default SliderAddPage;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
-    await dbConnect();
-    const menu = await Menu.findOne({ slug: "" });
+    const session = req.session?.user;
 
     if (
-      user?.isLoggedIn !== true ||
-      !user?.permissions?.menu ||
-      !menu ||
-      menu?.custom
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
     ) {
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
     }
+    await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+    const node = await Menu.findOne({ slug: "", custom: false });
+
+    if (!user || !user?.permissions?.menu || !node)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
 
     return {
       props: {
-        permissions: req.session.user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

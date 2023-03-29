@@ -1,6 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import Cost from "@/models/Cost";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -8,10 +9,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default withIronSessionApiRoute(costsRoute, sessionOptions);
 
 async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
-  const user = req.session.user;
+  const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
@@ -19,7 +24,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
     const items = await Cost.find({});
     res.status(200).json(items);
   } else if (req.method === "PUT") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
@@ -52,7 +57,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ error: true, msg: "Nieprawidłowo wypełnione pola!" });
     }
   } else if (req.method === "DELETE") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });

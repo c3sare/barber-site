@@ -23,6 +23,7 @@ import fs from "fs/promises";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -269,19 +270,37 @@ export default AddNews;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
+    const session = req.session?.user;
+
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(query.id as string)
+    ) {
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+    }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
     const data = JSON.parse(
       JSON.stringify(
         await News.findOne({ _id: new Types.ObjectId(query.id as string) })
       )
     );
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.news || !data) {
+    if (!user || !user?.permissions?.news || !data)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
-    }
+
     const newsDirectory = path.join(process.cwd(), "news");
     const content = !data
       ? ""
@@ -290,7 +309,7 @@ export const getServerSideProps = withIronSessionSsr(
     return {
       props: {
         data: { ...data, content: content ? JSON.parse(content) : "" },
-        permissions: user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

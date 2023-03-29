@@ -15,6 +15,7 @@ import Users from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import CTextField from "@/componentsAdminPanel/elements/CTextField";
+import User from "@/models/User";
 
 interface Permissions {
   [key: string]: boolean;
@@ -128,8 +129,23 @@ export default AdminPanelIndex;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
+    const session = req.session?.user;
+
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(query.id as string)
+    ) {
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+    }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
     const data = JSON.parse(
       JSON.stringify(
         await Users.findOne({
@@ -138,16 +154,18 @@ export const getServerSideProps = withIronSessionSsr(
       )
     );
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.users || !data) {
+    if (!user || !user?.permissions?.users || !data)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
-    }
 
     return {
       props: {
         data,
-        permissions: user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

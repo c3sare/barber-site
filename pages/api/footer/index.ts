@@ -1,7 +1,9 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import Footer from "@/models/Footer";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 interface FormDataFooter {
@@ -90,8 +92,12 @@ function checkDataFooter(data: FormDataFooter) {
 async function footerRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "POST") {
-    if (!session?.isLoggedIn && !session?.permissions?.footer)
+    if (!session?.isLoggedIn && !user?.permissions?.footer)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });

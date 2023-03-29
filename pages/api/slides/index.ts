@@ -8,6 +8,7 @@ import getNewFileName from "@/utils/getNewFileName";
 import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export const config = {
   api: {
@@ -55,8 +56,12 @@ function checkData({ image, title, desc }: any) {
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn || !session?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -64,7 +69,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
     const data = await Slide.find({});
     res.status(200).json(data);
   } else if (req.method === "DELETE") {
-    if (!session?.isLoggedIn || !session?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

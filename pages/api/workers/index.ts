@@ -4,6 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Types } from "mongoose";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
 
 export default withIronSessionApiRoute(workersRoute, sessionOptions);
 
@@ -13,8 +14,12 @@ const nameRegex =
 async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -22,7 +27,7 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
     const workers = await Barbers.find({});
     res.json(workers);
   } else if (req.method === "PUT") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -42,7 +47,7 @@ async function workersRoute(req: NextApiRequest, res: NextApiResponse) {
 
     res.status(200).json({ error: false });
   } else if (req.method === "DELETE") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

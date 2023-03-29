@@ -9,6 +9,8 @@ import { withIronSessionSsr } from "iron-session/next";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import SaveIcon from "@mui/icons-material/Save";
+import User from "@/models/User";
+import { Types } from "mongoose";
 
 const AdminPanelBasicConfig = ({ permissions, data }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -190,9 +192,13 @@ export default AdminPanelBasicConfig;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
+    const session = req.session?.user;
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.basic) {
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
+    ) {
       return {
         redirect: {
           destination: "/admin",
@@ -201,12 +207,23 @@ export const getServerSideProps = withIronSessionSsr(
       };
     }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+
+    if (!user || !user.permissions?.basic)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+
     const data = JSON.parse(JSON.stringify(await Info.findOne({})));
+    delete data._id;
 
     return {
       props: {
+        permissions: user.permissions,
         data,
-        permissions: user?.permissions,
       },
     };
   },

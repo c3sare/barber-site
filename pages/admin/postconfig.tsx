@@ -9,6 +9,8 @@ import CTextField from "@/componentsAdminPanel/elements/CTextField";
 import { Box } from "@mui/material";
 import getMailConfig from "@/lib/getMailConfig";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
+import User from "@/models/User";
 
 interface MailConfig {
   host: string;
@@ -189,21 +191,37 @@ export default AdminPanelPostConfig;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
-    console.log(req.session);
+    const session = req.session?.user;
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.smtpconfig) {
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
+    ) {
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
     }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+
+    if (!user || !user.permissions?.smtpconfig)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+
     const data = await getMailConfig();
 
     return {
       props: {
+        permissions: user.permissions,
         data,
-        permissions: user?.permissions,
       },
     };
   },

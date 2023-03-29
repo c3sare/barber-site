@@ -16,6 +16,8 @@ import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import Uswork from "@/models/Uswork";
 import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import { Types } from "mongoose";
 
 const Input = styled("input")({
   display: "none",
@@ -199,30 +201,32 @@ export default UsworkConfig;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
-    await dbConnect();
-    const menu = await Menu.findOne({ slug: "uswork" });
+    const session = req.session?.user;
 
     if (
-      user?.isLoggedIn !== true ||
-      !user?.permissions?.menu ||
-      !menu ||
-      menu?.custom
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
     ) {
       return {
-        redirect: {
-          destination: "/admin",
-          permanent: false,
-        },
+        notFound: true,
       };
     }
+    await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+    const node = await Menu.findOne({ slug: "uswork", custom: false });
+
+    if (!user || !user?.permissions?.menu || !node)
+      return {
+        notFound: true,
+      };
 
     const data = JSON.parse(JSON.stringify(await Uswork.find({})));
 
     return {
       props: {
         data,
-        permissions: req.session.user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

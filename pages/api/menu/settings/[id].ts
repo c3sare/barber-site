@@ -1,6 +1,7 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -16,10 +17,14 @@ interface MenuSettings {
 }
 
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
-  const user = req.session.user;
+  const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Brak uprawnien do tej ścieżki!" });
@@ -45,7 +50,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
       default: item.default,
     });
   } else if (req.method === "POST") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Brak uprawnien do tej ścieżki!" });
@@ -106,5 +111,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Wystąpił błąd przy wykonywaniu zapytania!" });
 
     return res.status(200).json({ error: false });
+  } else {
+    res.status(404);
   }
 }

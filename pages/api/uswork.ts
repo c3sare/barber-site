@@ -8,6 +8,7 @@ import getNewFileName from "@/utils/getNewFileName";
 import Uswork from "@/models/Uswork";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export default withIronSessionApiRoute(usworkRoute, sessionOptions);
 
@@ -46,8 +47,12 @@ async function handleId(req: NextApiRequest, res: NextApiResponse) {
 async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "PUT") {
-    if (!session?.isLoggedIn || !session?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -70,7 +75,7 @@ async function usworkRoute(req: NextApiRequest, res: NextApiResponse) {
     );
     res.json({ error: false, _id: insert.insertedId, image: fullName });
   } else if (req.method === "DELETE") {
-    if (!session?.isLoggedIn || !session?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

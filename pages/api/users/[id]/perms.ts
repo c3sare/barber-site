@@ -1,5 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
 import Users from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { Types } from "mongoose";
@@ -37,8 +38,12 @@ const validPermissions = (permissions: Permissions) => {
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "POST") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });

@@ -13,6 +13,7 @@ import { Box } from "@mui/material";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 interface Worker {
   name: string;
@@ -116,8 +117,23 @@ export default AdminPanelIndex;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
+    const session = req.session?.user;
+
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(query.id as string)
+    ) {
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+    }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
     const worker = JSON.parse(
       JSON.stringify(
         await Barbers.findOne({
@@ -126,16 +142,18 @@ export const getServerSideProps = withIronSessionSsr(
       )
     );
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.workers || !worker) {
+    if (!user || !user?.permissions?.workers || !worker)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
-    }
 
     return {
       props: {
         name: worker.name,
-        permissions: user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

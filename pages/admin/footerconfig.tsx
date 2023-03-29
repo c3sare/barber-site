@@ -32,6 +32,8 @@ import CameraAlt from "@mui/icons-material/CameraAlt";
 import RemoveIcon from "@mui/icons-material/Remove";
 import AddIcon from "@mui/icons-material/Add";
 import SaveIcon from "@mui/icons-material/Save";
+import { Types } from "mongoose";
+import User from "@/models/User";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -645,9 +647,13 @@ export default AdminPanelFooterConfig;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
+    const session = req.session?.user;
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.footer) {
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
+    ) {
       return {
         redirect: {
           destination: "/admin",
@@ -656,14 +662,23 @@ export const getServerSideProps = withIronSessionSsr(
       };
     }
     await dbConnect();
-    const data = JSON.parse(JSON.stringify(await Footer.findOne({})));
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
 
+    if (!user || !user.permissions?.footer)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+
+    const data = JSON.parse(JSON.stringify(await Footer.findOne({})));
     delete data._id;
 
     return {
       props: {
+        permissions: user.permissions,
         data,
-        permissions: user?.permissions,
       },
     };
   },

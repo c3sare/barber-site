@@ -4,6 +4,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs/promises";
 import path from "path";
 import { Types } from "mongoose";
+import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
 
 export default withIronSessionApiRoute(customPageContentRoute, sessionOptions);
 
@@ -11,12 +13,17 @@ async function customPageContentRoute(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const user = req.session.user;
+  const session = req.session.user;
   const { id } = req.query;
 
   const pagesDir = path.join(process.cwd(), "pagecontent");
+  await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -32,7 +39,7 @@ async function customPageContentRoute(
         res.status(404);
       });
   } else if (req.method === "POST") {
-    if (!user?.isLoggedIn || !user?.permissions?.menu)
+    if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej strony!" });

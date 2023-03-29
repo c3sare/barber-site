@@ -14,7 +14,7 @@ async function logoutRoute(req: NextApiRequest, res: NextApiResponse<User>) {
       return res.status(400).json({ message: "Nie jesteś zalogowany!" } as any);
 
     req.session.destroy();
-    res.status(200).json({ isLoggedIn: false, login: "", permissions: {} });
+    res.status(200).json({ isLoggedIn: false, id: "" });
   } else {
     return res.status(404);
   }

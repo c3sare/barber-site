@@ -10,8 +10,10 @@ export const middleware = async (req: NextRequest) => {
 
   const { user } = session;
 
-  if (user?.isLoggedIn !== true) {
-    return NextResponse.redirect(new URL('/admin/login', req.url));
+  if (!user?.isLoggedIn || !user.id) {
+    if (user?.id || user?.isLoggedIn) session.destroy();
+
+    return NextResponse.redirect(new URL("/admin/login", req.url));
   }
 
   return res;

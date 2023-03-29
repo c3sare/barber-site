@@ -32,6 +32,8 @@ import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
 import format from "date-fns/format";
 import { useRouter } from "next/router";
+import { Types } from "mongoose";
+import User from "@/models/User";
 
 const dateRegex = /^\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])$/;
 const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -323,20 +325,37 @@ export default AdminPanelReservations;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
+    const session = req.session?.user;
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.reservations) {
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
+    ) {
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
     }
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+
+    if (!user || !user?.permissions?.reservations)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+
     const workers = JSON.parse(JSON.stringify(await Barbers.find({})));
 
     return {
       props: {
         workers,
-        permissions: user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

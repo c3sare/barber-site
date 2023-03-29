@@ -6,6 +6,7 @@ import Reservation from "@/models/Reservation";
 import Barbers from "@/models/Barber";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export default withIronSessionApiRoute(reservationsRoute, sessionOptions);
 
@@ -15,6 +16,10 @@ const timeRegex = /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$/;
 async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
     const { id, date } = req.query;
 
@@ -46,7 +51,7 @@ async function reservationsRoute(req: NextApiRequest, res: NextApiResponse) {
       }))
     );
   } else if (req.method === "DELETE") {
-    if (!session?.isLoggedIn || !session?.permissions?.reservations)
+    if (!session?.isLoggedIn || !user?.permissions?.reservations)
       return res
         .status(403)
         .json({ message: "Brak uprawnień do tej ścieżki!" });

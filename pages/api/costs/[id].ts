@@ -2,6 +2,7 @@ import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import { CostsData } from "@/lib/types/CostsData";
 import Cost from "@/models/Cost";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -11,15 +12,19 @@ export default withIronSessionApiRoute(costsRoute, sessionOptions);
 const categoryServiceRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
 
 async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
-  const user = req.session.user;
+  const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   const { id } = req.query;
 
   if (!Types.ObjectId.isValid(id as string))
     return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
   if (req.method === "GET") {
-    if (!user?.isLoggedIn || !user?.permissions.menu)
+    if (!session?.isLoggedIn || !user?.permissions.menu)
       return res
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
@@ -36,7 +41,7 @@ async function costsRoute(req: NextApiRequest, res: NextApiResponse) {
       services: item.services,
     });
   } else if (req.method === "POST") {
-    if (!user?.isLoggedIn || !user?.permissions.menu)
+    if (!session?.isLoggedIn || !user?.permissions.menu)
       return res.status(403).json({ message: "Brak uprawnień!" });
 
     const { category, services }: CostsData = req.body;

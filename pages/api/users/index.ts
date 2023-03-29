@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import Users from "@/models/User";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
+import User from "@/models/User";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -59,8 +60,12 @@ const validUser = (
 async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -72,7 +77,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     res.status(200).json(users);
   } else if (req.method === "PUT") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
@@ -105,12 +110,20 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     res.json({ error: false });
   } else if (req.method === "DELETE") {
-    if (!session?.isLoggedIn || !session?.permissions?.users)
+    if (!session?.isLoggedIn || !user?.permissions?.users)
       return res
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const loggedUser = session?.login;
+    const loggedUser = await User.findOne({
+      _id: new Types.ObjectId(session.id),
+    });
+
+    if (!loggedUser)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił błąd przy wykonywaniu zapytania!" });
+
     const { id } = req.body;
 
     if (!Types.ObjectId.isValid(id as string))
@@ -126,7 +139,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(404)
         .json({ message: "Nie odnaleziono użytkownika od id " + id });
 
-    if (checkUser.login === loggedUser)
+    if (checkUser.login === loggedUser.login)
       return res
         .status(403)
         .json({ message: "Nie możesz usunąć własnego siebie!" });

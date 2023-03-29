@@ -20,6 +20,8 @@ import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import Menu from "@/models/Menu";
 import Cost from "@/models/Cost";
 import dbConnect from "@/lib/dbConnect";
+import User from "@/models/User";
+import { Types } from "mongoose";
 
 const DefaultCostsEdit = ({ permissions = {}, costData }: any) => {
   const [state, setState] = useState<CostsData[]>(costData);
@@ -115,27 +117,38 @@ export default DefaultCostsEdit;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
-    const user = req.session.user;
-    await dbConnect();
-    const menu = await Menu.findOne({ slug: "costs" });
+    const session = req.session?.user;
 
     if (
-      user?.isLoggedIn !== true ||
-      !user?.permissions?.menu ||
-      !menu ||
-      menu?.custom
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id)
     ) {
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
     }
+    await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+    const node = await Menu.findOne({ slug: "costs", custom: false });
 
-    const data = JSON.parse(JSON.stringify(await Cost.find({})));
+    if (!user || !user?.permissions?.menu || !node)
+      return {
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
+      };
+
+    const costData = JSON.parse(JSON.stringify(await Cost.find({})));
 
     return {
       props: {
-        costData: data,
-        permissions: req.session.user?.permissions,
+        costData,
+        permissions: user.permissions,
       },
     };
   },

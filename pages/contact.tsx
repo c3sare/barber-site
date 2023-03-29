@@ -1,8 +1,8 @@
 import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
-import getContact from "@/lib/getContact";
 import getLayoutData from "@/lib/getLayoutData";
 import { useRef, useState } from "react";
+import Contacts from "@/models/Contact";
 
 const Contact = ({ info, contactData, menu, footer }: any) => {
   const [sending, setSending] = useState(false);
@@ -178,7 +178,8 @@ export default Contact;
 export async function getStaticProps() {
   await dbConnect();
   const { menu, info, footer } = await getLayoutData();
-  const contactData = await getContact();
+  const contactData = JSON.parse(JSON.stringify(await Contacts.findOne({})));
+  delete contactData._id;
 
   return {
     props: {

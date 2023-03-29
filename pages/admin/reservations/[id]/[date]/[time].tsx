@@ -14,6 +14,8 @@ import { Controller, useForm } from "react-hook-form";
 import SaveIcon from "@mui/icons-material/Save";
 import Reservation from "@/models/Reservation";
 import dbConnect from "@/lib/dbConnect";
+import { Types } from "mongoose";
+import User from "@/models/User";
 
 interface ReservationTime {
   reserved: boolean;
@@ -209,20 +211,30 @@ export default AdminPanelIndex;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req, query }) {
-    const user = req.session.user;
+    const session = req.session?.user;
+    const { id, date, time } = query;
 
-    if (user?.isLoggedIn !== true || !user?.permissions?.reservations) {
+    if (
+      !session?.isLoggedIn ||
+      !session?.id ||
+      !Types.ObjectId.isValid(session?.id) ||
+      !Types.ObjectId.isValid(id as string)
+    ) {
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
     }
-
-    const { id, date, time } = query;
     await dbConnect();
+    const user = await User.findOne({ _id: new Types.ObjectId(session.id) });
+
     const list = JSON.parse(
       JSON.stringify(await Reservation.findOne({ barber_id: id, date }))
     );
     let data = null;
+
     if (list) {
       const timeFromList = list.times.find((item: any) => item.time === time);
       if (timeFromList) {
@@ -230,15 +242,18 @@ export const getServerSideProps = withIronSessionSsr(
       }
     }
 
-    if (!data)
+    if (!user || !user?.permissions?.reservations || !data)
       return {
-        notFound: true,
+        redirect: {
+          destination: "/admin",
+          permanent: false,
+        },
       };
 
     return {
       props: {
         data,
-        permissions: user?.permissions,
+        permissions: user.permissions,
       },
     };
   },

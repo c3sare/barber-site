@@ -2,7 +2,9 @@ import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import InfoData from "@/lib/types/InfoData";
 import Info from "@/models/Info";
+import User from "@/models/User";
 import { withIronSessionApiRoute } from "iron-session/next";
+import { Types } from "mongoose";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default withIronSessionApiRoute(infoRoute, sessionOptions);
@@ -28,8 +30,12 @@ function checkDataInfo(data: InfoData) {
 async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
   await dbConnect();
+  let user = null;
+  if (session?.id && session.isLoggedIn) {
+    user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
+  }
   if (req.method === "POST") {
-    if (!session?.isLoggedIn || !session?.permissions?.basic)
+    if (!session?.isLoggedIn || !user?.permissions?.basic)
       return res.status(403);
     const { companyName, yearOfCreate, slogan } = req.body;
     if (!checkDataInfo({ companyName, yearOfCreate, slogan }))
