@@ -1,19 +1,18 @@
+import dynamic from "next/dynamic";
+const CustomPage = dynamic(import("@/components/CustomPage"));
 import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
 import getCosts from "@/lib/getCosts";
 import getLayoutData from "@/lib/getLayoutData";
-import Head from "next/head";
+import Menu from "@/models/Menu";
+import getPage from "@/utils/getPage";
 
 const Costs = ({ costsData, info, menu, footer }: any) => {
+  const title = menu.find((item: any) => item.slug === "costs")?.title;
   return (
-    <Layout menu={menu} footer={footer} info={info} title="Kontakt">
-      <Head>
-        <title>
-          {info.companyName + (info.slogan !== "" ? " | " + info.slogan : "")}
-        </title>
-      </Head>
+    <Layout menu={menu} footer={footer} info={info} title={title}>
       <div className="container">
-        <h1>Cennik</h1>
+        <h1>{title}</h1>
         <div className="costBox">
           {costsData.map((category: any, index: number) => (
             <ul key={index} className="costBox">
@@ -50,19 +49,45 @@ const Costs = ({ costsData, info, menu, footer }: any) => {
   );
 };
 
-export default Costs;
+export default function Page(props: any) {
+  if (props.custom) {
+    return <CustomPage {...props} />;
+  } else {
+    return <Costs {...props} />;
+  }
+}
 
 export async function getStaticProps() {
   await dbConnect();
   const { menu, footer, info } = await getLayoutData();
-  const costsData = await getCosts();
+  const page = await Menu.findOne({ slug: "costs" });
 
-  return {
-    props: {
-      menu,
-      footer,
-      costsData,
+  if (!page || !page?.on)
+    return {
+      notFound: true,
+    };
+
+  if (page.custom) {
+    const content = (await getPage("costs")).content;
+
+    return {
       info,
-    },
-  };
+      footer,
+      menu,
+      custom: page.custom,
+      content,
+    };
+  } else {
+    const costsData = await getCosts();
+
+    return {
+      props: {
+        menu,
+        footer,
+        costsData,
+        info,
+        custom: page.custom,
+      },
+    };
+  }
 }

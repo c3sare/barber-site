@@ -13,8 +13,11 @@ import FooterData from "@/lib/types/FooterData";
 import getLayoutData from "@/lib/getLayoutData";
 import getMainPageData from "@/lib/getMainPageData";
 import News from "@/models/News";
-import mongoose from "mongoose";
 import dbConnect from "@/lib/dbConnect";
+import Menu from "@/models/Menu";
+import getPage from "@/utils/getPage";
+import dynamic from "next/dynamic";
+const CustomPage = dynamic(import("@/components/CustomPage"));
 
 const sortOpenHours = (a: OpenHoursData, b: OpenHoursData) => {
   if (a.order < b.order) {
@@ -26,13 +29,13 @@ const sortOpenHours = (a: OpenHoursData, b: OpenHoursData) => {
   }
 };
 
-export default function Home({
+function Home({
   descMain,
-  openHours = [],
-  slideData = [],
-  news = [],
+  openHours,
+  slideData,
+  news,
   info,
-  menu = [],
+  menu,
   footer,
 }: {
   descMain: DescMainData;
@@ -62,13 +65,10 @@ export default function Home({
     };
   }, [actualSlide, slideData]);
 
+  const title = menu.find((item) => item.slug === "")!.title;
+
   return (
-    <Layout
-      info={info}
-      menu={menu}
-      footer={footer}
-      title={menu.find((item) => item.slug === "")!.title}
-    >
+    <Layout info={info} menu={menu} footer={footer} title={title}>
       <div className="container" style={{ width: "100%", padding: "0" }}>
         <div className={styles.slider}>
           <div className={styles.sliderView}>
@@ -209,23 +209,46 @@ export default function Home({
   );
 }
 
+export default function Page(props: any) {
+  if (props.custom) {
+    return <CustomPage {...props} />;
+  } else {
+    return <Home {...props} />;
+  }
+}
+
 export async function getStaticProps() {
   await dbConnect();
   const { info, footer, menu } = await getLayoutData();
-  const { descMain, openHours, slideData } = await getMainPageData();
-  const news = JSON.parse(
-    JSON.stringify(await News.find({}).sort({ date: -1 }).limit(3))
-  );
+  const mainPage = await Menu.findOne({ slug: "" });
 
-  return {
-    props: {
-      descMain,
-      openHours,
-      slideData,
-      news,
+  if (mainPage.custom) {
+    const content = (await getPage("")).content;
+
+    return {
       info,
       footer,
       menu,
-    },
-  };
+      custom: mainPage.custom,
+      content,
+    };
+  } else {
+    const { descMain, openHours, slideData } = await getMainPageData();
+    const news = JSON.parse(
+      JSON.stringify(await News.find({}).sort({ date: -1 }).limit(3))
+    );
+
+    return {
+      props: {
+        descMain,
+        openHours,
+        slideData,
+        news,
+        info,
+        footer,
+        menu,
+        custom: mainPage.custom,
+      },
+    };
+  }
 }

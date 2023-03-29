@@ -5,6 +5,12 @@ import Menu from "@/models/Menu";
 export default async function handler(slug: string) {
   const findItem = JSON.parse(JSON.stringify(await Menu.findOne({ slug })));
 
+  if (!findItem)
+    return {
+      title: "",
+      content: "",
+    };
+
   const pageDataDirectory = path.join(process.cwd(), "pagecontent");
 
   const content = findItem

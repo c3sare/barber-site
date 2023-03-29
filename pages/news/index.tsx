@@ -5,6 +5,7 @@ import styles from "@/styles/index.module.css";
 import getLayoutData from "@/lib/getLayoutData";
 import getNews from "@/lib/getNews";
 import dbConnect from "@/lib/dbConnect";
+import Menu from "@/models/Menu";
 
 const News = ({ news, menu, footer, info }: any) => {
   return (
@@ -66,6 +67,13 @@ function sortByDateNews(a: any, b: any) {
 export async function getStaticProps() {
   await dbConnect();
   const { menu, footer, info } = await getLayoutData();
+  const node = await Menu.findOne({ slug: "news" });
+
+  if (!node || !node?.on)
+    return {
+      notFound: true,
+    };
+
   const news = await getNews();
 
   return {

@@ -10,6 +10,7 @@ import { pl } from "date-fns/locale";
 import { Divider } from "@mui/material";
 import getLayoutData from "@/lib/getLayoutData";
 import dbConnect from "@/lib/dbConnect";
+import Menu from "@/models/Menu";
 
 const Reservations = ({
   menu,
@@ -366,6 +367,12 @@ export default Reservations;
 export async function getStaticProps() {
   await dbConnect();
   const { menu, footer, info } = await getLayoutData();
+  const node = await Menu.findOne({ slug: "reservations" });
+
+  if (!node || !node?.on)
+    return {
+      notFound: true,
+    };
 
   return {
     props: {

@@ -3,6 +3,8 @@ import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
 import { useRef, useState } from "react";
 import Contacts from "@/models/Contact";
+import dynamic from "next/dynamic";
+const CustomPage = dynamic(import("@/components/CustomPage"));
 
 const Contact = ({ info, contactData, menu, footer }: any) => {
   const [sending, setSending] = useState(false);
@@ -173,7 +175,13 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
   );
 };
 
-export default Contact;
+export default function Page(props: any) {
+  if (props.custom) {
+    return <CustomPage {...props} />;
+  } else {
+    return <Contact {...props} />;
+  }
+}
 
 export async function getStaticProps() {
   await dbConnect();
