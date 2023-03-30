@@ -208,10 +208,12 @@ const Reservations = ({
     root: "rdp customdp",
   };
 
+  const title = menu.find((item: any) => item.slug === "reservations")?.title;
+
   return (
-    <Layout title="Rezerwacje" menu={menu} footer={footer} info={info}>
+    <Layout title={title as string} menu={menu} footer={footer} info={info}>
       <div className="container">
-        <h1>Rezerwacje</h1>
+        <h1>{title}</h1>
         {barbers?.length > 0 && (
           <>
             <div>

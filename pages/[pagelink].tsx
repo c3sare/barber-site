@@ -1,4 +1,4 @@
-import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
+import cellPlugins from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";

@@ -10,7 +10,7 @@ import Usworks from "@/models/Uswork";
 import dbConnect from "@/lib/dbConnect";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
-const Uswork = ({ workData, menu, footer, info, pageData }: any) => {
+const Uswork = ({ workData, menu, footer, info }: any) => {
   const [showImage, setShowImage] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
 
@@ -19,11 +19,12 @@ const Uswork = ({ workData, menu, footer, info, pageData }: any) => {
     setShowImage(true);
   };
 
+  const title = menu.find((item: any) => item.slug === "uswork").title;
   return (
     <>
-      <Layout title="Nasze Prace" menu={menu} footer={footer} info={info}>
+      <Layout title={title} menu={menu} footer={footer} info={info}>
         <div className="container">
-          <h1>{pageData.title}</h1>
+          <h1>{title}</h1>
           <div className="photoBox">
             {(workData as WorkData[]).map((item, index: number) => (
               <div
@@ -52,7 +53,7 @@ const Uswork = ({ workData, menu, footer, info, pageData }: any) => {
           </div>
         </div>
       </Layout>
-      {showImage && !pageData.custom && (
+      {showImage && (
         <div className="fullImageScreen">
           <Image
             alt="Fryzura"
@@ -77,9 +78,9 @@ const Uswork = ({ workData, menu, footer, info, pageData }: any) => {
 
 export default function Page(props: any) {
   if (props.custom) {
-    <CustomPage {...props} />;
+    return <CustomPage {...props} />;
   } else {
-    <Uswork {...props} />;
+    return <Uswork {...props} />;
   }
 }
 

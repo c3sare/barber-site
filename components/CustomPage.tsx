@@ -1,4 +1,4 @@
-import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
+import cellPlugins from "@/ReactPagesComponents/cellPlugins";
 import Editor from "@react-page/editor";
 import Layout from "./Layout";
 

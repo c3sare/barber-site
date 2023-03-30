@@ -1,4 +1,4 @@
-import { cellPlugins } from "@/ReactPagesComponents/cellPlugins";
+import cellPlugins from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
 import dynamic from "next/dynamic";
 const Editor = dynamic(import("@react-page/editor"));

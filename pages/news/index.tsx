@@ -8,10 +8,12 @@ import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 
 const News = ({ news, menu, footer, info }: any) => {
+  const title = menu.find((item: any) => item.slug === "news")?.title;
+
   return (
-    <Layout menu={menu} footer={footer} info={info} title="Aktualności">
+    <Layout menu={menu} footer={footer} info={info} title={title}>
       <div className="container">
-        <h1>Aktualności</h1>
+        <h1>{title}</h1>
         <div className={styles.newsBox}>
           <div className={styles.page}>
             {news.map((article: any, index: number) => (

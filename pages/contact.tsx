@@ -76,10 +76,12 @@ const Contact = ({ info, contactData, menu, footer }: any) => {
       });
   };
 
+  const title = menu.find((item: any) => item.slug === "contact")?.title;
+
   return (
-    <Layout menu={menu} footer={footer} info={info} title="Kontakt">
+    <Layout menu={menu} footer={footer} info={info} title={title}>
       <div className="container">
-        <h1>Kontakt</h1>
+        <h1>{title}</h1>
         <div className="contactPage">
           <div className="contactBg"></div>
           <div className="contactContent">
