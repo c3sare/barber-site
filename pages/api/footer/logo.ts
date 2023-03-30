@@ -53,7 +53,7 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    const publicDir = path.join(process.cwd(), "public");
+    const publicDir = process.cwd() + "/public/images";
     const image: any = await handlePostFormReq(req, res);
     if (checkData(image))
       return res
@@ -62,17 +62,14 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const newName = getNewFileName(image.originalFilename);
     const filedata = await fs.readFile(image.filepath);
-    fs.appendFile(
-      `${publicDir}/images/${newName}`,
-      Buffer.from(filedata.buffer)
-    );
+    fs.appendFile(`${publicDir}/${newName}`, Buffer.from(filedata.buffer));
     const oldFile = await Footer.findOne({});
     const insert = await Footer.updateOne({}, { $set: { logo: newName } });
     if (!insert)
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy aktualizacji danych!" });
-    if (oldFile) fs.unlink(`${publicDir}/images/${oldFile.logo}`);
+    if (oldFile) fs.unlink(`${publicDir}/${oldFile.logo}`);
 
     return res.json({ error: false, img: newName });
   } else {
