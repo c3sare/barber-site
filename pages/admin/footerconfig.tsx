@@ -34,6 +34,8 @@ import AddIcon from "@mui/icons-material/Add";
 import SaveIcon from "@mui/icons-material/Save";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import axios from "axios";
+import Image from "next/image";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -173,21 +175,51 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
   const onChange = async (e: any) => {
     if (e.target?.files?.length === 1) {
       setLoading(true);
-      const fd = new FormData();
-      fd.append("logo", e.target.files[0]);
-      const data = await fetch("/api/footer/logo", {
+      const file = e.target.files[0];
+
+      const res = await fetch("/api/footer/logo", {
         method: "POST",
-        body: fd,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          return data;
-        });
-      if (!data.error) {
-        setValue("logo", data.img);
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: file.name,
+          type: file.type,
+        }),
+      }).then((data) => data.json());
+
+      const { url, fields } = res;
+
+      const formData = new FormData();
+
+      Object.entries({ ...fields, file }).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
+
+      const upload = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: formData,
+      });
+      // const fd = new FormData();
+      // fd.append("logo", e.target.files[0]);
+      // const data = await fetch("/api/footer/logo", {
+      //   method: "POST",
+      //   body: fd,
+      // })
+      //   .then((res) => res.json())
+      //   .then((data) => {
+      //     return data;
+      //   });
+      if (upload.ok) {
+        console.log("Uploaded successfully!");
+        setValue("logo", file.name);
       } else {
-        console.log("error");
+        console.error("Upload failed.");
       }
+
       setLoading(false);
     }
   };
@@ -223,11 +255,17 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
               justifyContent="center"
               alignItems="center"
             >
-              <img
-                style={{ maxHeight: "72px" }}
-                src={`/images/${logo}`}
-                alt="logo"
-              />
+              <div
+                style={{ height: "72px", width: "200px", position: "relative" }}
+              >
+                <Image
+                  width={200}
+                  height={72}
+                  style={{ objectPosition: "center", objectFit: "fill" }}
+                  src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${logo}`}
+                  alt="logo"
+                />
+              </div>
               <ThemeProvider theme={theme}>
                 <label htmlFor="contained-button-file">
                   <Input

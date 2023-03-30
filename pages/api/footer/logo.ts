@@ -1,43 +1,19 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import formidable from "formidable";
-import fs from "fs/promises";
-import getNewFileName from "@/utils/getNewFileName";
-import Footer from "@/models/Footer";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import { Types } from "mongoose";
+import aws from "@/utils/aws";
+import Footer from "@/models/Footer";
 
 export const config = {
   api: {
-    bodyParser: false,
+    sizeLimit: "5mb",
   },
 };
 
-async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
-  const form = formidable({ multiples: true });
-
-  const formData = new Promise((resolve, reject) => {
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        reject(err);
-      }
-
-      resolve({ ...files.logo });
-    });
-  });
-  const data = await formData;
-  return data;
-}
-
 export default withIronSessionApiRoute(footerLogoRoute, sessionOptions);
-
-function checkData(image: any) {
-  if (image.mimetype.indexOf("image") === 0 && image.size < 1024 * 1024 * 5)
-    return true;
-  else return false;
-}
 
 async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
   const session = req.session.user;
@@ -52,25 +28,24 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    const publicDir = process.cwd() + "/public/images";
-    const image: any = await handlePostFormReq(req, res);
-    if (checkData(image))
-      return res
-        .status(400)
-        .json({ message: "Parametry zapytania są nieprawidłowe!" });
+    const image = await aws(req.body);
 
-    const newName = getNewFileName(image.originalFilename);
-    const filedata = await fs.readFile(image.filepath);
-    fs.appendFile(`${publicDir}/${newName}`, Buffer.from(filedata.buffer));
-    const oldFile = await Footer.findOne({});
-    const insert = await Footer.updateOne({}, { $set: { logo: newName } });
-    if (!insert)
-      return res
-        .status(500)
-        .json({ message: "Wystąpił problem przy aktualizacji danych!" });
-    if (oldFile) fs.unlink(`${publicDir}/${oldFile.logo}`);
+    if (!image)
+      return res.status(500).json({ message: "Wystąpił błąd przy zapisie!" });
 
-    return res.json({ error: false, img: newName });
+    const update = await Footer.updateOne(
+      {},
+      {
+        $set: {
+          logo: req.body.name,
+        },
+      }
+    );
+
+    if (!update)
+      return res.status(500).json({ message: "Wystąpił nieoczekiwany błąd!" });
+
+    return res.json(image);
   } else {
     return res.status(404);
   }

@@ -26,6 +26,7 @@
     "@react-page/plugins-slate": "^5.4.3",
     "@react-page/plugins-spacer": "^5.4.3",
     "@react-page/plugins-video": "^5.4.3",
+    "axios": "^1.3.4",
     "bcrypt": "^5.1.0",
     "date-fns": "^2.29.3",
     "eslint": "8.32.0",

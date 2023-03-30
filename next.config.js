@@ -2,16 +2,8 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    formats: ['image/avif', 'image/webp'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'assets.vercel.com',
-        port: '',
-        pathname: '/image/upload/**',
-      },
-    ],
+    domains: ["barberianextjs.s3.eu-central-1.amazonaws.com"],
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
