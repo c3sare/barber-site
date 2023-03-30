@@ -30,7 +30,7 @@ async function uploadImageRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    const list = await fs.readdir("/");
+    const list = await fs.readdir(process.cwd() + "/.next");
     res.json({ dir: list });
   } else {
     res.status(404);
