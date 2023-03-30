@@ -226,11 +226,14 @@ export async function getStaticProps() {
     const content = (await getPage("")).content;
 
     return {
-      info,
-      footer,
-      menu,
-      custom: mainPage.custom,
-      content,
+      props: {
+        info,
+        footer,
+        menu,
+        custom: mainPage.custom,
+        content,
+      },
+      revalidate: 60,
     };
   } else {
     const { descMain, openHours, slideData } = await getMainPageData();
@@ -249,6 +252,7 @@ export async function getStaticProps() {
         menu,
         custom: mainPage.custom,
       },
+      revalidate: 60,
     };
   }
 }

@@ -36,6 +36,7 @@ export async function getStaticProps(context: any) {
       info,
       page,
     },
+    revalidate: 60,
   };
 }
 

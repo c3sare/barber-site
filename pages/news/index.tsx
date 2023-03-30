@@ -3,7 +3,7 @@ import Layout from "@/components/Layout";
 import Image from "next/image";
 import styles from "@/styles/index.module.css";
 import getLayoutData from "@/lib/getLayoutData";
-import getNews from "@/lib/getNews";
+import Articles from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 
@@ -74,7 +74,7 @@ export async function getStaticProps() {
       notFound: true,
     };
 
-  const news = await getNews();
+  const news = await JSON.parse(JSON.stringify(await Articles.find({})));
 
   return {
     props: {
@@ -83,5 +83,6 @@ export async function getStaticProps() {
       info,
       news: news.sort(sortByDateNews),
     },
+    revalidate: 60,
   };
 }

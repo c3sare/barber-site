@@ -20,7 +20,7 @@ export async function getStaticPaths() {
         },
       };
     }),
-    fallback: false,
+    fallback: "blocking",
   };
 }
 
@@ -35,6 +35,7 @@ export async function getStaticProps(context: any) {
       info,
       page,
     },
+    revalidate: 60,
   };
 }
 

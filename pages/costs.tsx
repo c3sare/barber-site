@@ -2,10 +2,10 @@ import dynamic from "next/dynamic";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
-import getCosts from "@/lib/getCosts";
 import getLayoutData from "@/lib/getLayoutData";
 import Menu from "@/models/Menu";
 import getPage from "@/utils/getPage";
+import Cost from "@/models/Cost";
 
 const Costs = ({ costsData, info, menu, footer }: any) => {
   const title = menu.find((item: any) => item.slug === "costs")?.title;
@@ -65,20 +65,24 @@ export async function getStaticProps() {
   if (!page || !page?.on)
     return {
       notFound: true,
+      revalidate: 60,
     };
 
   if (page.custom) {
     const content = (await getPage("costs")).content;
 
     return {
-      info,
-      footer,
-      menu,
-      custom: page.custom,
-      content,
+      props: {
+        info,
+        footer,
+        menu,
+        custom: page.custom,
+        content,
+      },
+      revalidate: 60,
     };
   } else {
-    const costsData = await getCosts();
+    const costsData = JSON.parse(JSON.stringify(await Cost.find({})));
 
     return {
       props: {
@@ -88,6 +92,7 @@ export async function getStaticProps() {
         info,
         custom: page.custom,
       },
+      revalidate: 60,
     };
   }
 }

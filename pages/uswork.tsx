@@ -6,7 +6,7 @@ import MenuItem from "@/lib/types/MenuItem";
 import WorkData from "@/lib/types/WorkData";
 import dynamic from "next/dynamic";
 import getLayoutData from "@/lib/getLayoutData";
-import getUswork from "@/lib/getUswork";
+import Usworks from "@/models/Uswork";
 import dbConnect from "@/lib/dbConnect";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
@@ -92,6 +92,7 @@ export async function getStaticProps() {
   if (!pageData || !pageData?.on) {
     return {
       notFound: true,
+      revalidate: 60,
     };
   }
   if (pageData.custom) {
@@ -104,9 +105,10 @@ export async function getStaticProps() {
         custom: pageData.custom,
         content,
       },
+      revalidate: 60,
     };
   } else {
-    const workData = await getUswork();
+    const workData = JSON.parse(JSON.stringify(await Usworks.find({})));
     return {
       props: {
         menu,
@@ -115,6 +117,7 @@ export async function getStaticProps() {
         workData,
         custom: pageData.custom,
       },
+      revalidate: 60,
     };
   }
 }

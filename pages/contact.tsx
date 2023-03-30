@@ -4,6 +4,8 @@ import getLayoutData from "@/lib/getLayoutData";
 import { useRef, useState } from "react";
 import Contacts from "@/models/Contact";
 import dynamic from "next/dynamic";
+import Menu from "@/models/Menu";
+import getPage from "@/utils/getPage";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
 const Contact = ({ info, contactData, menu, footer }: any) => {
@@ -186,15 +188,34 @@ export default function Page(props: any) {
 export async function getStaticProps() {
   await dbConnect();
   const { menu, info, footer } = await getLayoutData();
-  const contactData = JSON.parse(JSON.stringify(await Contacts.findOne({})));
-  delete contactData._id;
+  const page = await Menu.findOne({ slug: "contact" });
 
-  return {
-    props: {
-      menu,
-      footer,
-      contactData,
-      info,
-    },
-  };
+  if (page.custom) {
+    const content = (await getPage("contact")).content;
+
+    return {
+      props: {
+        info,
+        footer,
+        menu,
+        custom: page.custom,
+        content,
+      },
+      revalidate: 60,
+    };
+  } else {
+    const contactData = JSON.parse(JSON.stringify(await Contacts.findOne({})));
+    delete contactData._id;
+
+    return {
+      props: {
+        menu,
+        footer,
+        contactData,
+        info,
+        custom: page.custom,
+      },
+      revalidate: 60,
+    };
+  }
 }
