@@ -24,7 +24,7 @@ async function uploadImageRoute(req: NextApiRequest, res: NextApiResponse) {
   if (session?.id && session.isLoggedIn) {
     user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
   }
-  if (req.method === "POST") {
+  if (req.method === "GET") {
     if (!session?.isLoggedIn && !user?.permissions?.menu)
       return res
         .status(403)
