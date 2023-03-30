@@ -86,7 +86,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
     const publicDir = path.join(process.cwd(), "public");
-    const newsDir = path.join(process.cwd(), "news");
+    // const newsDir = path.join(process.cwd(), "news");
     const newName = getNewFileName(img.originalFilename);
     const filedata = await fs.readFile(img.filepath);
     fs.appendFile(
@@ -99,13 +99,14 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
       desc,
       date,
       img: newName,
+      content: JSON.parse(content),
     });
     if (insert.acknowledged === undefined)
       return res
         .status(500)
         .json({ message: "Wystąpił błąd przy wykonywaniu zapytania!" });
 
-    fs.writeFile(`${newsDir}/${insert.insertedId}.json`, content, "utf-8");
+    // fs.writeFile(`${newsDir}/${insert.insertedId}.json`, content, "utf-8");
 
     return res.status(200).json({ error: false });
   } else if (req.method === "DELETE") {
@@ -136,9 +137,9 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
 
     const publicDir = path.join(process.cwd(), "public");
-    const newsDir = path.join(process.cwd(), "news");
+    // const newsDir = path.join(process.cwd(), "news");
     fs.unlink(`${publicDir}/images/articles/${toDelete!.img}`);
-    fs.unlink(`${newsDir}/${id}.json`);
+    // fs.unlink(`${newsDir}/${id}.json`);
     return res.status(200).json({ error: false });
   } else {
     return res.status(404);

@@ -5,7 +5,6 @@ import { useRef, useState } from "react";
 import Contacts from "@/models/Contact";
 import dynamic from "next/dynamic";
 import Menu from "@/models/Menu";
-import getPage from "@/utils/getPage";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
 const Contact = ({ info, contactData, menu, footer }: any) => {
@@ -193,15 +192,13 @@ export async function getStaticProps() {
   const page = await Menu.findOne({ slug: "contact" });
 
   if (page.custom) {
-    const content = (await getPage("contact")).content;
-
     return {
       props: {
         info,
         footer,
         menu,
         custom: page.custom,
-        content,
+        content: page.content,
       },
       revalidate: 60,
     };

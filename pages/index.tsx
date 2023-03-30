@@ -15,7 +15,6 @@ import getMainPageData from "@/lib/getMainPageData";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
-import getPage from "@/utils/getPage";
 import dynamic from "next/dynamic";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
@@ -223,15 +222,13 @@ export async function getStaticProps() {
   const mainPage = await Menu.findOne({ slug: "" });
 
   if (mainPage.custom) {
-    const content = (await getPage("")).content;
-
     return {
       props: {
         info,
         footer,
         menu,
         custom: mainPage.custom,
-        content,
+        content: mainPage.content,
       },
       revalidate: 60,
     };

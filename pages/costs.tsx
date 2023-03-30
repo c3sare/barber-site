@@ -4,7 +4,6 @@ import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
 import Menu from "@/models/Menu";
-import getPage from "@/utils/getPage";
 import Cost from "@/models/Cost";
 
 const Costs = ({ costsData, info, menu, footer }: any) => {
@@ -69,15 +68,13 @@ export async function getStaticProps() {
     };
 
   if (page.custom) {
-    const content = (await getPage("costs")).content;
-
     return {
       props: {
         info,
         footer,
         menu,
         custom: page.custom,
-        content,
+        content: page.content,
       },
       revalidate: 60,
     };

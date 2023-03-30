@@ -1,5 +1,4 @@
 import Layout from "@/components/Layout";
-import getPage from "@/utils/getPage";
 import Image from "next/image";
 import { useState } from "react";
 import MenuItem from "@/lib/types/MenuItem";
@@ -97,14 +96,13 @@ export async function getStaticProps() {
     };
   }
   if (pageData.custom) {
-    const content = (await getPage("uswork")).content;
     return {
       props: {
         menu,
         footer,
         info,
         custom: pageData.custom,
-        content,
+        content: pageData.content,
       },
       revalidate: 60,
     };

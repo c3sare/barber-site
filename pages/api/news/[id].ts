@@ -1,8 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import fs from "fs/promises";
-import path from "path";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
@@ -33,17 +31,18 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const newsDirectory = path.join(process.cwd(), "news");
+    // const newsDirectory = path.join(process.cwd(), "news");
     const _id = new Types.ObjectId(id);
     const data = News.findOne({ _id });
 
-    if (data === null)
+    if (!data)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono artykułu o id " + id });
 
-    const content = await fs.readFile(`${newsDirectory}/${id}.json`, "utf-8");
-    res.json({ ...data, content: content === "" ? "" : JSON.parse(content) });
+    // const content = await fs.readFile(`${newsDirectory}/${id}.json`, "utf-8");
+    // res.json({ ...data, content: content === "" ? "" : JSON.parse(content) });
+    res.status(200).json(data);
   } else if (req.method === "POST") {
     if (!session?.isLoggedIn || !user?.permissions?.news)
       return res
@@ -79,28 +78,29 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
     const _id = new Types.ObjectId(id as string);
     const update = await News.updateOne(
       { _id },
-      { $set: { title, desc, date } }
+      { $set: { title, desc, date, content } }
     );
     if (update.acknowledged === undefined)
       return res
         .status(404)
         .json({ message: "Artykuł o id " + id + " nie istnieje" });
 
-    const newsDirectory = path.join(process.cwd(), "news");
-    fs.writeFile(
-      `${newsDirectory}/${req.query.id}.json`,
-      JSON.stringify(content),
-      "utf-8"
-    )
-      .then(() => {
-        return res.status(200).json({ error: false });
-      })
-      .catch((err) => {
-        console.log(err);
-        return res
-          .status(500)
-          .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
-      });
+    // const newsDirectory = path.join(process.cwd(), "news");
+    // fs.writeFile(
+    //   `${newsDirectory}/${req.query.id}.json`,
+    //   JSON.stringify(content),
+    //   "utf-8"
+    // )
+    //   .then(() => {
+    //     return res.status(200).json({ error: false });
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //     return res
+    //       .status(500)
+    //       .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
+    //   });
+    return res.status(200).json({ error: false });
   } else {
     return res.status(404);
   }

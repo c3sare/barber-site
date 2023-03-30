@@ -6,6 +6,7 @@ import path from "path";
 import { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
+import Menu from "@/models/Menu";
 
 export default withIronSessionApiRoute(customPageContentRoute, sessionOptions);
 
@@ -31,13 +32,19 @@ async function customPageContentRoute(
     if (!Types.ObjectId.isValid(id as string))
       return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-    fs.readFile(`${pagesDir}/${id}.json`, { encoding: "utf-8" })
-      .then((data) => JSON.parse(data))
-      .then((data) => res.status(200).json(data))
-      .catch((err) => {
-        console.log(err);
-        res.status(404);
-      });
+    const page = await Menu.findOne({ _id: new Types.ObjectId(id as string) });
+
+    if (!page || !page?.custom)
+      return res.status(404).json({ message: "Nie znaleziono takiej strony!" });
+
+    return res.status(200).json(page.content);
+    // fs.readFile(`${pagesDir}/${id}.json`, { encoding: "utf-8" })
+    //   .then((data) => JSON.parse(data))
+    //   .then((data) => res.status(200).json(data))
+    //   .catch((err) => {
+    //     console.log(err);
+    //     res.status(404);
+    //   });
   } else if (req.method === "POST") {
     if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
@@ -47,21 +54,36 @@ async function customPageContentRoute(
     if (!Types.ObjectId.isValid(id as string))
       return res.status(500).json({ message: "Zapytanie jest nieprawidłowe!" });
 
-    try {
-      await fs.access(`${pagesDir}/${id}.json`);
-      return fs
-        .writeFile(`${pagesDir}/${id}.json`, JSON.stringify(req.body), "utf-8")
-        .catch((err) => {
-          console.log(err);
-          return res
-            .status(500)
-            .json({ message: "Wystąpił problem z zapisem!" });
-        })
-        .then(() => res.status(200).json({ error: false }));
-    } catch {
-      console.error("Cannot access file " + id + ".json");
-      return res.status(404);
-    }
+    const updatePage = await Menu.updateOne(
+      { _id: new Types.ObjectId(id as string) },
+      {
+        $set: {
+          content: req.body,
+        },
+      }
+    );
+
+    if (!updatePage)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy zapisie do bazy!" });
+
+    return res.status(200).json({ error: false });
+    // try {
+    //   await fs.access(`${pagesDir}/${id}.json`);
+    //   return fs
+    //     .writeFile(`${pagesDir}/${id}.json`, JSON.stringify(req.body), "utf-8")
+    //     .catch((err) => {
+    //       console.log(err);
+    //       return res
+    //         .status(500)
+    //         .json({ message: "Wystąpił problem z zapisem!" });
+    //     })
+    //     .then(() => res.status(200).json({ error: false }));
+    // } catch {
+    //   console.error("Cannot access file " + id + ".json");
+    //   return res.status(404);
+    // }
   } else {
     return res.status(404);
   }

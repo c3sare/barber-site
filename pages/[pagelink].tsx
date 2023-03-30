@@ -2,11 +2,11 @@ import cellPlugins from "@/ReactPagesComponents/cellPlugins";
 import Layout from "@/components/Layout";
 import dbConnect from "@/lib/dbConnect";
 import getLayoutData from "@/lib/getLayoutData";
-import getPage from "@/utils/getPage";
 import pageList from "@/utils/pageList";
 import dynamic from "next/dynamic";
 const Editor = dynamic(import("@react-page/editor"));
 import React from "react";
+import Menu from "@/models/Menu";
 
 export async function getStaticPaths() {
   await dbConnect();
@@ -27,7 +27,9 @@ export async function getStaticPaths() {
 export async function getStaticProps(context: any) {
   await dbConnect();
   const { menu, footer, info } = await getLayoutData();
-  const page = await getPage(context.params.pagelink);
+  const page = JSON.parse(
+    JSON.stringify(await Menu.findOne({ slug: context.params.pagelink }))
+  );
 
   return {
     props: {

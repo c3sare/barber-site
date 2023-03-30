@@ -56,14 +56,14 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
       { parent: id },
       { $set: { parent: "" } }
     );
-    if (!updateParentResult.acknowledged) {
+    if (!updateParentResult) {
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
     }
 
-    const pagesDir = path.join(process.cwd(), "pagecontent");
-    fs.unlink(`${pagesDir}/${id}.json`);
+    // const pagesDir = path.join(process.cwd(), "pagecontent");
+    // fs.unlink(`${pagesDir}/${id}.json`);
     res.json({ error: false });
   } else if (req.method === "PUT") {
     if (!session?.isLoggedIn || !user?.permissions?.menu)
@@ -90,18 +90,19 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
       order: allItems.length + 1,
       parent: "",
       default: false,
+      content: {},
     });
 
-    if (!insertResult.acknowledged)
+    if (!insertResult)
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
 
-    const pagesDirectory = path.join(process.cwd(), "pagecontent");
-    fs.appendFile(
-      `${pagesDirectory}/${insertResult.insertedId.toString()}.json`,
-      "{}"
-    );
+    // const pagesDirectory = path.join(process.cwd(), "pagecontent");
+    // fs.appendFile(
+    //   `${pagesDirectory}/${insertResult.insertedId.toString()}.json`,
+    //   "{}"
+    // );
 
     return res.status(200).json({ error: false });
   } else {

@@ -4,9 +4,9 @@ import dynamic from "next/dynamic";
 const Editor = dynamic(import("@react-page/editor"));
 import React from "react";
 import newsList from "@/utils/newsList";
-import getNewsPage from "@/utils/getNewsPage";
 import getLayoutData from "@/lib/getLayoutData";
 import dbConnect from "@/lib/dbConnect";
+import News from "@/models/News";
 
 export async function getStaticPaths() {
   await dbConnect();
@@ -26,7 +26,9 @@ export async function getStaticPaths() {
 
 export async function getStaticProps(context: any) {
   const { menu, footer, info } = await getLayoutData();
-  const page = await getNewsPage(context.params.slug);
+  const page = JSON.parse(
+    JSON.stringify(await News.findOne({ slug: context.params.slug }))
+  );
 
   return {
     props: {

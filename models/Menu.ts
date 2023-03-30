@@ -8,6 +8,9 @@ interface IMenu {
   parent: string;
   order: number;
   slug: string;
+  content: {
+    [key: string]: any;
+  };
 }
 
 const menuSchema = new Schema<IMenu>({
@@ -18,6 +21,7 @@ const menuSchema = new Schema<IMenu>({
   parent: { type: String, required: true },
   order: { type: Number, required: true },
   slug: { type: String, required: true },
+  content: { type: Object },
 });
 
 export default models.Menu || model<IMenu>("Menu", menuSchema);
