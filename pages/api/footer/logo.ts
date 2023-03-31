@@ -6,6 +6,7 @@ import User from "@/models/User";
 import { Types } from "mongoose";
 import aws from "@/utils/aws";
 import Footer from "@/models/Footer";
+import awsGetImages from "@/utils/awsGetImages";
 
 export const config = {
   api: {
@@ -28,10 +29,12 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie posiadasz uprawnień do tej ścieżki!" });
 
-    const image = await aws(req.body);
+    const list = (await awsGetImages()) as any[];
 
-    if (!image)
-      return res.status(500).json({ message: "Wystąpił błąd przy zapisie!" });
+    if (!list.find((item) => item.Key === req.body.name))
+      return res
+        .status(404)
+        .json({ message: "Nie znaleziono wybranego obrazu!" });
 
     const update = await Footer.updateOne(
       {},
@@ -45,7 +48,7 @@ async function footerLogoRoute(req: NextApiRequest, res: NextApiResponse) {
     if (!update)
       return res.status(500).json({ message: "Wystąpił nieoczekiwany błąd!" });
 
-    return res.json(image);
+    return res.json({ error: false });
   } else {
     return res.status(404);
   }

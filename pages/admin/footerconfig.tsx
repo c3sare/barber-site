@@ -34,8 +34,8 @@ import AddIcon from "@mui/icons-material/Add";
 import SaveIcon from "@mui/icons-material/Save";
 import { Types } from "mongoose";
 import User from "@/models/User";
-import axios from "axios";
 import Image from "next/image";
+import ImageSelect from "@/componentsAdminPanel/ImageSelect";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -74,6 +74,7 @@ const theme = createTheme({
 
 const AdminPanelFooterConfig = ({ permissions, data }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
   const {
     register,
     formState: { errors },
@@ -172,56 +173,25 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
 
   const { onBlur, ref, name } = register("logo");
 
-  const onChange = async (e: any) => {
-    if (e.target?.files?.length === 1) {
-      setLoading(true);
-      const file = e.target.files[0];
-
-      const res = await fetch("/api/footer/logo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: file.name,
-          type: file.type,
-        }),
-      }).then((data) => data.json());
-
-      const { url, fields } = res;
-
-      const formData = new FormData();
-
-      Object.entries({ ...fields, file }).forEach(([key, value]) => {
-        formData.append(key, value as string);
-      });
-
-      const upload = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: formData,
-      });
-      // const fd = new FormData();
-      // fd.append("logo", e.target.files[0]);
-      // const data = await fetch("/api/footer/logo", {
-      //   method: "POST",
-      //   body: fd,
-      // })
-      //   .then((res) => res.json())
-      //   .then((data) => {
-      //     return data;
-      //   });
-      if (upload.ok) {
-        console.log("Uploaded successfully!");
-        setValue("logo", file.name);
-      } else {
-        console.error("Upload failed.");
-      }
-
-      setLoading(false);
-    }
+  const onChange = (name: string) => {
+    setLoading(true);
+    fetch("/api/footer/logo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (!res.error) {
+          setValue("logo", name);
+        }
+      })
+      .catch((err) => console.log(err))
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -261,29 +231,35 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
                 <Image
                   width={200}
                   height={72}
-                  style={{ objectPosition: "center", objectFit: "fill" }}
+                  style={{
+                    objectPosition: "center",
+                    objectFit: "fill",
+                    height: "auto",
+                    width: "auto",
+                    maxHeight: "100%",
+                    maxWidth: "100%",
+                  }}
                   src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${logo}`}
                   alt="logo"
                 />
               </div>
               <ThemeProvider theme={theme}>
-                <label htmlFor="contained-button-file">
-                  <Input
-                    onBlur={onBlur}
-                    ref={ref}
-                    name={name}
-                    onChange={onChange}
-                    disabled={loading}
-                  />
-                  <IconButton
-                    disabled={loading}
-                    color="primary"
-                    aria-label="upload picture"
-                    component="span"
-                  >
-                    <CameraAlt />
-                  </IconButton>
-                </label>
+                <Input
+                  onBlur={onBlur}
+                  ref={ref}
+                  name={name}
+                  onChange={(e: any) => logo as any}
+                  disabled={loading}
+                />
+                <IconButton
+                  disabled={loading}
+                  color="primary"
+                  aria-label="upload picture"
+                  component="span"
+                  onClick={() => setOpen(true)}
+                >
+                  <CameraAlt />
+                </IconButton>
               </ThemeProvider>
             </Grid>
           </Grid>
@@ -677,6 +653,7 @@ const AdminPanelFooterConfig = ({ permissions, data }: any) => {
           </span>
         ) : null}
       </form>
+      {open && <ImageSelect setOpen={setOpen} setSelectedImage={onChange} />}
     </Layout>
   );
 };
