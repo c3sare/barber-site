@@ -18,12 +18,11 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import PageEditor from "@/componentsAdminPanel/PageEditor";
 import { Value } from "@react-page/editor";
 import { useRouter } from "next/router";
-import path from "path";
-import fs from "fs/promises";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import ImageSelect from "@/componentsAdminPanel/ImageSelect";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -31,18 +30,10 @@ const InputStyled = styled("input")({
 });
 
 // eslint-disable-next-line react/display-name
-const Input = React.forwardRef(({ onChange, onBlur, name }: any, ref: any) => (
+const Input = React.forwardRef(({ onBlur, name }: any, ref: any) => (
   <InputStyled
-    accept="image/*"
     id={name}
-    type="file"
-    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-      if (
-        e.target.files!.length > 0 &&
-        e.target.files?.[0]?.type?.indexOf("image")! >= 0
-      )
-        onChange(e);
-    }}
+    onChange={(_e: any) => null as any}
     onBlur={onBlur}
     name={name}
     ref={ref}
@@ -52,7 +43,8 @@ const Input = React.forwardRef(({ onChange, onBlur, name }: any, ref: any) => (
 const AddNews = ({ permissions = {}, data }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const [content, setContent] = useState<Value | null>(data.content);
+  const [content, setContent] = useState<Value | null>(data.content || {});
+  const [open, setOpen] = useState(false);
   const {
     register,
     control,
@@ -76,7 +68,7 @@ const AddNews = ({ permissions = {}, data }: any) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...data, content }),
+      body: JSON.stringify({ ...data, content: content }),
     })
       .then((data) => data.json())
       .then((data) => {
@@ -91,28 +83,6 @@ const AddNews = ({ permissions = {}, data }: any) => {
         console.log(err);
         setLoading(false);
       });
-  };
-
-  const onChangeImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target?.files?.length === 1) {
-      setLoading(true);
-      const fd = new FormData();
-      fd.append("img", e.target.files[0]);
-      const data = await fetch("/api/news/image/" + router.query.id, {
-        method: "POST",
-        body: fd,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setLoading(false);
-          return data;
-        });
-      if (!data.error) {
-        setValue("img", data.img);
-      } else {
-        console.log("error");
-      }
-    }
   };
 
   const image = watch("img");
@@ -134,28 +104,21 @@ const AddNews = ({ permissions = {}, data }: any) => {
               height: "auto",
               width: "auto",
             }}
-            src={`/images/articles/${image}`}
-            alt="logo"
+            src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${image}`}
+            alt="Grafika artykułu"
           />
         </div>
-        <label htmlFor={`img`}>
-          <Input
-            disabled={loading}
-            onBlur={onBlur}
-            ref={ref}
-            name={name}
-            onChange={onChangeImage}
-          />
-          <IconButton
-            color="primary"
-            disabled={loading}
-            aria-label="upload picture"
-            component="span"
-            sx={{ color: blueGrey[700] }}
-          >
-            <CameraAltIcon />
-          </IconButton>
-        </label>
+        <Input disabled={loading} onBlur={onBlur} ref={ref} name={name} />
+        <IconButton
+          color="primary"
+          disabled={loading}
+          aria-label="upload picture"
+          component="span"
+          sx={{ color: blueGrey[700] }}
+          onClick={() => setOpen(true)}
+        >
+          <CameraAltIcon />
+        </IconButton>
         <Controller
           control={control}
           name="date"
@@ -262,6 +225,12 @@ const AddNews = ({ permissions = {}, data }: any) => {
           Zapisz
         </CLoadingButton>
       </form>
+      {open && (
+        <ImageSelect
+          setOpen={setOpen}
+          setSelectedImage={(name: string) => setValue("img", name)}
+        />
+      )}
     </Layout>
   );
 };
@@ -301,14 +270,9 @@ export const getServerSideProps = withIronSessionSsr(
         },
       };
 
-    const newsDirectory = path.join(process.cwd(), "news");
-    const content = !data
-      ? ""
-      : await fs.readFile(`${newsDirectory}/${data._id}.json`, "utf-8");
-
     return {
       props: {
-        data: { ...data, content: content ? JSON.parse(content) : "" },
+        data,
         permissions: user.permissions,
       },
     };

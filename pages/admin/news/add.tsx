@@ -21,6 +21,7 @@ import { useRouter } from "next/router";
 import { Types } from "mongoose";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
+import ImageSelect from "@/componentsAdminPanel/ImageSelect";
 
 const InputStyled = styled("input")({
   display: "none",
@@ -29,18 +30,10 @@ const InputStyled = styled("input")({
 
 // eslint-disable-next-line react/display-name
 const Input = React.forwardRef(
-  ({ onChange, onBlur, name }: UseFormRegisterReturn, ref: any) => (
+  ({ onBlur, name }: UseFormRegisterReturn, ref: any) => (
     <InputStyled
-      accept="image/*"
       id={name}
-      type="file"
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-        if (
-          e.target.files!.length > 0 &&
-          e.target.files?.[0]?.type?.indexOf("image")! >= 0
-        )
-          onChange(e);
-      }}
+      onChange={(_e: any) => null as any}
       onBlur={onBlur}
       name={name}
       ref={ref}
@@ -61,13 +54,15 @@ function getTodayDate() {
 const AddNews = ({ permissions = {} }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const [value, setValue] = useState<Value | null>(null);
+  const [content, setContent] = useState<Value | null>(null);
+  const [open, setOpen] = useState<boolean>(false);
   const {
     register,
     control,
     formState: { errors },
     handleSubmit,
     watch,
+    setValue,
   } = useForm<NewsData>({
     defaultValues: {
       title: "",
@@ -78,15 +73,12 @@ const AddNews = ({ permissions = {} }: any) => {
 
   const handleSendData = (data: NewsData) => {
     setLoading(true);
-    const fd = new FormData();
-    fd.append("title", data.title);
-    fd.append("desc", data.desc);
-    fd.append("date", data.date);
-    fd.append("content", JSON.stringify(value));
-    fd.append("img", data.img[0]);
     fetch("/api/news", {
       method: "PUT",
-      body: fd,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ...data, content: content }),
     })
       .then((data) => data.json())
       .then((data) => {
@@ -121,30 +113,30 @@ const AddNews = ({ permissions = {} }: any) => {
               width: "auto",
             }}
             src={
-              typeof image === "object" && image.length > 0
-                ? URL.createObjectURL(image?.[0])
+              image
+                ? "https://barberianextjs.s3.eu-central-1.amazonaws.com/" +
+                  image
                 : "/images/vercel.svg"
             }
             alt="logo"
           />
         </div>
-        <label htmlFor={`img`}>
-          <Input
-            disabled={loading}
-            {...register("img", {
-              required: "Wymagane!",
-            })}
-          />
-          <IconButton
-            color="primary"
-            disabled={loading}
-            aria-label="upload picture"
-            component="span"
-            sx={{ color: blueGrey[700] }}
-          >
-            <CameraAltIcon />
-          </IconButton>
-        </label>
+        <Input
+          disabled={loading}
+          {...register("img", {
+            required: "Wymagane!",
+          })}
+        />
+        <IconButton
+          color="primary"
+          disabled={loading}
+          aria-label="upload picture"
+          component="span"
+          sx={{ color: blueGrey[700] }}
+          onClick={() => setOpen(true)}
+        >
+          <CameraAltIcon />
+        </IconButton>
         <Controller
           control={control}
           name="date"
@@ -242,7 +234,7 @@ const AddNews = ({ permissions = {} }: any) => {
           )}
         </Box>
         <h2>Treść</h2>
-        <PageEditor value={value} setValue={setValue} loading={loading} />
+        <PageEditor value={content} setValue={setContent} loading={loading} />
         <CButton disabled={loading} LinkComponent={Link} href="/admin/news">
           Wróć
         </CButton>
@@ -256,6 +248,12 @@ const AddNews = ({ permissions = {} }: any) => {
           Zapisz
         </CLoadingButton>
       </form>
+      {open && (
+        <ImageSelect
+          setOpen={setOpen}
+          setSelectedImage={(name: string) => setValue("img", name)}
+        />
+      )}
     </Layout>
   );
 };

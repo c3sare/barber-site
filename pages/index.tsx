@@ -16,6 +16,7 @@ import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
 import dynamic from "next/dynamic";
+import { getPlaiceholder } from "plaiceholder";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
 const sortOpenHours = (a: OpenHoursData, b: OpenHoursData) => {
@@ -36,6 +37,7 @@ function Home({
   info,
   menu,
   footer,
+  openHoursImg,
 }: {
   descMain: DescMainData;
   openHours: OpenHoursData[];
@@ -44,6 +46,13 @@ function Home({
   info: InfoData;
   menu: MenuItem[];
   footer: FooterData;
+  openHoursImg: {
+    img: {
+      src: string;
+      blurDataURL: string;
+    };
+    base64: string;
+  };
 }) {
   const [actualSlide, setActualSlide] = useState<number>(0);
 
@@ -86,10 +95,13 @@ function Home({
                   }}
                 >
                   <Image
+                    src={(sld.image as any).src}
+                    blurDataURL={(sld.image as any).blurDataURL}
                     alt={sld.title}
-                    src={`/images/${sld?.image}`}
+                    placeholder="blur"
                     fill
                     style={{
+                      width: "100%",
                       objectFit: "cover",
                       objectPosition: "center",
                       zIndex: "-1",
@@ -126,6 +138,7 @@ function Home({
                     alt={`Ikona ${index + 1}`}
                     src={`/images/${item?.img}`}
                     width={30}
+                    priority
                     height={30}
                   />
                   {item?.desc}
@@ -139,25 +152,11 @@ function Home({
           {news.map((article, index: number) => (
             <div key={index} className={styles.infoBox}>
               <div>
-                <div
-                  style={{
-                    width: "100%",
-                    height: "230px",
-                    position: "relative",
-                  }}
-                >
-                  <Image
-                    alt={article.title}
-                    src={`/images/articles/${article.img}`}
-                    fill
-                    loading="lazy"
-                    style={{ objectFit: "cover" }}
-                    sizes="(max-width: 1200px) 355px,
-                  (max-width: 1024px) 275px,
-                  (max-width: 800px) 200px,
-                  355px"
-                  />
-                </div>
+                <Image
+                  {...(article.img as any)}
+                  placeholder="blur"
+                  alt={article.title}
+                />
                 <span
                   style={{
                     width: "100%",
@@ -178,10 +177,14 @@ function Home({
         </div>
         <div className={styles.openingHoursBox}>
           <Image
-            alt={"Godziny otwarcia"}
-            src={`/images/bgHour.jpg`}
+            alt="Godziny otwarcia"
+            src={openHoursImg.img.src}
+            blurDataURL={openHoursImg.base64}
+            placeholder="blur"
             fill
             style={{
+              width: "100%",
+              height: "100%",
               objectFit: "cover",
               objectPosition: "center",
               zIndex: "-1",
@@ -236,18 +239,48 @@ export async function getStaticProps() {
     const { descMain, openHours, slideData } = await getMainPageData();
     const news = JSON.parse(
       JSON.stringify(await News.find({}).sort({ date: -1 }).limit(3))
+    ) as NewsData[];
+
+    const newsWithImages = await Promise.all(
+      news.map(async (item) => {
+        const { base64, img } = await getPlaiceholder(
+          "https://barberianextjs.s3.eu-central-1.amazonaws.com/" + item.img
+        );
+        item.img = {
+          ...img,
+          blurDataURL: base64,
+        } as any;
+        return item;
+      })
     );
+
+    const slides = await Promise.all(
+      slideData.map(async (item: any) => {
+        const { base64, img } = await getPlaiceholder(
+          "https://barberianextjs.s3.eu-central-1.amazonaws.com/" + item.image
+        );
+        item.image = {
+          ...img,
+          blurDataURL: base64,
+        } as any;
+
+        return item;
+      })
+    );
+
+    const openHoursImg = await getPlaiceholder("/images/bgHour.jpg");
 
     return {
       props: {
         descMain,
         openHours,
-        slideData,
-        news,
+        slideData: slides,
+        news: newsWithImages,
         info,
         footer,
         menu,
         custom: mainPage.custom,
+        openHoursImg,
       },
       revalidate: 60,
     };

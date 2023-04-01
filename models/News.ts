@@ -6,6 +6,7 @@ interface INews {
   date: string;
   img: string;
   slug: string;
+  content: string;
 }
 
 const newsSchema = new Schema<INews>({
@@ -14,6 +15,7 @@ const newsSchema = new Schema<INews>({
   date: { type: String, required: true },
   img: { type: String, required: true },
   slug: { type: String, required: true },
+  content: { type: String, required: true },
 });
 
 export default models.New || model<INews>("New", newsSchema);

@@ -6,6 +6,8 @@ import getLayoutData from "@/lib/getLayoutData";
 import Articles from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import Menu from "@/models/Menu";
+import NewsData from "@/lib/types/NewsData";
+import { getPlaiceholder } from "plaiceholder";
 
 const News = ({ news, menu, footer, info }: any) => {
   const title = menu.find((item: any) => item.slug === "news")?.title;
@@ -19,25 +21,11 @@ const News = ({ news, menu, footer, info }: any) => {
             {news.map((article: any, index: number) => (
               <div key={index} className={styles.infoBox}>
                 <div>
-                  <div
-                    style={{
-                      width: "100%",
-                      height: "230px",
-                      position: "relative",
-                    }}
-                  >
-                    <Image
-                      alt={article.title}
-                      src={`/images/articles/${article.img}`}
-                      fill
-                      loading="lazy"
-                      style={{ objectFit: "cover" }}
-                      sizes="(max-width: 1200px) 355px,
-                      (max-width: 1024px) 275px,
-                      (max-width: 76px) 200px,
-                      355px"
-                    />
-                  </div>
+                  <Image
+                    {...article.img}
+                    placeholder="blur"
+                    alt={article.title}
+                  />
                   <span>{article.date}</span>
                   <h2>{article.title}</h2>
                   <p>{article.desc}</p>
@@ -76,14 +64,29 @@ export async function getStaticProps() {
       notFound: true,
     };
 
-  const news = await JSON.parse(JSON.stringify(await Articles.find({})));
+  const news = (await JSON.parse(
+    JSON.stringify(await Articles.find({}))
+  )) as NewsData[];
+
+  const newsWithImages = await Promise.all(
+    news.map(async (item) => {
+      const { base64, img } = await getPlaiceholder(
+        "https://barberianextjs.s3.eu-central-1.amazonaws.com/" + item.img
+      );
+      item.img = {
+        ...img,
+        blurDataURL: base64,
+      } as any;
+      return item;
+    })
+  );
 
   return {
     props: {
       menu,
       footer,
       info,
-      news: news.sort(sortByDateNews),
+      news: newsWithImages.sort(sortByDateNews),
     },
     revalidate: 60,
   };

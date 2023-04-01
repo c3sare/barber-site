@@ -4,7 +4,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import { Types } from "mongoose";
-import aws from "@/utils/aws";
 import Footer from "@/models/Footer";
 import awsGetImages from "@/utils/awsGetImages";
 

@@ -1,38 +1,24 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
-import path from "path";
-import fs from "fs/promises";
-import formidable from "formidable";
-import getNewFileName from "@/utils/getNewFileName";
 import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import awsGetImages from "@/utils/awsGetImages";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+function slugify(title: string) {
+  return title
+    .toString()
+    .normalize("NFD") // split an accented letter in the base letter and the acent
+    .replace(/[\u0300-\u036f]/g, "") // remove all previously split accents
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9 ]/g, "") // remove all chars not letters, numbers and spaces (to be replaced)
+    .replace(/\s+/g, "-");
+}
 
 export default withIronSessionApiRoute(infoRoute, sessionOptions);
-
-async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
-  const form = formidable({ multiples: true });
-
-  const formData = new Promise((resolve, reject) => {
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        reject(err);
-      }
-
-      resolve({ ...{ ...fields, ...files } });
-    });
-  });
-  const data = await formData;
-  return data;
-}
 
 const titleRegex =
   /^[a-zA-ZàáâäãåąčćęèéêëėįìíîïłńòóôöõøùúûüųūÿýżźñçčšžÀÁÂÄÃÅĄĆČĖĘÈÉÊËÌÍÎÏĮŁŃÒÓÔÖÕØÙÚÛÜŲŪŸÝŻŹÑßÇŒÆČŠŽ∂ð ,.'-]+$/u;
@@ -60,11 +46,8 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const { title, desc, date, content, img }: any = await handlePostFormReq(
-      req,
-      res
-    );
-
+    const { title, desc, date, content, img }: any = req.body;
+    console.log(req.body);
     if (!title || !desc || !date || !content || !img)
       return res
         .status(400)
@@ -77,36 +60,31 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
       !descRegex.test(desc) ||
       desc.length === 0 ||
       desc.length > 400 ||
-      !dateRegex.test(date) ||
-      img?.mimetype?.indexOf("image") !== 0 ||
-      img?.size > 1024 * 1024 * 5
+      !dateRegex.test(date)
     )
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const publicDir = path.join(process.cwd(), "public");
-    // const newsDir = path.join(process.cwd(), "news");
-    const newName = getNewFileName(img.originalFilename);
-    const filedata = await fs.readFile(img.filepath);
-    fs.appendFile(
-      `${publicDir}/images/articles/${newName}`,
-      Buffer.from(filedata.buffer)
-    );
+    const imageList = (await awsGetImages()) as any[];
+
+    if (!imageList.find((item) => item.Key === img))
+      return res
+        .status(404)
+        .json({ message: "Nie odnaleziono obrazu do użycia!" });
 
     const insert = await News.collection.insertOne({
       title,
       desc,
       date,
-      img: newName,
-      content: JSON.parse(content),
+      img,
+      slug: slugify(title),
+      content,
     });
-    if (insert.acknowledged === undefined)
+    if (!insert.acknowledged)
       return res
         .status(500)
         .json({ message: "Wystąpił błąd przy wykonywaniu zapytania!" });
-
-    // fs.writeFile(`${newsDir}/${insert.insertedId}.json`, content, "utf-8");
 
     return res.status(200).json({ error: false });
   } else if (req.method === "DELETE") {
@@ -115,7 +93,7 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const { id }: any = await handlePostFormReq(req, res);
+    const { id }: any = req.body;
 
     if (!Types.ObjectId.isValid(id))
       return res
@@ -136,10 +114,6 @@ async function infoRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(500)
         .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
 
-    const publicDir = path.join(process.cwd(), "public");
-    // const newsDir = path.join(process.cwd(), "news");
-    fs.unlink(`${publicDir}/images/articles/${toDelete!.img}`);
-    // fs.unlink(`${newsDir}/${id}.json`);
     return res.status(200).json({ error: false });
   } else {
     return res.status(404);

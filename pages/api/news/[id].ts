@@ -5,6 +5,7 @@ import News from "@/models/News";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import awsGetImages from "@/utils/awsGetImages";
 
 export default withIronSessionApiRoute(newsRoute, sessionOptions);
 
@@ -31,17 +32,16 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    // const newsDirectory = path.join(process.cwd(), "news");
     const _id = new Types.ObjectId(id);
-    const data = News.findOne({ _id });
+    const data = await News.findOne({ _id });
 
     if (!data)
       return res
         .status(404)
         .json({ message: "Nie odnaleziono artykułu o id " + id });
 
-    // const content = await fs.readFile(`${newsDirectory}/${id}.json`, "utf-8");
-    // res.json({ ...data, content: content === "" ? "" : JSON.parse(content) });
+    data.content = JSON.parse(data.content);
+
     res.status(200).json(data);
   } else if (req.method === "POST") {
     if (!session?.isLoggedIn || !user?.permissions?.news)
@@ -49,15 +49,17 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Brak uprawnień do tej ścieżki!" });
 
-    const { title, desc, date, content } = req.body;
+    const { title, desc, date, content, img } = req.body;
     const { id } = req.query;
+
+    console.log(req.body);
 
     if (!Types.ObjectId.isValid(id as string))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    if (!title || !desc || !date || !content)
+    if (!title || !desc || !date || !content || !img)
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
@@ -75,31 +77,34 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
+    const imageList = (await awsGetImages()) as any[];
+
+    if (!imageList.find((item) => item.Key === img))
+      return res
+        .status(404)
+        .json({ message: "Nie znaleziono wybranej grafiki!" });
+
     const _id = new Types.ObjectId(id as string);
-    const update = await News.updateOne(
+    const find = await News.findOne({ _id });
+    console.log(find);
+    const update = await News.collection.updateOne(
       { _id },
-      { $set: { title, desc, date, content } }
+      {
+        $set: {
+          title,
+          desc,
+          date,
+          img,
+          content,
+        },
+      }
     );
-    if (update.acknowledged === undefined)
+    console.log(update);
+    if (!update.acknowledged)
       return res
         .status(404)
         .json({ message: "Artykuł o id " + id + " nie istnieje" });
 
-    // const newsDirectory = path.join(process.cwd(), "news");
-    // fs.writeFile(
-    //   `${newsDirectory}/${req.query.id}.json`,
-    //   JSON.stringify(content),
-    //   "utf-8"
-    // )
-    //   .then(() => {
-    //     return res.status(200).json({ error: false });
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     return res
-    //       .status(500)
-    //       .json({ message: "Wystąpił problem przy wykonywaniu zapytania!" });
-    //   });
     return res.status(200).json({ error: false });
   } else {
     return res.status(404);
