@@ -30,6 +30,8 @@ export async function getStaticProps(context: any) {
     JSON.stringify(await News.findOne({ slug: context.params.slug }))
   );
 
+  page.content = JSON.parse(page.content);
+
   return {
     props: {
       menu,
