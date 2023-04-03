@@ -137,7 +137,7 @@ const Menu = ({ perms }: any) => {
         <li>
           <IconButtonStyled
             name="Biblioteka obrazów"
-            href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/imagelist`}
+            href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/images`}
             icon={<PhotoSizeSelectActualIcon fontSize="inherit" />}
           />
         </li>

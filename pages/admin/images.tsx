@@ -41,7 +41,7 @@ const theme = createTheme({
   },
 });
 
-const AdminPanelIndex = ({ permissions = {} }: any) => {
+const AdminPanelImageList = ({ permissions = {} }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [list, setList] = useState<ImageObject[]>([]);
   const [data, setData] = useState({
@@ -191,7 +191,7 @@ const AdminPanelIndex = ({ permissions = {} }: any) => {
   );
 };
 
-export default AdminPanelIndex;
+export default AdminPanelImageList;
 
 export const getServerSideProps = withIronSessionSsr(
   async function getServerSideProps({ req }) {
