@@ -128,7 +128,7 @@ const AdminPanelIndex = ({ permissions = {} }: any) => {
                 aria-label="upload picture"
                 component="span"
               >
-                <CameraAlt sx={{ fontSize: "50px" }} />
+                <CameraAlt sx={{ fontSize: "50px", marginBottom: "25px" }} />
               </IconButton>
             </label>
           </Tooltip>
