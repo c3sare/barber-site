@@ -4,8 +4,13 @@ import InfoData from "@/lib/types/InfoData";
 import FooterData from "@/lib/types/FooterData";
 import Image from "next/image";
 
-const Footer = ({footerData, info}: {footerData: FooterData, info: InfoData}) => {
-
+const Footer = ({
+  footerData,
+  info,
+}: {
+  footerData: FooterData;
+  info: InfoData;
+}) => {
   return (
     <div className={style.footer}>
       <div className={style.mainContent}>
@@ -14,18 +19,10 @@ const Footer = ({footerData, info}: {footerData: FooterData, info: InfoData}) =>
             style={{
               width: "200px",
               height: "45px",
-              position: "relative"
+              position: "relative",
             }}
           >
-            <Image
-              src={`/images/${footerData.logo}`}
-              alt="Logo Dolne"
-              fill
-              sizes="(max-width: 1200px) 200px,
-              (max-width: 1024px) 150px,
-              (max-width: 768px) 100px,
-              100px"
-            />
+            <Image {...(footerData.logo as any).img} alt="Logo Dolne" />
           </div>
           <p>{footerData?.desc}</p>
           {footerData.btnMore &&
@@ -43,7 +40,7 @@ const Footer = ({footerData, info}: {footerData: FooterData, info: InfoData}) =>
           <div className={style.linkBox} key={index}>
             <p className={style.linkBoxName}>{box.name}</p>
             <ul>
-              {box.links.map(li => (
+              {box.links.map((li) => (
                 <li key={li.id}>
                   {li.url.indexOf("http") > -1 ? (
                     <a href={li.url}>{li.name}</a>

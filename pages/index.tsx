@@ -136,7 +136,7 @@ function Home({
                 <li key={index}>
                   <Image
                     alt={`Ikona ${index + 1}`}
-                    src={`/images/${item?.img}`}
+                    src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${item?.img}`}
                     width={30}
                     priority
                     height={30}

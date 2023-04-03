@@ -8,6 +8,7 @@ import GroupIcon from "@mui/icons-material/Group";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MailLockIcon from "@mui/icons-material/MailLock";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
+import PhotoSizeSelectActualIcon from "@mui/icons-material/PhotoSizeSelectActual";
 import style from "../styles/admin.module.css";
 import Link from "next/link";
 import { IconButton, Tooltip } from "@mui/material";
@@ -133,6 +134,13 @@ const Menu = ({ perms }: any) => {
             />
           </li>
         )}
+        <li>
+          <IconButtonStyled
+            name="Biblioteka obrazów"
+            href={`${process.env.NEXT_PUBLIC_AFTER_SITE_URL}/imagelist`}
+            icon={<PhotoSizeSelectActualIcon fontSize="inherit" />}
+          />
+        </li>
       </ul>
       <ul>
         <li>

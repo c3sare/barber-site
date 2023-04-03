@@ -5,10 +5,11 @@ import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import awsGetImages from "@/utils/awsGetImages";
 
 export default withIronSessionApiRoute(slidesRoute, sessionOptions);
 
-function checkData({ title, desc }: any) {
+async function checkData({ title, desc, image }: any) {
   const titleDescRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
   if (
     titleDescRegex.test(title) &&
@@ -17,9 +18,14 @@ function checkData({ title, desc }: any) {
     titleDescRegex.test(desc) &&
     desc.length > 0 &&
     desc.length <= 800
-  )
-    return true;
-  else return false;
+  ) {
+    const images = (await awsGetImages()) as any[];
+    if (images.find((item) => item.Key === image)) {
+      return true;
+    } else {
+      return false;
+    }
+  } else return false;
 }
 
 async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
@@ -35,16 +41,22 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Brak uprawnień dla tej ścieżki!" });
 
-    const { title, desc }: { title: string; desc: string } = req.body;
+    const {
+      title,
+      desc,
+      image,
+    }: { title: string; desc: string; image: string } = req.body;
 
     const { id } = req.query;
 
-    if (
-      !title ||
-      !desc ||
-      !checkData({ title, desc }) ||
-      !Types.ObjectId.isValid(id as string)
-    )
+    if (!title || !desc || !image || !Types.ObjectId.isValid(id as string))
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
+
+    const check = await checkData({ title, desc, image });
+
+    if (!check)
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
@@ -57,7 +69,10 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(404)
         .json({ message: "Nie odnaleziono artykułu o id " + id });
 
-    const update = await Slide.updateOne({ _id }, { $set: { title, desc } });
+    const update = await Slide.updateOne(
+      { _id },
+      { $set: { title, desc, image } }
+    );
 
     if (!update)
       res

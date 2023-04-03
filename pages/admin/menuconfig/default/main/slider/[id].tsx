@@ -20,6 +20,7 @@ import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import ImageSelect from "@/componentsAdminPanel/ImageSelect";
 
 interface Slide {
   title: string;
@@ -33,18 +34,11 @@ const InputStyled = styled("input")({
 });
 
 // eslint-disable-next-line react/display-name
-const Input = React.forwardRef(({ onChange, onBlur, name }: any, ref: any) => (
+const Input = React.forwardRef(({ onBlur, name }: any, ref: any) => (
   <InputStyled
-    accept="image/*"
     id={name}
-    type="file"
-    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-      if (
-        e.target.files!.length > 0 &&
-        e.target.files?.[0]?.type?.indexOf("image")! >= 0
-      )
-        onChange(e);
-    }}
+    type="text"
+    onChange={(_e: any) => null as any}
     onBlur={onBlur}
     name={name}
     ref={ref}
@@ -54,6 +48,7 @@ const Input = React.forwardRef(({ onChange, onBlur, name }: any, ref: any) => (
 const SliderEditPage = ({ permissions = {}, data }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
   const {
     control,
     formState: { errors },
@@ -73,42 +68,14 @@ const SliderEditPage = ({ permissions = {}, data }: any) => {
 
   const { onBlur, name, ref } = register("image");
 
-  const onChangeImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target?.files?.length === 1) {
-      setLoading(true);
-      const fd = new FormData();
-      fd.append("image", e.target.files[0]);
-      const data = await fetch("/api/slides/image/" + router.query.id, {
-        method: "POST",
-        body: fd,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setLoading(false);
-          return data;
-        });
-      if (!data.error) {
-        setValue("image", data.image);
-      } else {
-        console.log("error");
-      }
-    }
-  };
-
   const handleSendData = (data: Slide) => {
     setLoading(true);
-    const fd = new FormData();
-    fd.append("title", data.title);
-    fd.append("desc", data.desc);
     fetch(`/api/slides/${router.query.id}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        title: data.title,
-        desc: data.desc,
-      }),
+      body: JSON.stringify(data),
     })
       .then((res) => res.json())
       .then((data) => {
@@ -140,28 +107,21 @@ const SliderEditPage = ({ permissions = {}, data }: any) => {
               height: "auto",
               width: "auto",
             }}
-            src={`/images/${image}`}
+            src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${image}`}
             alt="logo"
           />
         </div>
-        <label htmlFor={`image`}>
-          <Input
-            onBlur={onBlur}
-            ref={ref}
-            name={name}
-            onChange={onChangeImage}
-            disabled={loading}
-          />
-          <IconButton
-            color="primary"
-            disabled={loading}
-            aria-label="upload picture"
-            component="span"
-            sx={{ color: blueGrey[700] }}
-          >
-            <CameraAltIcon />
-          </IconButton>
-        </label>
+        <Input onBlur={onBlur} ref={ref} name={name} disabled={loading} />
+        <IconButton
+          color="primary"
+          disabled={loading}
+          aria-label="upload picture"
+          component="span"
+          onClick={() => setOpen(true)}
+          sx={{ color: blueGrey[700] }}
+        >
+          <CameraAltIcon />
+        </IconButton>
         <Controller
           control={control}
           name="title"
@@ -284,6 +244,12 @@ const SliderEditPage = ({ permissions = {}, data }: any) => {
           Zapisz zmiany
         </CLoadingButton>
       </form>
+      {open && (
+        <ImageSelect
+          setOpen={setOpen}
+          setSelectedImage={(name: string) => setValue("image", name)}
+        />
+      )}
     </Layout>
   );
 };

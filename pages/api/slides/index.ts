@@ -9,45 +9,21 @@ import Slide from "@/models/Slide";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-async function handlePostFormReq(req: NextApiRequest, res: NextApiResponse) {
-  const form = formidable({ multiples: true });
-
-  const formData = new Promise((resolve, reject) => {
-    form.parse(req, async (err, fields, files) => {
-      if (err) {
-        reject(err);
-      }
-
-      resolve({ ...{ ...fields, ...files } });
-    });
-  });
-  const data = await formData;
-  return data;
-}
+import awsGetImages from "@/utils/awsGetImages";
 
 export default withIronSessionApiRoute(slidesRoute, sessionOptions);
 
-function checkData({ image, title, desc }: any) {
+function checkData({ title, desc }: any) {
   const titleDescRegex = /^(.|\s)*[a-zA-Z]+(.|\s)*$/;
   if (
     title &&
-    image &&
     desc &&
     titleDescRegex.test(title) &&
     title.length > 0 &&
     title.length <= 80 &&
     titleDescRegex.test(desc) &&
     desc.length > 0 &&
-    desc.length <= 800 &&
-    image.mimetype.indexOf("image") === 0 &&
-    image.size < 1024 * 1024 * 5
+    desc.length <= 800
   )
     return true;
   else return false;
@@ -74,7 +50,7 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
         .status(403)
         .json({ message: "Nie masz uprawnień do tej ścieżki!" });
 
-    const { id }: any = await handlePostFormReq(req, res);
+    const { id }: any = req.body;
 
     if (!id || !Types.ObjectId.isValid(id as string))
       return res
@@ -99,24 +75,23 @@ async function slidesRoute(req: NextApiRequest, res: NextApiResponse) {
     res.json({ error: false });
   } else if (req.method === "PUT") {
     const publicDir = path.join(process.cwd(), "public");
-    const { image, title, desc }: any = await handlePostFormReq(req, res);
+    const { image, title, desc }: any = req.body;
     if (!checkData({ image, title, desc }))
       return res
         .status(400)
         .json({ message: "Nieprawidłowe parametry zapytania!" });
 
-    const newName = getNewFileName(image.originalFilename);
-    const filedata = await fs.readFile(image.filepath);
+    const images = (await awsGetImages()) as any[];
 
-    fs.appendFile(
-      `${publicDir}/images/${newName}`,
-      Buffer.from(filedata.buffer)
-    );
+    if (!images.find((item) => item.Key === image))
+      return res
+        .status(400)
+        .json({ message: "Nieprawidłowe parametry zapytania!" });
 
     const insert = await Slide.collection.insertOne({
       title,
       desc,
-      image: newName,
+      image,
     });
 
     if (!insert)

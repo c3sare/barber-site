@@ -10,18 +10,40 @@ import slate from "@react-page/plugins-slate";
 
 const imageUploadService: (url: string) => ImageUploadType =
   () => (file, _reportProgress) => {
-    return new Promise((resolve, reject) => {
-      const fd = new FormData();
-      fd.append("file", file);
-      fetch("/api/imageupload", {
+    return new Promise(async (resolve, reject) => {
+      const res = await fetch("/api/images", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: file.name,
+          type: file.type,
+        }),
+      }).then((data) => data.json());
+
+      const { url, fields } = res;
+
+      const formData = new FormData();
+
+      Object.entries({ ...fields, file }).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
+
+      const upload = await fetch(url, {
         method: "POST",
-        body: fd,
-      })
-        .then((data) => data.json())
-        .then((data) => resolve({ url: "/images/" + data.url }))
-        .catch((err) => {
-          reject("Error" + err);
-        });
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: formData,
+      });
+
+      if (upload.ok) {
+        resolve({ url: url + file.name });
+      } else {
+        reject("Error");
+        console.error("Upload failed.");
+      }
     });
   };
 

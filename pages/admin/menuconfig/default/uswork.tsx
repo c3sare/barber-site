@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { Layout } from "@/componentsAdminPanel/Layout";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import { Grid, IconButton, Tooltip, styled } from "@mui/material";
@@ -18,6 +19,7 @@ import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 import { Types } from "mongoose";
+import ImageSelect from "@/componentsAdminPanel/ImageSelect";
 
 const Input = styled("input")({
   display: "none",
@@ -27,40 +29,42 @@ const Input = styled("input")({
 const UsworkConfig = ({ permissions, data }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [works, setWorks] = useState<WorkData[]>(data);
+  const [currentImage, setCurrentImage] = useState<string>("");
+  const [open, setOpen] = useState<boolean>(false);
   const [deleteData, setDeleteData] = useState<{
     open: boolean;
     id: string;
     text: string;
   }>({ open: false, id: "", text: "" });
-  const [image, setImage] = useState<File | null>(null);
 
   const handleAddUsWork = () => {
-    if (image === null) return;
-    else {
-      const fd = new FormData();
-      fd.append("file", image);
-      setLoading(true);
-      fetch("/api/uswork", {
-        method: "PUT",
-        body: fd,
+    if (currentImage === "") return;
+    setLoading(true);
+    fetch("/api/uswork", {
+      method: "PUT",
+      body: JSON.stringify({
+        name: currentImage,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((data) => data.json())
+      .then((data) => {
+        if (!data.error)
+          setWorks((prevState) => [
+            ...prevState,
+            { _id: data._id, image: data.image },
+          ]);
+        else console.log("Wystąpił błąd przy dodawaniu obrazu!");
       })
-        .then((data) => data.json())
-        .then((data) => {
-          if (!data.error)
-            setWorks((prevState) => [
-              ...prevState,
-              { _id: data._id, image: data.image },
-            ]);
-          else console.log("Wystąpił błąd przy dodawaniu obrazu!");
-        })
-        .catch((err) => {
-          console.log(err);
-        })
-        .finally(() => {
-          setLoading(false);
-          setImage(null);
-        });
-    }
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        setLoading(false);
+        setCurrentImage("");
+      });
   };
 
   const handleDeleteWork = (id: string) => {
@@ -82,30 +86,22 @@ const UsworkConfig = ({ permissions, data }: any) => {
             justifyContent: "center",
           }}
         >
-          <label htmlFor="contained-button-file">
-            <Input
-              disabled={loading}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                if (e.target?.files?.length === 1) setImage(e.target!.files[0]);
-              }}
-              accept="image/*"
-              id="contained-button-file"
-              type="file"
-            />
-            <IconButton
-              disabled={loading}
-              aria-label="upload picture"
-              component="span"
-              sx={{ color: `${blueGrey[700]}` }}
-            >
-              <FaCamera />
-            </IconButton>
-          </label>
+          <Input disabled={loading} type="text" id="contained-button-file" />
+          <IconButton
+            disabled={loading}
+            aria-label="upload picture"
+            component="span"
+            onClick={() => setOpen(true)}
+            sx={{ color: `${blueGrey[700]}` }}
+          >
+            <FaCamera />
+          </IconButton>
           <img
             style={{ width: "100px", height: "100px", margin: "0 15px" }}
             src={
-              image instanceof Blob
-                ? URL.createObjectURL(image)
+              currentImage
+                ? "https://barberianextjs.s3.eu-central-1.amazonaws.com/" +
+                  currentImage
                 : "/images/vercel.svg"
             }
             alt={`Obraz`}
@@ -131,7 +127,10 @@ const UsworkConfig = ({ permissions, data }: any) => {
               key={item._id}
             >
               <Image
-                src={"/images/uswork/" + item.image}
+                src={
+                  "https://barberianextjs.s3.eu-central-1.amazonaws.com/" +
+                  item.image
+                }
                 alt={item._id}
                 priority
                 width={500}
@@ -193,6 +192,12 @@ const UsworkConfig = ({ permissions, data }: any) => {
       >
         Wróć
       </CButton>
+      {open && (
+        <ImageSelect
+          setOpen={setOpen}
+          setSelectedImage={(name: string) => setCurrentImage(name)}
+        />
+      )}
     </Layout>
   );
 };

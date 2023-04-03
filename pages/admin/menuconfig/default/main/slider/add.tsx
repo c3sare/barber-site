@@ -18,11 +18,12 @@ import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import ImageSelect from "@/componentsAdminPanel/ImageSelect";
 
 interface Slide {
   title: string;
   desc: string;
-  image: Blob[];
+  image: string;
 }
 
 const InputStyled = styled("input")({
@@ -32,18 +33,11 @@ const InputStyled = styled("input")({
 
 // eslint-disable-next-line react/display-name
 const Input = React.forwardRef(
-  ({ onChange, onBlur, name }: UseFormRegisterReturn, ref: any) => (
+  ({ onBlur, name }: UseFormRegisterReturn, ref: any) => (
     <InputStyled
-      accept="image/*"
       id={name}
-      type="file"
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-        if (
-          e.target.files!.length > 0 &&
-          e.target.files?.[0]?.type?.indexOf("image")! >= 0
-        )
-          onChange(e);
-      }}
+      type="text"
+      onChange={(_e: any) => null as any}
       onBlur={onBlur}
       name={name}
       ref={ref}
@@ -53,6 +47,7 @@ const Input = React.forwardRef(
 
 const SliderAddPage = ({ permissions = {} }: any) => {
   const router = useRouter();
+  const [open, setOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
   const {
     control,
@@ -60,19 +55,19 @@ const SliderAddPage = ({ permissions = {} }: any) => {
     handleSubmit,
     register,
     watch,
+    setValue,
   } = useForm<Slide>();
 
   const image = watch("image");
 
   const handleSendData = (data: Slide) => {
     setLoading(true);
-    const fd = new FormData();
-    fd.append("title", data.title);
-    fd.append("desc", data.desc);
-    fd.append("image", data.image[0]);
     fetch("/api/slides", {
       method: "PUT",
-      body: fd,
+      body: JSON.stringify(data),
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
       .then((res) => res.json())
       .then((data) => {
@@ -104,27 +99,31 @@ const SliderAddPage = ({ permissions = {} }: any) => {
               height: "auto",
               width: "auto",
             }}
-            src={image ? URL.createObjectURL(image[0]!) : "/images/vercel.svg"}
+            src={
+              image
+                ? "https://barberianextjs.s3.eu-central-1.amazonaws.com/" +
+                  image
+                : "/images/vercel.svg"
+            }
             alt="logo"
           />
         </div>
-        <label htmlFor={`image`}>
-          <Input
-            disabled={loading}
-            {...register("image", {
-              required: "Wymagane!",
-            })}
-          />
-          <IconButton
-            color="primary"
-            disabled={loading}
-            aria-label="upload picture"
-            component="span"
-            sx={{ color: blueGrey[700] }}
-          >
-            <CameraAltIcon />
-          </IconButton>
-        </label>
+        <Input
+          disabled={loading}
+          {...register("image", {
+            required: "Wymagane!",
+          })}
+        />
+        <IconButton
+          color="primary"
+          disabled={loading}
+          aria-label="upload picture"
+          component="span"
+          onClick={() => setOpen(true)}
+          sx={{ color: blueGrey[700] }}
+        >
+          <CameraAltIcon />
+        </IconButton>
         <Controller
           control={control}
           name="title"
@@ -247,6 +246,12 @@ const SliderAddPage = ({ permissions = {} }: any) => {
           Zapisz zmiany
         </CLoadingButton>
       </form>
+      {open && (
+        <ImageSelect
+          setOpen={setOpen}
+          setSelectedImage={(name: string) => setValue("image", name)}
+        />
+      )}
     </Layout>
   );
 };

@@ -43,7 +43,9 @@ const Input = React.forwardRef(({ onBlur, name }: any, ref: any) => (
 const AddNews = ({ permissions = {}, data }: any) => {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
-  const [content, setContent] = useState<Value | null>(data.content || {});
+  const [content, setContent] = useState<Value | null>(
+    data.content ? JSON.parse(data.content) : {}
+  );
   const [open, setOpen] = useState(false);
   const {
     register,

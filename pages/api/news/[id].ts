@@ -95,7 +95,7 @@ async function newsRoute(req: NextApiRequest, res: NextApiResponse) {
           desc,
           date,
           img,
-          content,
+          content: JSON.stringify(content),
         },
       }
     );

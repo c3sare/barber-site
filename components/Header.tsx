@@ -5,8 +5,8 @@ import MenuItem from "@/lib/types/MenuItem";
 import flatListToHierarchical from "@/utils/flatToHierarchical";
 import Image from "next/image";
 
-const generateMenu = (tab:MenuItem[], closeMenu:any) => {
-  return tab.map(item => (
+const generateMenu = (tab: MenuItem[], closeMenu: any) => {
+  return tab.map((item) => (
     <li key={item._id}>
       <Link href={`/${item.slug}`}>{item.title}</Link>
       {item.children?.length > 0 && (
@@ -20,11 +20,11 @@ const generateMenu = (tab:MenuItem[], closeMenu:any) => {
           />
         </>
       )}
-  </li>
+    </li>
   ));
-}
+};
 
-const Header = ({menu, logo}: {menu: MenuItem[], logo: string}) => {
+const Header = ({ menu, logo }: { menu: MenuItem[]; logo: string }) => {
   const [showMenu, setShowMenu] = useState(false);
 
   const handleToggleMenu = (e: MouseEvent<HTMLDivElement>) => {
@@ -34,22 +34,21 @@ const Header = ({menu, logo}: {menu: MenuItem[], logo: string}) => {
 
   const handleOpenCloseSubMenu = (e: MouseEvent<HTMLDivElement>) => {
     e.currentTarget.classList.toggle(`${style.rotate}`);
-    e.currentTarget!.parentNode!.querySelector(`ul`)!.style.maxHeight = e.currentTarget.classList.contains(`${style.rotate}`) ? "" : e.currentTarget.parentNode!.querySelector(`ul`)!.querySelectorAll("li").length*71+"px";
+    e.currentTarget!.parentNode!.querySelector(`ul`)!.style.maxHeight =
+      e.currentTarget.classList.contains(`${style.rotate}`)
+        ? ""
+        : e.currentTarget
+            .parentNode!.querySelector(`ul`)!
+            .querySelectorAll("li").length *
+            71 +
+          "px";
   };
 
   return (
     <div className={style.header}>
       <Link href="/">
         <div className={style.logo}>
-          <Image
-            src={`/images/${logo}`}
-            alt="Logo"
-            fill
-            sizes="(max-width: 1200px) 200px,
-            (max-width: 1024px) 150px,
-            (max-width: 768px) 100px,
-            100px"
-          />
+          <Image {...(logo as any).img} alt="Logo" />
         </div>
       </Link>
       <div
@@ -67,7 +66,10 @@ const Header = ({menu, logo}: {menu: MenuItem[], logo: string}) => {
         style={showMenu ? { maxHeight: `${71 * menu.length + 15}px` } : {}}
       >
         <ul>
-          {generateMenu(flatListToHierarchical(menu as never[]), handleOpenCloseSubMenu)}
+          {generateMenu(
+            flatListToHierarchical(menu as never[]),
+            handleOpenCloseSubMenu
+          )}
         </ul>
       </div>
     </div>

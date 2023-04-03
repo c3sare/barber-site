@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import getLayoutData from "@/lib/getLayoutData";
 import Usworks from "@/models/Uswork";
 import dbConnect from "@/lib/dbConnect";
+import { getPlaiceholder } from "plaiceholder";
 const CustomPage = dynamic(import("@/components/CustomPage"));
 
 const Uswork = ({ workData, menu, footer, info }: any) => {
@@ -36,13 +37,11 @@ const Uswork = ({ workData, menu, footer, info }: any) => {
                   height: "350px",
                   cursor: "pointer",
                 }}
-                onClick={() => showImageBox(item.image)}
+                onClick={() => showImageBox((item.image as any).src)}
               >
                 <Image
+                  {...(item.image as any)}
                   alt={`Fryzura ${index + 1}`}
-                  src={`/images/uswork/${item.image}`}
-                  priority
-                  fill
                   sizes="(max-width: 1200px) 350px,
                     350px"
                   style={{ objectFit: "cover", objectPosition: "center" }}
@@ -54,12 +53,7 @@ const Uswork = ({ workData, menu, footer, info }: any) => {
       </Layout>
       {showImage && (
         <div className="fullImageScreen">
-          <Image
-            alt="Fryzura"
-            src={`/images/uswork/${imageUrl}`}
-            width={1000}
-            height={1000}
-          />
+          <Image alt="Fryzura" src={imageUrl} width={1000} height={1000} />
           <div
             className="closeBtn"
             onClick={() => {
@@ -107,7 +101,22 @@ export async function getStaticProps() {
       revalidate: 60,
     };
   } else {
-    const workData = JSON.parse(JSON.stringify(await Usworks.find({})));
+    const workImages = JSON.parse(JSON.stringify(await Usworks.find({})));
+
+    const workData = await Promise.all(
+      workImages.map(async (item: any) => {
+        const { base64, img } = await getPlaiceholder(
+          "https://barberianextjs.s3.eu-central-1.amazonaws.com/" + item.image
+        );
+        item.image = {
+          ...img,
+          blurDataURL: base64,
+        } as any;
+
+        return item;
+      })
+    );
+
     return {
       props: {
         menu,
