@@ -130,7 +130,14 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
           </Tooltip>
         </ThemeProvider>
       </div>
-      <div style={{ textAlign: "center" }}>
+      <div
+        style={{
+          textAlign: "center",
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
         {isLoading ? (
           <Loading />
         ) : error ? (
@@ -139,24 +146,32 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
           list.map((item) => (
             <div
               style={{
-                display: "inline-block",
-                width: "200px",
+                display: "inline-flex",
+                width: "300px",
                 maxWidth: "100%",
                 height: "200px",
                 position: "relative",
                 border: "1px solid rgba(255, 255, 255, 0.3)",
                 margin: "0 4px",
+                alignItems: "center",
+                justifyContent: "center",
               }}
               key={item.Key}
             >
-              <Image
+              <img
                 src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${item.Key}`}
-                fill
-                style={{ objectPosition: "center", objectFit: "contain" }}
+                style={{
+                  objectPosition: "center",
+                  objectFit: "contain",
+                  height: "auto",
+                  width: "auto",
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                }}
                 alt={item.Key}
-                sizes="(max-width: 768px) 200px,
-                            (max-width: 1200px) 200px,
-                            200px"
+                sizes="(max-width: 768px) 300px,
+                            (max-width: 1200px) 300px,
+                            300px"
               />
               <IconButton
                 disabled={loading}
