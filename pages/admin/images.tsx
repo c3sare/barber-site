@@ -104,8 +104,8 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
 
   return (
     <Layout perms={permissions}>
-      {/* <h1>Obrazy</h1>
-      <div style={{ width: "100%", textAlign: "center" }}>
+      <h1>Obrazy</h1>
+      {/* <div style={{ width: "100%", textAlign: "center" }}>
         <ThemeProvider theme={theme}>
           <Tooltip title="Wgraj obraz">
             <label htmlFor="upload">
@@ -114,7 +114,7 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
                 type="file"
                 name="upload"
                 id="upload"
-                // onChange={upload}
+                onChange={upload}
                 disabled={loading}
               />
               <IconButton
@@ -128,7 +128,7 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
             </label>
           </Tooltip>
         </ThemeProvider>
-      </div>
+      </div> */}
       <div
         style={{
           textAlign: "center",
@@ -201,7 +201,7 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
         setOpen={setDataDelete}
         setState={setList}
         url={"/api/images"}
-      /> */}
+      />
     </Layout>
   );
 };
