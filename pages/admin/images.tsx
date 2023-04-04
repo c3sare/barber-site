@@ -4,29 +4,13 @@ import Loading from "@/componentsAdminPanel/Loading";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
-import {
-  createTheme,
-  IconButton,
-  styled,
-  ThemeProvider,
-  Tooltip,
-} from "@mui/material";
+import { IconButton, styled } from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { Types } from "mongoose";
 import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { CameraAlt } from "@mui/icons-material";
 import useSWR from "swr";
-import { blueGrey } from "@mui/material/colors";
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: blueGrey[700],
-      contrastText: "white",
-    },
-  },
-});
 
 interface ImageObject {
   Key: string;
@@ -105,25 +89,23 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
   return (
     <Layout perms={permissions}>
       <h1>Obrazy</h1>
-      <ThemeProvider theme={theme}>
-        <label htmlFor="upload">
-          <InputStyled
-            accept="image/*"
-            type="file"
-            name="upload"
-            id="upload"
-            onChange={upload}
-          />
-          <IconButton
-            disabled={loading}
-            color="primary"
-            aria-label="upload picture"
-            component="span"
-          >
-            <CameraAlt />
-          </IconButton>
-        </label>
-      </ThemeProvider>
+      <label htmlFor="upload">
+        <InputStyled
+          accept="image/*"
+          type="file"
+          name="upload"
+          id="upload"
+          onChange={upload}
+        />
+        <IconButton
+          disabled={loading}
+          color="primary"
+          aria-label="upload picture"
+          component="span"
+        >
+          <CameraAlt />
+        </IconButton>
+      </label>
       <div
         style={{
           textAlign: "center",
