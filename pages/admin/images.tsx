@@ -55,52 +55,52 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
   //   if (data) setList(data);
   // }, [data]);
 
-  const upload = async (e: any) => {
-    if (e.target?.files?.length === 1) {
-      setLoading(true);
-      const file = e.target.files[0];
+  // const upload = async (e: any) => {
+  //   if (e.target?.files?.length === 1) {
+  //     setLoading(true);
+  //     const file = e.target.files[0];
 
-      const res = await fetch("/api/images", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: file.name,
-          type: file.type,
-        }),
-      }).then((data) => data.json());
+  //     const res = await fetch("/api/images", {
+  //       method: "PUT",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         name: file.name,
+  //         type: file.type,
+  //       }),
+  //     }).then((data) => data.json());
 
-      const { url, fields } = res;
+  //     const { url, fields } = res;
 
-      const formData = new FormData();
+  //     const formData = new FormData();
 
-      Object.entries({ ...fields, file }).forEach(([key, value]) => {
-        formData.append(key, value as string);
-      });
+  //     Object.entries({ ...fields, file }).forEach(([key, value]) => {
+  //       formData.append(key, value as string);
+  //     });
 
-      const upload = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-        },
-        body: formData,
-      });
+  //     const upload = await fetch(url, {
+  //       method: "POST",
+  //       headers: {
+  //         "Access-Control-Allow-Origin": "*",
+  //       },
+  //       body: formData,
+  //     });
 
-      if (upload.ok) {
-        console.log("Uploaded successfully!");
-        fetch("/api/images")
-          .then((res) => res.json())
-          .then((data) => {
-            setList(data);
-          })
-          .finally(() => setLoading(false));
-      } else {
-        console.error("Upload failed.");
-        setLoading(false);
-      }
-    }
-  };
+  //     if (upload.ok) {
+  //       console.log("Uploaded successfully!");
+  //       fetch("/api/images")
+  //         .then((res) => res.json())
+  //         .then((data) => {
+  //           setList(data);
+  //         })
+  //         .finally(() => setLoading(false));
+  //     } else {
+  //       console.error("Upload failed.");
+  //       setLoading(false);
+  //     }
+  //   }
+  // };
 
   return (
     <Layout perms={permissions}>
@@ -114,7 +114,7 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
                 type="file"
                 name="upload"
                 id="upload"
-                onChange={upload}
+                // onChange={upload}
                 disabled={loading}
               />
               <IconButton
