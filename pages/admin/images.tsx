@@ -16,8 +16,17 @@ import { Types } from "mongoose";
 import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { CameraAlt } from "@mui/icons-material";
-import { blueGrey } from "@mui/material/colors";
 import useSWR from "swr";
+import { blueGrey } from "@mui/material/colors";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: blueGrey[700],
+      contrastText: "white",
+    },
+  },
+});
 
 interface ImageObject {
   Key: string;
@@ -96,7 +105,7 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
   return (
     <Layout perms={permissions}>
       <h1>Obrazy</h1>
-      <div style={{ width: "100%", textAlign: "center" }}>
+      <ThemeProvider theme={theme}>
         <label htmlFor="upload">
           <InputStyled
             accept="image/*"
@@ -104,26 +113,17 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
             name="upload"
             id="upload"
             onChange={upload}
-            disabled={loading}
           />
-          <Tooltip title="Wgraj obraz">
-            <IconButton
-              disabled={loading}
-              color="primary"
-              aria-label="upload picture"
-              component="span"
-            >
-              <CameraAlt
-                sx={{
-                  fontSize: "50px",
-                  marginBottom: "25px",
-                  color: blueGrey[700],
-                }}
-              />
-            </IconButton>
-          </Tooltip>
+          <IconButton
+            disabled={loading}
+            color="primary"
+            aria-label="upload picture"
+            component="span"
+          >
+            <CameraAlt />
+          </IconButton>
         </label>
-      </div>
+      </ThemeProvider>
       <div
         style={{
           textAlign: "center",
