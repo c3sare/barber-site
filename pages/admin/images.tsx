@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { CameraAlt } from "@mui/icons-material";
 import { blueGrey } from "@mui/material/colors";
+import awsGetImages from "@/utils/awsGetImages";
 
 interface ImageObject {
   Key: string;
@@ -41,24 +42,14 @@ const theme = createTheme({
   },
 });
 
-const AdminPanelImageList = ({ permissions = {} }: any) => {
+const AdminPanelImageList = ({ permissions = {}, images }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [list, setList] = useState<ImageObject[]>([]);
+  const [list, setList] = useState<ImageObject[]>(images);
   const [data, setData] = useState({
     id: "",
     open: false,
     text: "",
   });
-
-  useEffect(() => {
-    setLoading(true);
-    fetch("/api/images")
-      .then((res) => res.json())
-      .then((data) => {
-        setList(data);
-        setLoading(false);
-      });
-  }, []);
 
   const upload = async (e: any) => {
     if (e.target?.files?.length === 1) {
@@ -220,9 +211,12 @@ export const getServerSideProps = withIronSessionSsr(
         },
       };
 
+    const images = JSON.parse(JSON.stringify(await awsGetImages()));
+
     return {
       props: {
         permissions: user.permissions,
+        images,
       },
     };
   },
