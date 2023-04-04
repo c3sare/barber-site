@@ -4,12 +4,12 @@ import Loading from "@/componentsAdminPanel/Loading";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
-import { IconButton, styled } from "@mui/material";
+import IconButton from "@mui/material/IconButton";
 import { withIronSessionSsr } from "iron-session/next";
 import { Types } from "mongoose";
 import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { CameraAlt } from "@mui/icons-material";
+import CameraAlt from "@mui/icons-material/CameraAlt";
 import useSWR from "swr";
 
 interface ImageObject {
@@ -19,11 +19,6 @@ interface ImageObject {
   Size: number;
   StorageClass: "STANDARD";
 }
-
-const InputStyled = styled("input")({
-  display: "none",
-  color: "",
-});
 
 const AdminPanelImageList = ({ permissions = {} }: any) => {
   const { isLoading, error, data } = useSWR("/api/images");
@@ -90,7 +85,8 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
     <Layout perms={permissions}>
       <h1>Obrazy</h1>
       <label htmlFor="upload">
-        <InputStyled
+        <input
+          style={{ display: "none", color: "" }}
           accept="image/*"
           type="file"
           name="upload"
