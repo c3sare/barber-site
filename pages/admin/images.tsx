@@ -32,15 +32,6 @@ const InputStyled = styled("input")({
   color: "",
 });
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: blueGrey[700],
-      contrastText: "white",
-    },
-  },
-});
-
 const AdminPanelImageList = ({ permissions = {} }: any) => {
   const { isLoading, error, data } = useSWR("/api/images");
   const [loading, setLoading] = useState<boolean>(false);
@@ -105,30 +96,34 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
   return (
     <Layout perms={permissions}>
       <h1>Obrazy</h1>
-      {/* <div style={{ width: "100%", textAlign: "center" }}>
-        <ThemeProvider theme={theme}>
+      <div style={{ width: "100%", textAlign: "center" }}>
+        <label htmlFor="upload">
+          <InputStyled
+            accept="image/*"
+            type="file"
+            name="upload"
+            id="upload"
+            onChange={upload}
+            disabled={loading}
+          />
           <Tooltip title="Wgraj obraz">
-            <label htmlFor="upload">
-              <InputStyled
-                accept="image/*"
-                type="file"
-                name="upload"
-                id="upload"
-                onChange={upload}
-                disabled={loading}
+            <IconButton
+              disabled={loading}
+              color="primary"
+              aria-label="upload picture"
+              component="span"
+            >
+              <CameraAlt
+                sx={{
+                  fontSize: "50px",
+                  marginBottom: "25px",
+                  color: blueGrey[700],
+                }}
               />
-              <IconButton
-                disabled={loading}
-                color="primary"
-                aria-label="upload picture"
-                component="span"
-              >
-                <CameraAlt sx={{ fontSize: "50px", marginBottom: "25px" }} />
-              </IconButton>
-            </label>
+            </IconButton>
           </Tooltip>
-        </ThemeProvider>
-      </div> */}
+        </label>
+      </div>
       <div
         style={{
           textAlign: "center",
@@ -137,9 +132,9 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
           flexWrap: "wrap",
         }}
       >
-        {false ? (
+        {isLoading ? (
           <Loading />
-        ) : false ? (
+        ) : error ? (
           <span>Wystąpił problem przy pobieraniu danych!</span>
         ) : (
           list.map((item) => (
