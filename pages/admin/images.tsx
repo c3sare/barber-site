@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CameraAlt from "@mui/icons-material/CameraAlt";
 import useSWR from "swr";
+import { blueGrey } from "@mui/material/colors";
+import Image from "next/image";
 
 interface ImageObject {
   Key: string;
@@ -84,24 +86,26 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
   return (
     <Layout perms={permissions}>
       <h1>Obrazy</h1>
-      <label htmlFor="upload">
-        <input
-          style={{ display: "none", color: "" }}
-          accept="image/*"
-          type="file"
-          name="upload"
-          id="upload"
-          onChange={upload}
-        />
-        <IconButton
-          disabled={loading}
-          color="primary"
-          aria-label="upload picture"
-          component="span"
-        >
-          <CameraAlt />
-        </IconButton>
-      </label>
+      <div style={{ textAlign: "center", marginBottom: "25px" }}>
+        <label htmlFor="upload">
+          <input
+            style={{ display: "none", color: "" }}
+            accept="image/*"
+            type="file"
+            name="upload"
+            id="upload"
+            onChange={upload}
+          />
+          <IconButton
+            disabled={loading}
+            color="primary"
+            aria-label="upload picture"
+            component="span"
+          >
+            <CameraAlt sx={{ color: blueGrey[700] }} />
+          </IconButton>
+        </label>
+      </div>
       <div
         style={{
           textAlign: "center",
@@ -124,21 +128,18 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
                 height: "200px",
                 position: "relative",
                 border: "1px solid rgba(255, 255, 255, 0.3)",
-                margin: "0 4px",
+                margin: "4px",
                 alignItems: "center",
                 justifyContent: "center",
               }}
               key={item.Key}
             >
-              <img
+              <Image
                 src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${item.Key}`}
+                fill
                 style={{
                   objectPosition: "center",
                   objectFit: "contain",
-                  height: "auto",
-                  width: "auto",
-                  maxWidth: "100%",
-                  maxHeight: "100%",
                 }}
                 alt={item.Key}
                 sizes="(max-width: 768px) 300px,
