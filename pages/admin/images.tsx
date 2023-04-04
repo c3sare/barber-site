@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { CameraAlt } from "@mui/icons-material";
 import { blueGrey } from "@mui/material/colors";
-import awsGetImages from "@/utils/awsGetImages";
+import useSWR from "swr";
 
 interface ImageObject {
   Key: string;
@@ -42,14 +42,19 @@ const theme = createTheme({
   },
 });
 
-const AdminPanelImageList = ({ permissions = {}, images }: any) => {
+const AdminPanelImageList = ({ permissions = {} }: any) => {
+  const { isLoading, error, data } = useSWR("/api/images");
   const [loading, setLoading] = useState<boolean>(false);
-  const [list, setList] = useState<ImageObject[]>(images);
-  const [data, setData] = useState({
+  const [list, setList] = useState<ImageObject[]>([]);
+  const [dataDelete, setDataDelete] = useState({
     id: "",
     open: false,
     text: "",
   });
+
+  useEffect(() => {
+    if (data) setList(data);
+  }, [data]);
 
   const upload = async (e: any) => {
     if (e.target?.files?.length === 1) {
@@ -126,55 +131,60 @@ const AdminPanelImageList = ({ permissions = {}, images }: any) => {
         </ThemeProvider>
       </div>
       <div style={{ textAlign: "center" }}>
-        {list.map((item) => (
-          <div
-            style={{
-              display: "inline-block",
-              width: "300px",
-              maxWidth: "100%",
-              height: "300px",
-              position: "relative",
-              border: "1px solid rgba(255, 255, 255, 0.3)",
-              margin: "0 4px",
-            }}
-            key={item.Key}
-          >
-            <Image
-              src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${item.Key}`}
-              fill
-              style={{ objectPosition: "center", objectFit: "contain" }}
-              alt={item.Key}
-              sizes="(max-width: 768px) 300px,
-                            (max-width: 1200px) 300px,
-                            300px"
-            />
-            <IconButton
-              disabled={loading}
+        {isLoading ? (
+          <Loading />
+        ) : error ? (
+          <span>Wystąpił problem przy pobieraniu danych!</span>
+        ) : (
+          list.map((item) => (
+            <div
               style={{
-                position: "absolute",
-                top: "8px",
-                right: "8px",
-                boxShadow: "0 0 3px white",
-                color: "white",
+                display: "inline-block",
+                width: "200px",
+                maxWidth: "100%",
+                height: "200px",
+                position: "relative",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                margin: "0 4px",
               }}
-              onClick={() => {
-                setData({
-                  id: item.Key,
-                  text: `Czy chcesz usunąć grafikę ${item.Key}?`,
-                  open: true,
-                });
-              }}
+              key={item.Key}
             >
-              <DeleteIcon />
-            </IconButton>
-          </div>
-        ))}
+              <Image
+                src={`https://barberianextjs.s3.eu-central-1.amazonaws.com/${item.Key}`}
+                fill
+                style={{ objectPosition: "center", objectFit: "contain" }}
+                alt={item.Key}
+                sizes="(max-width: 768px) 200px,
+                            (max-width: 1200px) 200px,
+                            200px"
+              />
+              <IconButton
+                disabled={loading}
+                style={{
+                  position: "absolute",
+                  top: "8px",
+                  right: "8px",
+                  boxShadow: "0 0 3px white",
+                  color: "white",
+                }}
+                onClick={() => {
+                  setDataDelete({
+                    id: item.Key,
+                    text: `Czy chcesz usunąć grafikę ${item.Key}?`,
+                    open: true,
+                  });
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </div>
+          ))
+        )}
       </div>
-      {loading && <Loading />}
       <DeleteDialog
         id="Key"
-        open={data}
-        setOpen={setData}
+        open={dataDelete}
+        setOpen={setDataDelete}
         setState={setList}
         url={"/api/images"}
       />
@@ -211,12 +221,9 @@ export const getServerSideProps = withIronSessionSsr(
         },
       };
 
-    const images = JSON.parse(JSON.stringify(await awsGetImages()));
-
     return {
       props: {
         permissions: user.permissions,
-        images,
       },
     };
   },
