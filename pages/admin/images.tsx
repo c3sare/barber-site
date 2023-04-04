@@ -1,110 +1,110 @@
-// import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
+import DeleteDialog from "@/componentsAdminPanel/elements/DeleteDialog";
 import { Layout } from "@/componentsAdminPanel/Layout";
-// import Loading from "@/componentsAdminPanel/Loading";
+import Loading from "@/componentsAdminPanel/Loading";
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
-// import {
-//   createTheme,
-//   IconButton,
-//   styled,
-//   ThemeProvider,
-//   Tooltip,
-// } from "@mui/material";
+import {
+  createTheme,
+  IconButton,
+  styled,
+  ThemeProvider,
+  Tooltip,
+} from "@mui/material";
 import { withIronSessionSsr } from "iron-session/next";
 import { Types } from "mongoose";
-// import { useEffect, useState } from "react";
-// import DeleteIcon from "@mui/icons-material/Delete";
-// import { CameraAlt } from "@mui/icons-material";
-// import { blueGrey } from "@mui/material/colors";
-// import useSWR from "swr";
+import { useEffect, useState } from "react";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { CameraAlt } from "@mui/icons-material";
+import { blueGrey } from "@mui/material/colors";
+import useSWR from "swr";
 
-// interface ImageObject {
-//   Key: string;
-//   LastModified: string;
-//   ETag: string;
-//   Size: number;
-//   StorageClass: "STANDARD";
-// }
+interface ImageObject {
+  Key: string;
+  LastModified: string;
+  ETag: string;
+  Size: number;
+  StorageClass: "STANDARD";
+}
 
-// const InputStyled = styled("input")({
-//   display: "none",
-//   color: "",
-// });
+const InputStyled = styled("input")({
+  display: "none",
+  color: "",
+});
 
-// const theme = createTheme({
-//   palette: {
-//     primary: {
-//       main: blueGrey[700],
-//       contrastText: "white",
-//     },
-//   },
-// });
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: blueGrey[700],
+      contrastText: "white",
+    },
+  },
+});
 
 const AdminPanelImageList = ({ permissions = {} }: any) => {
   // const { isLoading, error, data } = useSWR("/api/images");
-  // const [loading, setLoading] = useState<boolean>(false);
-  // const [list, setList] = useState<ImageObject[]>([]);
-  // const [dataDelete, setDataDelete] = useState({
-  //   id: "",
-  //   open: false,
-  //   text: "",
-  // });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [list, setList] = useState<ImageObject[]>([]);
+  const [dataDelete, setDataDelete] = useState({
+    id: "",
+    open: false,
+    text: "",
+  });
 
   // useEffect(() => {
   //   if (data) setList(data);
   // }, [data]);
 
-  // const upload = async (e: any) => {
-  //   if (e.target?.files?.length === 1) {
-  //     setLoading(true);
-  //     const file = e.target.files[0];
+  const upload = async (e: any) => {
+    if (e.target?.files?.length === 1) {
+      setLoading(true);
+      const file = e.target.files[0];
 
-  //     const res = await fetch("/api/images", {
-  //       method: "PUT",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         name: file.name,
-  //         type: file.type,
-  //       }),
-  //     }).then((data) => data.json());
+      const res = await fetch("/api/images", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: file.name,
+          type: file.type,
+        }),
+      }).then((data) => data.json());
 
-  //     const { url, fields } = res;
+      const { url, fields } = res;
 
-  //     const formData = new FormData();
+      const formData = new FormData();
 
-  //     Object.entries({ ...fields, file }).forEach(([key, value]) => {
-  //       formData.append(key, value as string);
-  //     });
+      Object.entries({ ...fields, file }).forEach(([key, value]) => {
+        formData.append(key, value as string);
+      });
 
-  //     const upload = await fetch(url, {
-  //       method: "POST",
-  //       headers: {
-  //         "Access-Control-Allow-Origin": "*",
-  //       },
-  //       body: formData,
-  //     });
+      const upload = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: formData,
+      });
 
-  //     if (upload.ok) {
-  //       console.log("Uploaded successfully!");
-  //       fetch("/api/images")
-  //         .then((res) => res.json())
-  //         .then((data) => {
-  //           setList(data);
-  //         })
-  //         .finally(() => setLoading(false));
-  //     } else {
-  //       console.error("Upload failed.");
-  //       setLoading(false);
-  //     }
-  //   }
-  // };
+      if (upload.ok) {
+        console.log("Uploaded successfully!");
+        fetch("/api/images")
+          .then((res) => res.json())
+          .then((data) => {
+            setList(data);
+          })
+          .finally(() => setLoading(false));
+      } else {
+        console.error("Upload failed.");
+        setLoading(false);
+      }
+    }
+  };
 
   return (
     <Layout perms={permissions}>
-      {/* <h1>Obrazy</h1>
+      <h1>Obrazy</h1>
       <div style={{ width: "100%", textAlign: "center" }}>
         <ThemeProvider theme={theme}>
           <Tooltip title="Wgraj obraz">
@@ -137,9 +137,9 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
           flexWrap: "wrap",
         }}
       >
-        {isLoading ? (
+        {false ? (
           <Loading />
-        ) : error ? (
+        ) : false ? (
           <span>Wystąpił problem przy pobieraniu danych!</span>
         ) : (
           list.map((item) => (
@@ -201,7 +201,7 @@ const AdminPanelImageList = ({ permissions = {} }: any) => {
         setOpen={setDataDelete}
         setState={setList}
         url={"/api/images"}
-      /> */}
+      />
     </Layout>
   );
 };
