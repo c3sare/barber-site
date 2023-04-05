@@ -1,12 +1,11 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
-import fs from "fs/promises";
-import path from "path";
 import { withIronSessionApiRoute } from "iron-session/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import Menu from "@/models/Menu";
 import dbConnect from "@/lib/dbConnect";
 import { Types } from "mongoose";
 import User from "@/models/User";
+import sortMenu from "@/lib/sortMenu";
 
 export default withIronSessionApiRoute(menuRoute, sessionOptions);
 
@@ -22,13 +21,22 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
     user = await User.findOne({ _id: new Types.ObjectId(session?.id) });
   }
   if (req.method === "GET") {
-    if (!session?.isLoggedIn || !user?.permissions?.menu)
-      return res
-        .status(403)
-        .json({ message: "Brak uprawnień dla tej ścieżki!" });
-
     const menu = await Menu.find({});
-    res.json(menu);
+
+    if (!menu)
+      return res
+        .status(500)
+        .json({ message: "Wystąpił problem przy pobieraniu danych!" });
+
+    const menuWithoutContent = menu.sort(sortMenu).map((node) => {
+      return {
+        _id: node.id,
+        title: node.title,
+        parent: node.parent,
+        slug: node.slug,
+      };
+    });
+    res.json(menuWithoutContent);
   } else if (req.method === "DELETE") {
     if (!session?.isLoggedIn || !user?.permissions?.menu)
       return res
@@ -62,8 +70,6 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
         .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
     }
 
-    // const pagesDir = path.join(process.cwd(), "pagecontent");
-    // fs.unlink(`${pagesDir}/${id}.json`);
     res.json({ error: false });
   } else if (req.method === "PUT") {
     if (!session?.isLoggedIn || !user?.permissions?.menu)
@@ -97,12 +103,6 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
       return res
         .status(500)
         .json({ message: "Wystąpił problem przy wykonaniu zapytania!" });
-
-    // const pagesDirectory = path.join(process.cwd(), "pagecontent");
-    // fs.appendFile(
-    //   `${pagesDirectory}/${insertResult.insertedId.toString()}.json`,
-    //   "{}"
-    // );
 
     return res.status(200).json({ error: false });
   } else {

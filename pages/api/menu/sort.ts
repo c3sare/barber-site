@@ -1,5 +1,6 @@
 import { sessionOptions } from "@/lib/AuthSession/Config";
 import dbConnect from "@/lib/dbConnect";
+import sortMenu from "@/lib/sortMenu";
 import { MenuItemDB } from "@/lib/types/MenuItem";
 import Menu from "@/models/Menu";
 import User from "@/models/User";
@@ -24,7 +25,7 @@ async function menuRoute(req: NextApiRequest, res: NextApiResponse) {
 
     const menu: MenuItemDB[] = await Menu.find({});
     res.status(200).json({
-      menu: menu.map((item) => ({
+      menu: menu.sort(sortMenu).map((item) => ({
         _id: item._id,
         parent: item.parent,
         title: item.title,

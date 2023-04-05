@@ -31,7 +31,6 @@
     "date-fns": "^2.29.3",
     "eslint": "8.32.0",
     "eslint-config-next": "13.1.5",
-    "formidable": "^2.1.1",
     "iron-session": "^6.3.1",
     "mongoose": "^7.0.3",
     "next": "13.1.5",
