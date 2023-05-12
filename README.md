@@ -27,6 +27,7 @@ The website created dedicated to hairdressers, contains a system for booking app
 <p align="center">
     <img alt="Vercel" src="https://logowik.com/content/uploads/images/vercel1868.jpg" height="120" />
     <img alt="MongoDB Atlas" src="https://techcrunch.com/wp-content/uploads/2016/06/2016-06-27_1940.png" height="120" />
+    <img alt="AWS S3 Bucket" src="https://havecamerawilltravel.com/wp-content/uploads/2013/03/aws-amazon-s3-logo-header-800x450.jpg" height="120" />
 </p>
 <h2>Live demo</h2>
 <a href="https://barber-site-sigma.vercel.app/">
