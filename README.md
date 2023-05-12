@@ -2,7 +2,7 @@
   Website CMS with reservation system and admin panel
 </h1>
 <p>
-The website created dedicated to hairdressers, contains a system for booking appointments for specific hours set by the website manager using the administration panel. In the admin panel, we can change things like:<br/>
+Website is dedicated to hairdressers, contains a system for booking appointments for specific hours set by the website manager using the administration panel. In the admin panel, we can change things like:<br/>
     <ul>
         <li>Title, slogan and create year of page</li>
         <li>Page footer - link boxes, description, logo and other links</li>
